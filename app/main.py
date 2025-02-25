@@ -7,4 +7,4 @@ app = FastAPI(title='Uranus Venue Map')
 
 app.include_router(venue.router, prefix='/venue', tags=['Veranstaltungsorte'])
 app.include_router(event.router, prefix='/event', tags=['Veranstaltungen'])
-app.include_router(space.router, prefix='/space', tags=['Veranstaltungens Räume'])
+app.include_router(space.router, prefix='/space', tags=['Veranstaltungsräume'])
