@@ -4,13 +4,13 @@ from typing import Any, List, Optional
 
 from sqlalchemy import ARRAY, Boolean, CHAR, CheckConstraint, Column, Date, DateTime, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, Time, text
 from geoalchemy2 import Geometry
+from sqlalchemy.sql import func
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql.sqltypes import NullType
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.schemas.space import Space
 from app.schemas.organizer import Organizer
-from app.schemas.venue_type import VenueType
 from app.schemas.venue_url import VenueUrl
 from app.schemas.event import Event
 from app.schemas.event_date import EventDate
@@ -28,10 +28,10 @@ class Venue(SQLModel, table=True):
         {'schema': 'uranus'}
     )
 
-    id: Optional[int] = Field(default=None, sa_column=mapped_column('id', Integer, Identity(always=True, start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1)))
+    id: Optional[int] = Column(Integer, primary_key=True, index=True)
     name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
-    created_at: datetime = Field(sa_column=mapped_column('created_at', DateTime(True), nullable=False, server_default=text('CURRENT_TIMESTAMP')))
-    # wkb_geometry: Optional[Geometry] = Field(sa_column=mapped_column('wkb_geometry', Geometry('POINT', srid=4326), nullable=False))
+    created_at: datetime = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    wkb_geometry: Any = Field(sa_column=Column(Geometry('POINT', srid=4326), nullable=False))
     organizer_id: Optional[int] = Field(default=None, sa_column=mapped_column('organizer_id', Integer))
     street: Optional[str] = Field(default=None, sa_column=mapped_column('street', String(255)))
     house_number: Optional[str] = Field(default=None, sa_column=mapped_column('house_number', String(50)))

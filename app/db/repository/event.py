@@ -1,5 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy.future import select
+
 from app.schemas.event import Event
 
 
