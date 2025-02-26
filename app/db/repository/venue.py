@@ -12,7 +12,7 @@ from app.schemas.venue import Venue
 async def get_all_venues(db: AsyncSession):
     stmt = select(
         *[getattr(Venue, col) for col in Venue.model_fields.keys() if col != 'wkb_geometry'],
-        cast(func.ST_AsGeoJSON(Venue.wkb_geometry, 15), JSON).label('wkb_geometry')
+        cast(func.ST_AsGeoJSON(Venue.wkb_geometry, 15), JSON).label('geojson')
     )
 
     result = await db.execute(stmt)

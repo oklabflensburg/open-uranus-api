@@ -1,50 +1,62 @@
-from datetime import date, datetime, time
-from decimal import Decimal
-from typing import Any, List, Optional
-
-from sqlalchemy import ARRAY, Boolean, CHAR, CheckConstraint, Column, Date, DateTime, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, Time, text
+from geoalchemy2.shape import to_shape
 from geoalchemy2 import Geometry
-from sqlalchemy.sql import func
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.sql.sqltypes import NullType
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Column
+from sqlmodel import SQLModel, Field
+from pydantic import BaseModel
+from typing import Optional
+from shapely.geometry import Point
+import json
+from datetime import datetime, date
 
-from app.schemas.space import Space
-from app.schemas.organizer import Organizer
-from app.schemas.venue_url import VenueUrl
-from app.schemas.event import Event
-from app.schemas.event_date import EventDate
-
-
-
-metadata = SQLModel.metadata
 
 
 class Venue(SQLModel, table=True):
-    __table_args__ = (
-        CheckConstraint('char_length(country_code::text) = 3', name='country_length_check'),
-        ForeignKeyConstraint(['organizer_id'], ['uranus.organizer.id'], name='venue_organizer_id_fkey'),
-        PrimaryKeyConstraint('id', name='venue_pkey'),
-        {'schema': 'uranus'}
-    )
+    __tablename__ = 'venue'
+    __table_args__ = {'schema': 'uranus'}
 
-    id: Optional[int] = Column(Integer, primary_key=True, index=True)
-    name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
-    created_at: datetime = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    wkb_geometry: Any = Field(sa_column=Column(Geometry('POINT', srid=4326), nullable=False))
-    organizer_id: Optional[int] = Field(default=None, sa_column=mapped_column('organizer_id', Integer))
-    street: Optional[str] = Field(default=None, sa_column=mapped_column('street', String(255)))
-    house_number: Optional[str] = Field(default=None, sa_column=mapped_column('house_number', String(50)))
-    postal_code: Optional[str] = Field(default=None, sa_column=mapped_column('postal_code', String(20)))
-    city: Optional[str] = Field(default=None, sa_column=mapped_column('city', String(100)))
-    country_code: Optional[str] = Field(default=None, sa_column=mapped_column('country_code', CHAR(3)))
-    modified_at: Optional[datetime] = Field(default=None, sa_column=mapped_column('modified_at', DateTime(True)))
-    county_code: Optional[str] = Field(default=None, sa_column=mapped_column('county_code', String(10)))
-    opened_at: Optional[date] = Field(default=None, sa_column=mapped_column('opened_at', Date))
-    closed_at: Optional[date] = Field(default=None, sa_column=mapped_column('closed_at', Date))
+    id: int = Field(primary_key=True)
+    organizer_id: Optional[int] = Field(foreign_key='uranus.organizer.id')
+    name: str = Field(max_length=255)
+    street: Optional[str] = Field(max_length=255, default=None)
+    house_number: Optional[str] = Field(max_length=50, default=None)
+    postal_code: Optional[str] = Field(max_length=20, default=None)
+    city: Optional[str] = Field(max_length=100, default=None)
+    country_code: Optional[str] = Field(max_length=3, default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    modified_at: Optional[datetime] = Field(default=None)
+    county_code: Optional[str] = Field(max_length=10, default=None)
+    opened_at: Optional[date] = Field(default=None)
+    closed_at: Optional[date] = Field(default=None)
+    wkb_geometry: Geometry = Field(sa_column=Column(Geometry('POINT', srid=4326)))
 
-    organizer: Optional['Organizer'] = Relationship(back_populates='venue')
-    space: List['Space'] = Relationship(back_populates='venue')
-    venue_url: List['VenueUrl'] = Relationship(back_populates='venue')
-    event: List['Event'] = Relationship(back_populates='venue')
-    event_date: List['EventDate'] = Relationship(back_populates='venue')
+    class Config:
+        arbitrary_types_allowed = True
+
+
+
+class VenueResponse(BaseModel):
+    id: int
+    organizer_id: Optional[int]
+    name: str
+    street: Optional[str]
+    house_number: Optional[str]
+    postal_code: Optional[str]
+    city: Optional[str]
+    country_code: Optional[str]
+    created_at: datetime
+    modified_at: Optional[datetime]
+    county_code: Optional[str]
+    opened_at: Optional[date]
+    closed_at: Optional[date]
+    geojson: Optional[dict]
+
+    @classmethod
+    def from_orm(cls, venue: Venue):
+        # Convert the geometry field to a Shapely geometry object
+        geom = to_shape(venue.wkb_geometry)
+
+        # Convert the Shapely geometry object to GeoJSON
+        geojson = geom.__geo_interface__ if geom else None
+
+        # Return the VenueResponse with GeoJSON formatted geometry
+        return cls(**venue.dict(), geojson=geojson)
