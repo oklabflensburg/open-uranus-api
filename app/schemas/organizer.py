@@ -5,6 +5,9 @@ from datetime import datetime, date
 
 
 class Organizer(SQLModel, table=True):
+    __tablename__ = 'organizer'
+    __table_args__ = {'schema': 'uranus'}
+
     id: int = Field(primary_key=True)
     name: str = Field(max_length=255)
     description: Optional[str] = None

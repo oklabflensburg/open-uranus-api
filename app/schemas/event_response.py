@@ -5,11 +5,13 @@ from typing import List, Optional
 
 
 class EventResponse(BaseModel):
-    title: str
-    description: str
+    event_title: str
+    event_description: str
+    organizer_name: Optional[str]
+    event_type: Optional[str]
+    genre_type: Optional[str]
+    venue_type: Optional[str]
     venue_name: str
-    city: str
+    venue_city: str
     start_date: datetime
     space_name: str
-    ramp: Optional[bool]
-    venue_type: str
