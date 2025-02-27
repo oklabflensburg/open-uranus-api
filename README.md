@@ -52,3 +52,12 @@ pip3 install -r requirements.txt
 ```sh
 uvicorn app.main:app --reload --env-file .env
 ```
+
+
+
+## Export Data
+
+```sh
+pg_dump -U oklab -h localhost -d oklab -n uranus --data-only --column-inserts --no-owner --no-comments --verbose -f uranus_data_dump.sql
+pg_dump -U oklab -h localhost -d oklab -n uranus --schema-only --no-owner --no-comments --verbose -f uranus_schema_dump.sql
+```
