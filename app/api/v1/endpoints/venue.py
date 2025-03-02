@@ -25,7 +25,7 @@ async def fetch_all_venues(db: AsyncSession = Depends(get_db)):
 
 
 
-@router.get('/id', response_model=List[VenueResponse])
+@router.get('/id', response_model=VenueResponse)
 async def fetch_venue_by_id(
     venue_id: int,
     db: AsyncSession = Depends(get_db)
