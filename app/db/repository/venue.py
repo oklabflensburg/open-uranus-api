@@ -4,6 +4,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.types import JSON
 from sqlalchemy.future import select
 from sqlalchemy.sql.expression import cast
+from geoalchemy2.functions import ST_AsGeoJSON, ST_MakeEnvelope
 
 from app.schemas.venue import Venue
 
@@ -19,3 +20,20 @@ async def get_all_venues(db: AsyncSession):
     venues = result.all()
 
     return venues
+
+
+async def get_venues_within_bounds(db: AsyncSession, xmin: float, ymin: float, xmax: float, ymax: float):
+    stmt = (
+        select(
+            Venue.id,
+            Venue.name,
+            ST_AsGeoJSON(Venue.wkb_geometry).label('geojson')
+        )
+        .where(
+            Venue.wkb_geometry.ST_Within(ST_MakeEnvelope(xmin, ymin, xmax, ymax, 4326))
+        )
+    )
+
+    venues = await db.execute(stmt)
+
+    return venues.mappings().all()
