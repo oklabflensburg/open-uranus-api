@@ -8,7 +8,7 @@ import json
 
 from app.db.session import get_db
 
-from app.schemas.venue import VenueResponse
+from app.schemas.venue_response import VenueResponse
 from app.schemas.venue_bounds_response import VenueBoundsResponse
 
 from app.db.repository.venue import get_all_venues, get_venues_within_bounds

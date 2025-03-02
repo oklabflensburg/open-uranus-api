@@ -1,11 +1,8 @@
-from geoalchemy2.shape import to_shape
 from geoalchemy2 import Geometry
 from sqlalchemy import Column
 from sqlmodel import SQLModel, Field
-from pydantic import BaseModel
 from typing import Optional
 from shapely.geometry import Point
-import json
 from datetime import datetime, date
 
 
@@ -31,32 +28,3 @@ class Venue(SQLModel, table=True):
 
     class Config:
         arbitrary_types_allowed = True
-
-
-
-class VenueResponse(BaseModel):
-    id: int
-    organizer_id: Optional[int]
-    name: str
-    street: Optional[str]
-    house_number: Optional[str]
-    postal_code: Optional[str]
-    city: Optional[str]
-    country_code: Optional[str]
-    created_at: datetime
-    modified_at: Optional[datetime]
-    county_code: Optional[str]
-    opened_at: Optional[date]
-    closed_at: Optional[date]
-    geojson: Optional[dict]
-
-    @classmethod
-    def from_orm(cls, venue: Venue):
-        # Convert the geometry field to a Shapely geometry object
-        geom = to_shape(venue.wkb_geometry)
-
-        # Convert the Shapely geometry object to GeoJSON
-        geojson = geom.__geo_interface__ if geom else None
-
-        # Return the VenueResponse with GeoJSON formatted geometry
-        return cls(**venue.dict(), geojson=geojson)
