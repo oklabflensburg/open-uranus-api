@@ -30,12 +30,12 @@ async def fetch_venue_by_id(
     venue_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    venues = await get_venue_by_id(db, venue_id)
+    venue = await get_venue_by_id(db, venue_id)
 
-    if len(venues) < 1:
+    if venue is None:
         raise HTTPException(status_code=404, detail=f'No venue found for venue_id: {venue_id}')
 
-    return venues
+    return venue
 
 
 
