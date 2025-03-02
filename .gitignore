@@ -1,5 +1,8 @@
 venv/
+dist/
 __pycache__/
+.parcel-cache/
+node_modules/
 .DS_Store
 .env
 .idea
