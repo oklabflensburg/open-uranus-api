@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2 (Postgres.app)
 -- Dumped by pg_dump version 16.2 (Postgres.app)
 
--- Started on 2025-02-26 19:18:29 CET
+-- Started on 2025-03-03 14:59:11 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -72,8 +72,8 @@ CREATE TABLE uranus.event_date (
     event_id integer NOT NULL,
     venue_id integer NOT NULL,
     space_id integer,
-    start_date timestamp with time zone NOT NULL,
-    end_date timestamp with time zone,
+    date_start timestamp with time zone NOT NULL,
+    date_end timestamp with time zone,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     modified_at timestamp with time zone,
     entry_time time with time zone
@@ -891,7 +891,7 @@ ALTER TABLE ONLY uranus.venue_url
     ADD CONSTRAINT venue_url_venue_id_fkey FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
--- Completed on 2025-02-26 19:18:29 CET
+-- Completed on 2025-03-03 14:59:12 CET
 
 --
 -- PostgreSQL database dump complete
