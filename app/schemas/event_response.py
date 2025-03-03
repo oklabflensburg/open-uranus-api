@@ -14,5 +14,5 @@ class EventResponse(BaseModel):
     venue_type: Optional[str]
     venue_name: str
     venue_city: str
-    start_date: datetime
+    date_start: datetime
     space_name: str

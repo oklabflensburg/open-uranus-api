@@ -38,10 +38,9 @@ async def fetch_events_by_filter(
         'event_type': event_type,
         'venue_type': venue_type,
         'genre_type': genre_type,
-        'start_date': date_start,
-        'end_date': date_end
+        'date_start': date_start,
+        'date_end': date_end
     }
-    print(filters)
 
     # Remove filters with None values
     active_filters = {key: value for key, value in filters.items() if value not in [None, '']}

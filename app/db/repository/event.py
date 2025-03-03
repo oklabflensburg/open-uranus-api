@@ -62,7 +62,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Organizer.name.label('organizer_name'),
             Venue.name.label('venue_name'),
             Venue.city.label('venue_city'),
-            EventDate.start_date,
+            EventDate.date_start,
             Space.name.label('space_name'),
             func.string_agg(func.distinct(gvt.c.name), ', ').label('venue_type')
         )
@@ -86,7 +86,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Organizer.name,
             Venue.name,
             Venue.city,
-            EventDate.start_date,
+            EventDate.date_start,
             Space.name
         )
     )
@@ -96,19 +96,19 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
 
     # Apply multiple filters dynamically
     for column_name, filter_value in filters.items():
-        if column_name in ['start_date', 'end_date']:
+        if column_name in ['date_start', 'date_end']:
             parsed_date, date_operator = parse_date(filter_value)
 
             if date_operator == '=':
-                stmt = stmt.where(EventDate.start_date == parsed_date)
+                stmt = stmt.where(EventDate.date_start == parsed_date)
             elif date_operator == '>':
-                stmt = stmt.where(EventDate.start_date > parsed_date)
+                stmt = stmt.where(EventDate.date_start > parsed_date)
             elif date_operator == '<':
-                stmt = stmt.where(EventDate.start_date < parsed_date)
+                stmt = stmt.where(EventDate.date_start < parsed_date)
             elif date_operator == '>=':
-                stmt = stmt.where(EventDate.start_date >= parsed_date)
+                stmt = stmt.where(EventDate.date_start >= parsed_date)
             elif date_operator == '<=':
-                stmt = stmt.where(EventDate.start_date <= parsed_date)
+                stmt = stmt.where(EventDate.date_start <= parsed_date)
             else:
                 raise ValueError(f'Invalid operator: {date_operator}')
 
