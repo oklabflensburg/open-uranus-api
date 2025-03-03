@@ -17,6 +17,7 @@ from app.schemas.venue_type import VenueType
 from app.schemas.venue import Venue
 from app.schemas.genre_link_types import GenreLinkTypes
 from app.schemas.genre_type import GenreType
+from app.schemas.space_type import SpaceType
 
 from app.core.parser import parse_date
 
@@ -47,10 +48,17 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
         .cte('GenreTypes')
     )
 
+    space_types = (
+        select(SpaceType.type_id, SpaceType.name.label('space_type'))
+        .join(filtered_i18n, filtered_i18n.c.id == SpaceType.i18n_locale_id)
+        .cte('SpaceTypes')
+    )
+
     # Aliases
     cet = aliased(event_types)
     get = aliased(genre_types)
     gvt = aliased(venue_types)
+    spt = aliased(space_types)
 
     stmt = (
         select(
@@ -64,6 +72,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Venue.city.label('venue_city'),
             EventDate.date_start,
             Space.name.label('space_name'),
+            spt.c.space_type,
             func.string_agg(func.distinct(gvt.c.name), ', ').label('venue_type')
         )
         .select_from(Event)
@@ -78,6 +87,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
         .outerjoin(get, get.c.type_id == GenreLinkTypes.genre_type_id)
         .outerjoin(VenueLinkTypes, VenueLinkTypes.venue_id == Venue.id)
         .outerjoin(gvt, gvt.c.type_id == VenueLinkTypes.venue_type_id)
+        .outerjoin(spt, spt.c.type_id == Space.space_type_id)
         .outerjoin(Organizer, Organizer.id == Event.organizer_id)
         .group_by(
             Event.id,
@@ -87,7 +97,8 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Venue.name,
             Venue.city,
             EventDate.date_start,
-            Space.name
+            Space.name,
+            spt.c.space_type
         )
     )
 

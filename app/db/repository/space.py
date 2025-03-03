@@ -14,6 +14,15 @@ async def get_all_spaces(db: AsyncSession):
 
 
 
+async def get_space_by_id(db: AsyncSession, space_id: int, lang: str = 'de'):
+    filtered_i18n = (
+        select(I18nLocale.id, I18nLocale.iso_639_1)
+        .where(I18nLocale.iso_639_1 == lang)
+        .cte('FilteredI18n')
+    )
+
+
+
 async def get_spaces_by_filter(db: AsyncSession, filters: dict):
     stmt = (select(Space))
 

@@ -19,6 +19,20 @@ async def fetch_all_spaces(
 
 
 
+@router.get('/id', response_model=Space)
+async def fetch_space_by_id(
+    space_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    space = await get_space_by_id(db, space_id)
+
+    if space is None:
+        raise HTTPException(status_code=404, detail=f'No space found for space_id: {space_id}')
+
+    return space
+
+
+
 @router.get('/filtered', response_model=List[Space])
 async def fetch_spaces_by_filter(
     space_id: Optional[int] = Query(None),
