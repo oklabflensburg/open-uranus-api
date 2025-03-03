@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import func
+from sqlalchemy import or_
 
 from app.schemas.i18n_locale import I18nLocale
 from app.schemas.organizer import Organizer
@@ -17,17 +18,11 @@ from app.schemas.venue import Venue
 from app.schemas.genre_link_types import GenreLinkTypes
 from app.schemas.genre_type import GenreType
 
-
-
-async def get_all_events(db: AsyncSession):
-    result = await db.execute(select(Event))
-    
-    events = result.scalars().all()
-    return events
+from app.core.parser import parse_date
 
 
 
-async def get_all_detailed_events(db: AsyncSession, city: str, lang: str = 'de'):
+async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'):
     filtered_i18n = (
         select(I18nLocale.id, I18nLocale.iso_639_1)
         .where(I18nLocale.iso_639_1 == lang)
@@ -59,6 +54,7 @@ async def get_all_detailed_events(db: AsyncSession, city: str, lang: str = 'de')
 
     stmt = (
         select(
+            Event.id.label('event_id'),
             Event.title.label('event_title'),
             Event.description.label('event_description'),
             func.string_agg(func.distinct(cet.c.name), ', ').label('event_type'),
@@ -70,6 +66,7 @@ async def get_all_detailed_events(db: AsyncSession, city: str, lang: str = 'de')
             Space.name.label('space_name'),
             func.string_agg(func.distinct(gvt.c.name), ', ').label('venue_type')
         )
+        .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
         .join(Space, Space.id == EventDate.space_id)
         .join(Venue, Venue.id == Space.venue_id)
@@ -82,9 +79,8 @@ async def get_all_detailed_events(db: AsyncSession, city: str, lang: str = 'de')
         .outerjoin(VenueLinkTypes, VenueLinkTypes.venue_id == Venue.id)
         .outerjoin(gvt, gvt.c.type_id == VenueLinkTypes.venue_type_id)
         .outerjoin(Organizer, Organizer.id == Event.organizer_id)
-        .where(EventDate.start_date >= func.now())
-        .where(Venue.city == city)
         .group_by(
+            Event.id,
             Event.title,
             Event.description,
             Organizer.name,
@@ -95,6 +91,47 @@ async def get_all_detailed_events(db: AsyncSession, city: str, lang: str = 'de')
         )
     )
 
+    # Dictionary to group values by column name
+    column_filters = {}
+
+    # Apply multiple filters dynamically
+    for column_name, filter_value in filters.items():
+        if column_name in ['start_date', 'end_date']:
+            parsed_date, date_operator = parse_date(filter_value)
+
+            if date_operator == '=':
+                stmt = stmt.where(EventDate.start_date == parsed_date)
+            elif date_operator == '>':
+                stmt = stmt.where(EventDate.start_date > parsed_date)
+            elif date_operator == '<':
+                stmt = stmt.where(EventDate.start_date < parsed_date)
+            elif date_operator == '>=':
+                stmt = stmt.where(EventDate.start_date >= parsed_date)
+            elif date_operator == '<=':
+                stmt = stmt.where(EventDate.start_date <= parsed_date)
+            else:
+                raise ValueError(f'Invalid operator: {date_operator}')
+
+        elif column_name in ['city', 'postal_code']:
+            column_attr = getattr(Venue, column_name)
+            stmt = stmt.where(column_attr == filter_value)
+
+        elif column_name in ['id', 'venue_id', 'space_id']:
+            column_filters.setdefault(column_name, []).extend(filter_value)
+
+        '''
+        'event_type': event_type,
+        'venue_type': venue_type,
+        'genre_type': genre_type,
+        '''
+
+    # Apply OR conditions for grouped filters
+    for column_name, values in column_filters.items():
+        column_attr = getattr(Event, column_name)
+        stmt = stmt.where(or_(*[column_attr == value for value in values]))
+
+
     result = await db.execute(stmt)
     events = result.mappings().all()
+
     return events

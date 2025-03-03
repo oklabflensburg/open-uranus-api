@@ -5,6 +5,7 @@ from typing import List, Optional
 
 
 class EventResponse(BaseModel):
+    event_id: int
     event_title: str
     event_description: str
     organizer_name: Optional[str]
