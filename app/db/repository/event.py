@@ -69,9 +69,9 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             func.string_agg(func.distinct(get.c.name), ', ').label('genre_type'),
             Organizer.name.label('organizer_name'),
             Venue.name.label('venue_name'),
-            Venue.postal_code,
+            Venue.postal_code.label('venue_postcode'),
             Venue.city.label('venue_city'),
-            EventDate.date_start,
+            EventDate.date_start.label('event_date_start'),
             Space.name.label('space_name'),
             spt.c.space_type,
             func.string_agg(func.distinct(gvt.c.name), ', ').label('venue_type')
