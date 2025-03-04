@@ -396,6 +396,21 @@ function navigateTo(screen, updateHistory = true) {
 }
 
 
+function formatDateToGerman(dateString) {
+  const date = new Date(dateString)
+
+  if (!isNaN(date)) {
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+
+    return `${day}.${month}.${year}`
+  }
+
+  return dateString // Return original if invalid
+}
+
+
 async function fetchAndPopulate(url, elementId, idKey, nameKey) {
   try {
     const response = await fetch(url)
@@ -459,11 +474,11 @@ document.querySelector('#eventForm').addEventListener('submit', async function (
   }
 
   if (dateStart) {
-    params.push(`date_start=${dateStart}`)
+    params.push(`date_start=${encodeURIComponent('>=')}${formatDateToGerman(dateStart)}`)
   }
 
   if (dateEnd) {
-    params.push(`date_end=${dateEnd}`)
+    params.push(`date_end=${encodeURIComponent('<=')}${formatDateToGerman(dateEnd)}`)
   }
 
   if (params.length > 0) {
@@ -501,7 +516,7 @@ document.querySelector('#eventForm').addEventListener('submit', async function (
     ${e.event_type ? `<a href="#" class="font-sans bg-pink-100 text-pink-800 hover:bg-pink-500 focus:bg-pink-500 hover:text-white focus:text-white text-xs font-medium me-2 px-2.5 py-1 rounded">${e.event_type}</a>` : ''}
     ${e.genre_type ? `<a href="#" class="font-sans bg-orange-100 text-orange-800 hover:bg-orange-500 focus:bg-orange-500 hover:text-white focus:text-white text-xs font-medium me-2 px-2.5 py-1 rounded">${e.genre_type}</a>` : ''}
 </div>
-`).join('');
+`).join('')
   }
   catch (error) {
     console.error('Error fetching events:', error)
