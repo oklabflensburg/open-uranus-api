@@ -491,13 +491,17 @@ document.querySelector('#eventForm').addEventListener('submit', async function (
 <div class="bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow">
     <h3 class="text-xl font-semibold text-blue-600 mb-2">${e.event_title}</h3>
     <p class="text-gray-700 mb-3">${e.event_description}</p>
-    <div class="text-gray-600 text-sm space-y-1">
+    <div class="text-gray-600 text-sm space-y-1 mb-1">
         <p><strong>📍 Ort:</strong> ${e.venue_name} (${e.venue_city}, ${e.venue_postcode})</p>
         <p><strong>📅 Datum:</strong> ${new Date(e.event_date_start).toLocaleDateString()}</p>
         <p><strong>🎟 Veranstalter:</strong> ${e.organizer_name}</p>
     </div>
+
+    ${e.genre_type ? `<a href="#" class="font-sans bg-blue-100 text-blue-800 hover:bg-blue-500 focus:bg-blue-500 hover:text-white focus:text-white text-xs font-medium me-2 px-2.5 py-1 rounded">${e.genre_type}</a>` : ''}
+    ${e.event_type ? `<a href="#" class="font-sans bg-pink-100 text-pink-800 hover:bg-pink-500 focus:bg-pink-500 hover:text-white focus:text-white text-xs font-medium me-2 px-2.5 py-1 rounded">${e.event_type}</a>` : ''}
+    ${e.genre_type ? `<a href="#" class="font-sans bg-orange-100 text-orange-800 hover:bg-orange-500 focus:bg-orange-500 hover:text-white focus:text-white text-xs font-medium me-2 px-2.5 py-1 rounded">${e.genre_type}</a>` : ''}
 </div>
-                `).join('')
+`).join('');
   }
   catch (error) {
     console.error('Error fetching events:', error)
