@@ -63,15 +63,15 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
     stmt = (
         select(
             Event.id.label('event_id'),
-            Event.title.label('event_title'),
-            Event.description.label('event_description'),
-            func.string_agg(func.distinct(cet.c.name), ', ').label('event_type'),
-            func.string_agg(func.distinct(get.c.name), ', ').label('genre_type'),
-            Organizer.name.label('organizer_name'),
             Venue.name.label('venue_name'),
             Venue.postal_code.label('venue_postcode'),
             Venue.city.label('venue_city'),
+            Event.title.label('event_title'),
+            Event.description.label('event_description'),
             EventDate.date_start.label('event_date_start'),
+            func.string_agg(func.distinct(cet.c.name), ', ').label('event_type'),
+            func.string_agg(func.distinct(get.c.name), ', ').label('genre_type'),
+            Organizer.name.label('organizer_name'),
             Space.name.label('space_name'),
             spt.c.space_type,
             func.string_agg(func.distinct(gvt.c.name), ', ').label('venue_type')
