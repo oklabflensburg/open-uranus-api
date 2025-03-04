@@ -130,7 +130,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             stmt = stmt.where(column_attr == filter_value)
 
         elif column_name == 'event_type_id':
-            column_attr = EventType.type_id
+            column_attr = cet.c.type_id
             column_filters.setdefault(column_attr, []).extend(filter_value)
 
         elif column_name == 'venue_type_id':
