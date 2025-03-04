@@ -396,6 +396,17 @@ function navigateTo(screen, updateHistory = true) {
 }
 
 
+function renderTags(values, baseClass, colorClass) {
+  if (!values) {
+    return ''
+  }
+
+  return values.split(',').map((value) =>
+    `<a href="#" class="${baseClass} ${colorClass}">${value.trim()}</a>`
+  ).join('')
+}
+
+
 function formatDateToGerman(dateString) {
   const date = new Date(dateString)
 
@@ -512,9 +523,12 @@ document.querySelector('#eventForm').addEventListener('submit', async function (
         <p><strong>🎟 Veranstalter:</strong> ${e.organizer_name}</p>
     </div>
 
-    ${e.genre_type ? `<a href="#" class="font-sans bg-blue-100 text-blue-800 hover:bg-blue-500 focus:bg-blue-500 hover:text-white focus:text-white text-xs font-medium me-2 px-2.5 py-1 rounded">${e.genre_type}</a>` : ''}
-    ${e.event_type ? `<a href="#" class="font-sans bg-pink-100 text-pink-800 hover:bg-pink-500 focus:bg-pink-500 hover:text-white focus:text-white text-xs font-medium me-2 px-2.5 py-1 rounded">${e.event_type}</a>` : ''}
-    ${e.genre_type ? `<a href="#" class="font-sans bg-orange-100 text-orange-800 hover:bg-orange-500 focus:bg-orange-500 hover:text-white focus:text-white text-xs font-medium me-2 px-2.5 py-1 rounded">${e.genre_type}</a>` : ''}
+
+    <div class="flex flex-wrap gap-2 mt-2">
+        ${renderTags(e.venue_type, 'font-sans text-xs font-medium px-2.5 py-1 rounded', 'bg-orange-100 text-orange-800 hover:bg-orange-500 hover:text-white')}
+        ${renderTags(e.event_type, 'font-sans text-xs font-medium px-2.5 py-1 rounded', 'bg-pink-100 text-pink-800 hover:bg-pink-500 hover:text-white')}
+        ${renderTags(e.genre_type, 'font-sans text-xs font-medium px-2.5 py-1 rounded', 'bg-blue-100 text-blue-800 hover:bg-blue-500 hover:text-white')}
+    </div>
 </div>
 `).join('')
   }
