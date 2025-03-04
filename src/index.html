@@ -22,6 +22,10 @@
   <div class="relative sm:flex sm:flex-row w-full h-dvh overflow-hidden">
     <div class="h-dvh flex flex-col w-full xs:w-5/12 sm:w-6/12 md:w-7/12 lg:w-8/12 xl:w-9/12">
       <div id="map" class="h-[95dvh] w-full"></div>
+      <div id="list" class="h-[95dvh] p-3 w-full overflow-scroll hidden">
+        <h1 class="font-bold leading-normal lg:text-4xl mb-6 md:text-3xl px-1 text-1xl tracking-normal">Suchergebnisse</h1>
+        <div id="listResults" class"space-y-10"></div>
+      </div>
       <footer class="grow w-full bg-gray-200 border-t md:border-t border-gray-300 text-sm flex justify-center items-center">
         <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./impressum.html">Impressum</a> <span class="inline-block text-gray-700 px-3">|</span> <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./impressum.html#privacypolicy">Datenschutzerklärung</a> <span class="inline-block text-gray-700 px-3">|</span> <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./lizenz.html">Lizenz</a>
       </footer>
@@ -36,20 +40,47 @@
         </a>
       </div>
 
-      <div id="sidebarHeader" class="py-2 px-3 mb-4 lg:mb-8">
-        <h1 class="tracking-normal leading-normal font-bold text-2xl md:text-3xl lg:text-4xl mb-1">Uranus Venue Map</h1>
-        <h2><a href="/" class="text-xl md:text-2xl text-gray-700 hover:text-blue-700 focus:text-blue-800" title="tbd.">klick mich (oder nicht)</a></h2>
-      </div>
+      <div id="sidebarHeader" class="py-2 px-3 mb-1">
+        <h1 class="tracking-normal leading-normal font-bold text-1xl md:text-3xl lg:text-4xl px-1 mb-6">Heute in Flensburg</h1>
 
-      <div class="mt-3 md:mt-6 py-2 px-3" id="about">
-      </div>
+        <div class="" id="about"></div>
 
-      <div id="sidebarContent" class="relative bg-white border border-slate-300 leading-normal lg:text-lg m-3 rounded text-black text-md hidden">
-        <div id="detailImage"></div>
-        <ul class="p-3 space-y-3" id="detailList"></ul>
+        <div id="sidebarContent" class="relative bg-white rounded-sm shadow-sm w-full lg:text-lg text-black text-md hidden">
+          <div id="detailImage"></div>
+          <ul class="p-3 space-y-3 mb-6" id="detailList"></ul>
+        </div>
+
+        <form id="eventForm" class="bg-white p-3 rounded-sm shadow-lg w-full" aria-labelledby="form-title">
+          <h2 id="form-title" class="text-xl font-bold mb-4">Veranstaltung finden</h2>
+
+          <label for="venueCity" class="block font-medium mb-1">Ort</label>
+          <input type="text" id="venueCity" class="w-full p-2 border rounded mb-4" aria-describedby="venueCity-desc" placeholder="Ort oder Stadt">
+
+          <label for="venuePostcode" class="block font-medium mb-1">PLZ</label>
+          <input type="text" id="venuePostcode" class="w-full p-2 border rounded mb-4" aria-describedby="venuePostcode-desc" placeholder="PLZ">
+
+          <label for="eventType" class="block font-medium mb-1">Veranstaltungsart</label>
+          <select id="eventType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="eventType-desc"></select>
+
+          <label for="venueType" class="block font-medium mb-1">Veranstaltungsort</label>
+          <select id="venueType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="venueType-desc"></select>
+
+          <label for="spaceType" class="block font-medium mb-1">Räume</label>
+          <select id="spaceType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="spaceType-desc"></select>
+
+          <label for="genreType" class="block font-medium mb-1">Genre</label>
+          <select id="genreType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="genreType-desc"></select>
+
+          <label for="eventDateStart" class="block font-medium mb-1">Frühster beginn</label>
+          <input type="date" id="eventDateStart" class="w-full p-2 border rounded mb-4" aria-describedby="eventDateStart-desc">
+
+          <label for="eventDateEnd" class="block font-medium mb-1">Spätestes Datum</label>
+          <input type="date" id="eventDateEnd" class="w-full p-2 border rounded mb-4" aria-describedby="eventDateEnd-desc">
+
+          <button type="submit" class="w-full bg-blue-500 hover:bg-green-500 focus:bg-green-500 text-white p-2 rounded">Veranstaltung finden</button>
+        </form>
       </div>
     </div>
-  </div>
 
   <script type="module" src="./main.js"></script>
 </body>

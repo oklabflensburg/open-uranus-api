@@ -56,7 +56,7 @@ let zoomControl = L.control.zoom({
 
 
 function updateScreen(screen) {
-  const title = 'Digitale Denkmalkarte für Schleswig-Holstein'
+  const title = 'Veranstaltung finden - Uranus Venue Map'
 
   if (screen === 'home') {
     document.title = title
@@ -394,6 +394,116 @@ function navigateTo(screen, updateHistory = true) {
 
   updateScreen(screen)
 }
+
+
+async function fetchAndPopulate(url, elementId, idKey, nameKey) {
+  try {
+    const response = await fetch(url)
+    const data = await response.json()
+    const selectElement = document.getElementById(elementId)
+    selectElement.innerHTML = '<option selected value>Bitte auswählen</option>'
+    selectElement.innerHTML += data.map((item) => `<option class="cursor-pointer" value="${item[idKey]}">${item[nameKey]}</option>`).join('')
+  }
+  catch (error) {
+    console.error(`Error fetching ${elementId}:`, error)
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/event/type/', 'eventType', 'event_type_id', 'event_type_name')
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/venue/type/', 'venueType', 'venue_type_id', 'venue_type_name')
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/space/type/', 'spaceType', 'space_type_id', 'space_type_name')
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/genre/type/', 'genreType', 'genre_type_id', 'genre_type_name')
+})
+
+
+document.querySelector('#eventForm').addEventListener('submit', async function (event) {
+  event.preventDefault()
+
+  const city = document.querySelector('#venueCity').value || null
+  const postcode = document.querySelector('#venuePostcode').value || null
+  const spaceTypeId = document.querySelector('#spaceType').value || null
+  const venueTypeId = document.querySelector('#venueType').value || null
+  const genreTypeId = document.querySelector('#genreType').value || null
+  const eventTypeId = document.querySelector('#eventType').value || null
+  const dateStart = document.querySelector('#eventDateStart').value || null
+  const dateEnd = document.querySelector('#eventDateEnd').value || null
+
+  const baseUrl = 'https://api.uranus.oklabflensburg.de/event/'
+  let url = baseUrl
+
+  const params = []
+
+  if (city) {
+    params.push(`city=${city}`)
+  }
+
+  if (postcode) {
+    params.push(`postal_code=${postcode}`)
+  }
+
+  if (venueTypeId) {
+    params.push(`venue_type_id=${venueTypeId}`)
+  }
+
+  if (genreTypeId) {
+    params.push(`genre_type_id=${genreTypeId}`)
+  }
+
+  if (spaceTypeId) {
+    params.push(`space_type_id=${spaceTypeId}`)
+  }
+
+  if (eventTypeId) {
+    params.push(`event_type_id=${eventTypeId}`)
+  }
+
+  if (dateStart) {
+    params.push(`date_start=${dateStart}`)
+  }
+
+  if (dateEnd) {
+    params.push(`date_end=${dateEnd}`)
+  }
+
+  if (params.length > 0) {
+    const urlParams = params.join('&')
+    url = `${baseUrl}?${urlParams}`
+  }
+
+  console.log(url)
+
+  try {
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+
+    const events = await response.json()
+
+    const listContainer = document.querySelector('#list')
+    const mapContainer = document.querySelector('#map')
+    mapContainer.classList.add('hidden')
+    listContainer.classList.remove('hidden')
+
+    document.querySelector('#listResults').innerHTML = events.map((e) => `
+<div class="bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow">
+    <h3 class="text-xl font-semibold text-blue-600 mb-2">${e.event_title}</h3>
+    <p class="text-gray-700 mb-3">${e.event_description}</p>
+    <div class="text-gray-600 text-sm space-y-1">
+        <p><strong>📍 Ort:</strong> ${e.venue_name} (${e.venue_city}, ${e.venue_postcode})</p>
+        <p><strong>📅 Datum:</strong> ${new Date(e.event_date_start).toLocaleDateString()}</p>
+        <p><strong>🎟 Veranstalter:</strong> ${e.organizer_name}</p>
+    </div>
+</div>
+                `).join('')
+  }
+  catch (error) {
+    console.error('Error fetching events:', error)
+  }
+})
+
 
 
 // Handle initial page load
