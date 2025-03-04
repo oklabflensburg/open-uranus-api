@@ -22,9 +22,9 @@ async def fetch_events_by_filter(
     venue_id: Optional[List[int]] = Query(None),
     event_id: Optional[List[int]] = Query(None),
     space_id: Optional[List[int]] = Query(None),
-    event_type: Optional[List[str]] = Query(None, delimiter=','),
-    venue_type: Optional[List[str]] = Query(None, delimiter=','),
-    genre_type: Optional[List[str]] = Query(None, delimiter=','),
+    event_type_id: Optional[List[int]] = Query(None),
+    venue_type_id: Optional[List[int]] = Query(None),
+    genre_type_id: Optional[List[int]] = Query(None),
     date_start: Optional[str] = Query(None),
     date_end: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
@@ -35,9 +35,9 @@ async def fetch_events_by_filter(
         'id': event_id,
         'venue_id': venue_id,
         'space_id': space_id,
-        'event_type': event_type,
-        'venue_type': venue_type,
-        'genre_type': genre_type,
+        'event_type_id': event_type_id,
+        'venue_type_id': venue_type_id,
+        'genre_type_id': genre_type_id,
         'date_start': date_start,
         'date_end': date_end
     }

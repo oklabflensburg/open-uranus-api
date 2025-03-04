@@ -69,6 +69,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             func.string_agg(func.distinct(get.c.name), ', ').label('genre_type'),
             Organizer.name.label('organizer_name'),
             Venue.name.label('venue_name'),
+            Venue.postal_code,
             Venue.city.label('venue_city'),
             EventDate.date_start,
             Space.name.label('space_name'),
@@ -95,6 +96,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Event.description,
             Organizer.name,
             Venue.name,
+            Venue.postal_code,
             Venue.city,
             EventDate.date_start,
             Space.name,
@@ -127,18 +129,24 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             column_attr = getattr(Venue, column_name)
             stmt = stmt.where(column_attr == filter_value)
 
-        elif column_name in ['id', 'venue_id', 'space_id']:
-            column_filters.setdefault(column_name, []).extend(filter_value)
+        elif column_name == 'event_type_id':
+            column_attr = EventType.type_id
+            column_filters.setdefault(column_attr, []).extend(filter_value)
 
-        '''
-        'event_type': event_type,
-        'venue_type': venue_type,
-        'genre_type': genre_type,
-        '''
+        elif column_name == 'venue_type_id':
+            column_attr = gvt.c.type_id
+            column_filters.setdefault(column_attr, []).extend(filter_value)
+
+        elif column_name == 'genre_type_id':
+            column_attr = get.c.type_id
+            column_filters.setdefault(column_attr, []).extend(filter_value)
+
+        elif column_name in ['id', 'venue_id', 'space_id']:
+            column_attr = getattr(Event, column_name)
+            column_filters.setdefault(column_attr, []).extend(filter_value)
 
     # Apply OR conditions for grouped filters
-    for column_name, values in column_filters.items():
-        column_attr = getattr(Event, column_name)
+    for column_attr, values in column_filters.items():
         stmt = stmt.where(or_(*[column_attr == value for value in values]))
 
 
