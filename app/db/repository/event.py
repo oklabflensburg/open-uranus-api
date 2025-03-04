@@ -102,6 +102,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Space.name,
             spt.c.space_type
         )
+        .order_by(EventDate.date_start)
     )
 
     # Dictionary to group values by column name
