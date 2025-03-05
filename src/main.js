@@ -69,49 +69,6 @@ function updateScreen(screen) {
 }
 
 
-function fetchBlob(url, designation) {
-  if (!url || typeof url !== 'string') {
-    console.error('Invalid URL passed to fetchBlob:', url)
-    return
-  }
-
-  fetch(url, { method: 'get', mode: 'cors' })
-    .then((response) => {
-      if (!response.ok) {
-        console.warn(`${url} returned HTTP status code ${response.status}`)
-        return null
-      }
-      return response.blob()
-    })
-    .then((blob) => {
-      if (!blob) {
-        console.error('Failed to retrieve image blob from response')
-        return
-      }
-
-      const imageUrl = URL.createObjectURL(blob)
-      const imageElement = document.createElement('img')
-      imageElement.src = imageUrl
-      imageElement.setAttribute('alt', designation || 'Denkmalschutz')
-
-      const divElement = document.createElement('div')
-      divElement.classList.add('px-3', 'py-2', 'w-full', 'text-xs', 'text-gray-100', 'bg-gray-600')
-      divElement.innerText = 'Foto © Landesamt für Denkmalpflege'
-
-      const container = document.querySelector('#detailImage')
-
-      if (!container) {
-        console.error('Element #detailImage not found')
-        return
-      }
-
-      container.appendChild(imageElement)
-      container.appendChild(divElement)
-    })
-    .catch((error) => console.error('Error in fetchBlob:', error))
-}
-
-
 function capitalizeEachWord(str) {
   return str.replace(/-/g, ' ').replace(/\w\S*/g, function (txt) {
     return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
@@ -145,7 +102,7 @@ function renderItemMeta(data) {
   const organizerURL	= data.organizer_url
 
   const title = 'Open Uranus Venue Map'
-  /* const title = `${capitalizeEachWord(slug)} - Digitale Denkmalkarte`
+  /* const title = `${capitalizeEachWord(slug)} - Veranstaltungskalender`
 
   document.querySelector('title').innerHTML = title
   document.querySelector('meta[property="og:title"]').setAttribute('content', title)
@@ -233,7 +190,6 @@ async function fetchItemDetailBySlug(slug) {
 
   if (isValidUrl(data.image_url)) {
     document.querySelector('#detailImage').innerHTML = ''
-    fetchBlob(data.image_url, data.designation)
   }
 
   renderItemMeta(data)
@@ -360,7 +316,7 @@ function findMarkerById(slug) {
 // Set the selected marker
 function setSelectedMarker(marker) {
   if (previousSelectedMarker !== null) {
-    previousSelectedMarker.setIcon(defaultIcon) // Reset previous marker
+    previousSelectedMarker.setIcon(defaultIcon)
   }
 
   marker.setIcon(selectedIcon)
@@ -386,6 +342,8 @@ function navigateTo(screen, updateHistory = true) {
 
 
 function renderTags(tags, baseClasses, hoverClasses) {
+  console.log(tags)
+
   if (!tags) {
     return null
   }
@@ -413,13 +371,34 @@ function formatDateToGerman(dateString) {
     return `${day}.${month}.${year}`
   }
 
-  return dateString // Return original if invalid
+  return dateString
 }
 
 
 function createEventCard(eventObject) {
   const card = document.createElement('div')
-  card.className = 'bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow'
+  card.className = 'bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow flex flex-col md:flex-row items-start'
+
+  // Image Wrapper
+  if (eventObject.image_url) {
+    const imageWrapper = document.createElement('div')
+    imageWrapper.className = 'md:ml-4 flex-shrink-0 w-full md:w-1/4'
+
+    const imageElement = document.createElement('img')
+    imageElement.src = eventObject.image_url
+    imageElement.setAttribute('alt', eventObject.event_title || 'your text here johnny')
+    imageElement.className = 'w-full h-auto rounded-lg object-cover'
+
+    imageWrapper.append(imageElement)
+    card.append(imageWrapper)
+  }
+
+  // Content Wrapper
+  const contentWrapper = document.createElement('div')
+  contentWrapper.className = 'flex flex-1'
+
+  // Content Block
+  const contentBlock = document.createElement('div')
 
   // Title
   const title = document.createElement('h3')
@@ -474,8 +453,13 @@ function createEventCard(eventObject) {
     }
   })
 
-  // Append elements to card
-  card.append(title, description, infoContainer, tagContainer)
+  // Append elements to content wrapper
+  contentBlock.append(title, description, infoContainer, tagContainer)
+  contentWrapper.append(contentBlock)
+
+  // Append content before the image (so it stays on the left)
+  card.prepend(contentWrapper)
+
   return card
 }
 
@@ -508,7 +492,6 @@ function buildEventUrl({ city, postcode, venueId, venueTypeId, genreTypeId, spac
 }
 
 
-
 async function handleFormChange() {
   const city = document.querySelector('#venueCity').value || null
   const postcode = document.querySelector('#venuePostcode').value || null
@@ -521,12 +504,14 @@ async function handleFormChange() {
   const dateEnd = document.querySelector('#eventDateEnd').value || null
 
   const url = buildEventUrl({ city, postcode, venueId, spaceTypeId, venueTypeId, genreTypeId, eventTypeId, dateStart, dateEnd })
+  console.log(url)
 
   try {
     const listResultsContainer = document.querySelector('#listResults')
     const listContainer = document.querySelector('#list')
     const mapContainer = document.querySelector('#map')
     const response = await fetch(url)
+    console.log(response)
 
     if (!response.ok) {
       mapContainer.classList.remove('hidden')
@@ -536,6 +521,8 @@ async function handleFormChange() {
     }
 
     const eventObjects = await response.json()
+    console.log(eventObjects)
+
     mapContainer.classList.add('hidden')
     listContainer.classList.remove('hidden')
     listResultsContainer.innerHTML = ''
@@ -546,7 +533,6 @@ async function handleFormChange() {
     console.error('Error fetching events:', error)
   }
 }
-
 
 
 async function fetchAndPopulate(url, elementId, idKey, nameKey) {
@@ -596,7 +582,7 @@ window.onload = () => {
 
   // Get the current path and determine screen
   const path = decodeURIComponent(window.location.pathname)
-  const screen = path === '/' ? 'home' : path.slice(1) // Remove leading "/"
+  const screen = path === '/' ? 'home' : path.slice(1)
 
   // Ensure history state is set correctly
   if (!history.state) {
