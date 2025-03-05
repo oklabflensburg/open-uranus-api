@@ -386,14 +386,17 @@ function navigateTo(screen, updateHistory = true) {
 
 
 function renderTags(tags, baseClasses, hoverClasses) {
-  if (!Array.isArray(tags)) {
-    tags = [tags]
+  if (!tags) {
+    return null
   }
 
-  return tags.map((tag) => {
+  const tagList = tags.split(', ').map((str) => str.trim())
+
+  return tagList.map((tag) => {
     const span = document.createElement('span')
     span.className = `font-sans text-xs font-medium px-2.5 py-1 rounded ${baseClasses} ${hoverClasses}`
     span.textContent = tag
+
     return span
   })
 }
@@ -456,11 +459,20 @@ function createEventCard(eventObject) {
   const tagContainer = document.createElement('div')
   tagContainer.className = 'flex flex-wrap gap-2 mt-2'
 
-  tagContainer.append(
-    ...renderTags(eventObject.venue_type, 'bg-orange-100 text-orange-800', 'hover:bg-orange-500 hover:text-white'),
-    ...renderTags(eventObject.event_type, 'bg-pink-100 text-pink-800', 'hover:bg-pink-500 hover:text-white'),
-    ...renderTags(eventObject.genre_type, 'bg-blue-100 text-blue-800', 'hover:bg-blue-500 hover:text-white')
-  )
+  // Define tag types and their styles
+  const tagTypes = [
+    { data: eventObject.venue_type, baseClass: 'bg-orange-100 text-orange-800', hoverClass: 'hover:bg-orange-500 hover:text-white cursor-pointer' },
+    { data: eventObject.event_type, baseClass: 'bg-pink-100 text-pink-800', hoverClass: 'hover:bg-pink-500 hover:text-white cursor-pointer' },
+    { data: eventObject.genre_type, baseClass: 'bg-blue-100 text-blue-800', hoverClass: 'hover:bg-blue-500 hover:text-white cursor-pointer' }
+  ]
+
+  // Render and append tags if they exist
+  tagTypes.forEach(({ data, baseClass, hoverClass }) => {
+    const tags = renderTags(data, baseClass, hoverClass)
+    if (tags) {
+      tagContainer.append(...tags)
+    }
+  })
 
   // Append elements to card
   card.append(title, description, infoContainer, tagContainer)
