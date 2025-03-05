@@ -63,9 +63,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
     stmt = (
         select(
             Event.id.label('event_id'),
-            gvt.c.venue_type_id,
-            spt.c.space_type_id,
-            get.c.genre_type_id,
+            Venue.id.label('venue_id'),
             Venue.name.label('venue_name'),
             Venue.postal_code.label('venue_postcode'),
             Venue.city.label('venue_city'),
@@ -81,9 +79,9 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
         )
         .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
-        .join(Venue, Venue.id == EventDate.venue_id)
-        .outerjoin(Space, Space.id == EventDate.space_id)
-        .outerjoin(EventLinkTypes, EventLinkTypes.event_id == Event.id)
+        .join(Venue, Venue.id == func.coalesce(EventDate.venue_id, Event.venue_id), isouter=True)
+        .join(Space, Space.id == func.coalesce(EventDate.space_id, Event.space_id), isouter=True)
+        .join(EventLinkTypes, EventLinkTypes.event_id == Event.id, isouter=True)
         .outerjoin(EventType, EventType.id == EventLinkTypes.event_type_id)
         .outerjoin(cet, cet.c.event_type_id == EventLinkTypes.event_type_id)
         .outerjoin(GenreLinkTypes, GenreLinkTypes.event_id == Event.id)
@@ -95,9 +93,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
         .outerjoin(Organizer, Organizer.id == Event.organizer_id)
         .group_by(
             Event.id,
-            gvt.c.venue_type_id,
-            spt.c.space_type_id,
-            get.c.genre_type_id,
+            Venue.id,
             Event.title,
             Event.description,
             Organizer.name,
@@ -136,6 +132,10 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             column_attr = getattr(Venue, column_name)
             stmt = stmt.where(column_attr == filter_value)
 
+        elif column_name == 'venue_id':
+            column_attr = Venue.id
+            column_filters.setdefault(column_attr, []).extend(filter_value)
+
         elif column_name == 'event_type_id':
             column_attr = cet.c.event_type_id
             column_filters.setdefault(column_attr, []).extend(filter_value)
@@ -148,7 +148,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             column_attr = get.c.genre_type_id
             column_filters.setdefault(column_attr, []).extend(filter_value)
 
-        elif column_name in ['id', 'venue_id', 'space_id']:
+        elif column_name in ['id', 'space_id']:
             column_attr = getattr(Event, column_name)
             column_filters.setdefault(column_attr, []).extend(filter_value)
 
