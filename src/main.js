@@ -38,7 +38,7 @@ let currentLayer = null
 
 const center = [54.79443515, 9.43205485]
 const zoomLevelInitial = 13
-const addMonumentsByBounds = false
+const addItemsByBounds = false
 
 const markerClusterGroup = L.markerClusterGroup({
   zoomToBoundsOnClick: true,
@@ -130,7 +130,7 @@ function isValidUrl(string) {
 }
 
 
-function renderMonumentMeta(data) {
+function renderItemMeta(data) {
   const venueId = data.venue_id
   const venueName = data.venue_name
   const venueType = data.venue_type
@@ -181,7 +181,7 @@ function renderMonumentMeta(data) {
 }
 
 
-function cleanMonumentMeta() {
+function cleanItemMeta() {
   document.querySelector('#detailList').innerHTML = ''
   document.querySelector('#detailImage').innerHTML = ''
   document.querySelector('#sidebar').classList.add('hidden')
@@ -209,7 +209,7 @@ async function fetchJsonData(url) {
 }
 
 
-async function fetchMonumentDetailBySlug(slug) {
+async function fetchItemDetailBySlug(slug) {
   const url = `https://api.uranus.oklabflensburg.de/monument/v1/detail?slug=${slug}`
 
   const data = await fetchJsonData(url)
@@ -236,8 +236,8 @@ async function fetchMonumentDetailBySlug(slug) {
     fetchBlob(data.image_url, data.designation)
   }
 
-  renderMonumentMeta(data)
-  addMonumentsToMap(geoJsonData, true, zoomLevelDetail)
+  renderItemMeta(data)
+  addItemsToMap(geoJsonData, true, zoomLevelDetail)
 
   const matchingMarker = findMarkerById(data['id'])
 
@@ -247,41 +247,15 @@ async function fetchMonumentDetailBySlug(slug) {
 }
 
 
-async function fetchMonumentDetailById(id) {
-  const url = `https://api.uranus.oklabflensburg.de/venue/id?venue_id=${id}`
+async function fetchItemDetailById(id) {
+  const url = `https://api.uranus.oklabflensburg.de/event?venue_id=${id}`
 
   const data = await fetchJsonData(url)
-  const zoomLevelDetail = 17
-
-  const geoJsonData = {
-    'type': 'FeatureCollection',
-    'features': [{
-      'type': 'Feature',
-      'venue_id': data['venue_id'],
-      'geometry': {
-        'type': data['geojson']['type'],
-        'coordinates': data['geojson']['coordinates']
-      },
-      'properties': {
-        'venue_name': data['venue_name']
-      }
-    }]
-  }
-
-  renderMonumentMeta(data)
-  addMonumentsToMap(geoJsonData, addMonumentsByBounds, zoomLevelDetail)
-
-
-  const matchingMarker = findMarkerById(data['venue_id'])
-
-  if (matchingMarker) {
-    setSelectedMarker(matchingMarker)
-  }
+  renderItemMeta(data)
 }
 
 
-// https://api.oklabflensburg.de/monument/v1/geometries
-async function fetchMonumentPointsByBounds() {
+async function fetchItemPointsByBounds() {
   const bounds = map.getBounds()
   const bbox = {
     xmin: bounds.getWest(),
@@ -294,11 +268,11 @@ async function fetchMonumentPointsByBounds() {
 
   const data = await fetchJsonData(url)
 
-  addMonumentsToMap(data, addMonumentsByBounds, zoomLevelInitial)
+  addItemsToMap(data, addItemsByBounds, zoomLevelInitial)
 }
 
 
-function addMonumentsToMap(data, fetchAdditionalMonuments, zoomLevel) {
+function addItemsToMap(data, fetchAdditionalItems, zoomLevel) {
   // Remove the existing layer
   if (currentLayer !== null) {
     currentLayer.removeLayer(currentLayer)
@@ -315,14 +289,14 @@ function addMonumentsToMap(data, fetchAdditionalMonuments, zoomLevel) {
       markerMap.set(id, layer)
 
       layer.on('click', async function (e) {
-        cleanMonumentMeta()
+        cleanItemMeta()
 
         if (!e || !e.target || !e.target.feature) {
           console.error('Invalid event object:', e)
           return
         }
 
-        await fetchMonumentDetailById(id)
+        await fetchItemDetailById(id)
 
         // Set selected icon when a marker is clicked
         setSelectedMarker(e.target)
@@ -396,14 +370,17 @@ function navigateTo(screen, updateHistory = true) {
 }
 
 
-function renderTags(values, baseClass, colorClass) {
-  if (!values) {
-    return ''
+function renderTags(tags, baseClasses, hoverClasses) {
+  if (!Array.isArray(tags)) {
+    tags = [tags]
   }
 
-  return values.split(',').map((value) =>
-    `<a href="#" class="${baseClass} ${colorClass}">${value.trim()}</a>`
-  ).join('')
+  return tags.map((tag) => {
+    const span = document.createElement('span')
+    span.className = `font-sans text-xs font-medium px-2.5 py-1 rounded ${baseClasses} ${hoverClasses}`
+    span.textContent = tag
+    return span
+  })
 }
 
 
@@ -420,6 +397,127 @@ function formatDateToGerman(dateString) {
 
   return dateString // Return original if invalid
 }
+
+
+function createEventCard(eventObject) {
+  const card = document.createElement('div')
+  card.className = 'bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow'
+
+  // Title
+  const title = document.createElement('h3')
+  title.className = 'text-lg lg:text-2xl font-semibold mb-2'
+  title.textContent = `${formatDateToGerman(eventObject.event_date_start)} - ${eventObject.event_title}`
+
+  // Description
+  const description = document.createElement('p')
+  description.className = 'text-md text-gray-600 mb-3'
+  description.textContent = eventObject.event_description
+
+  // Info Container
+  const infoContainer = document.createElement('div')
+  infoContainer.className = 'text-md text-gray-600 text-sm space-y-1 mb-1'
+
+  // Location
+  const location = document.createElement('p')
+  location.innerHTML = `<strong>📍 Ort:</strong> ${eventObject.venue_name} (${eventObject.venue_city}, ${eventObject.venue_postcode})`
+
+  // Calendar Link
+  const calendarLink = document.createElement('p')
+  const calendarAnchor = document.createElement('a')
+  calendarAnchor.href = 'event.ics'
+  calendarAnchor.download = ''
+  calendarAnchor.className = 'inline-flex items-center text-blue-500 hover:text-pink-700 focus:text-pink-700 px-2 py-1 transition'
+  calendarAnchor.textContent = '📅 Termin in Kalender speichern'
+  calendarLink.appendChild(calendarAnchor)
+
+  // Organizer
+  const organizer = document.createElement('p')
+  organizer.innerHTML = `<strong>🎟 Veranstalter:</strong> ${eventObject.organizer_name}`
+
+  // Append all info elements
+  infoContainer.append(location, calendarLink, organizer)
+
+  // Tags Container
+  const tagContainer = document.createElement('div')
+  tagContainer.className = 'flex flex-wrap gap-2 mt-2'
+
+  tagContainer.append(
+    ...renderTags(eventObject.venue_type, 'bg-orange-100 text-orange-800', 'hover:bg-orange-500 hover:text-white'),
+    ...renderTags(eventObject.event_type, 'bg-pink-100 text-pink-800', 'hover:bg-pink-500 hover:text-white'),
+    ...renderTags(eventObject.genre_type, 'bg-blue-100 text-blue-800', 'hover:bg-blue-500 hover:text-white')
+  )
+
+  // Append elements to card
+  card.append(title, description, infoContainer, tagContainer)
+  return card
+}
+
+
+
+
+function buildEventUrl({ city, postcode, venueTypeId, genreTypeId, spaceTypeId, eventTypeId, dateStart, dateEnd }) {
+  const baseUrl = 'https://api.uranus.oklabflensburg.de/event/'
+  const params = new URLSearchParams()
+
+  const filters = {
+    city,
+    postal_code: postcode,
+    venue_type_id: venueTypeId,
+    genre_type_id: genreTypeId,
+    space_type_id: spaceTypeId,
+    event_type_id: eventTypeId,
+    date_start: dateStart ? `>=${formatDateToGerman(dateStart)}` : null,
+    date_end: dateEnd ? `<=${formatDateToGerman(dateEnd)}` : null
+  }
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      params.append(key, value)
+    }
+  })
+
+  return params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl
+}
+
+
+
+async function handleFormChange() {
+  const city = document.querySelector('#venueCity').value || null
+  const postcode = document.querySelector('#venuePostcode').value || null
+  const spaceTypeId = document.querySelector('#spaceType').value || null
+  const venueTypeId = document.querySelector('#venueType').value || null
+  const genreTypeId = document.querySelector('#genreType').value || null
+  const eventTypeId = document.querySelector('#eventType').value || null
+  const dateStart = document.querySelector('#eventDateStart').value || null
+  const dateEnd = document.querySelector('#eventDateEnd').value || null
+
+  const url = buildEventUrl({ city, postcode, spaceTypeId, venueTypeId, genreTypeId, eventTypeId, dateStart, dateEnd })
+
+  try {
+    const listResultsContainer = document.querySelector('#listResults')
+    const listContainer = document.querySelector('#list')
+    const mapContainer = document.querySelector('#map')
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      mapContainer.classList.remove('hidden')
+      listContainer.classList.add('hidden')
+      listResultsContainer.innerHTML = ''
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+
+    const eventObjects = await response.json()
+    mapContainer.classList.add('hidden')
+    listContainer.classList.remove('hidden')
+    listResultsContainer.innerHTML = ''
+
+    eventObjects.forEach((eventObject) => listResultsContainer.appendChild(createEventCard(eventObject)))
+  }
+  catch (error) {
+    console.error('Error fetching events:', error)
+  }
+}
+
 
 
 async function fetchAndPopulate(url, elementId, idKey, nameKey) {
@@ -443,100 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 
 
-document.querySelector('#eventForm').addEventListener('submit', async function (event) {
-  event.preventDefault()
-
-  const city = document.querySelector('#venueCity').value || null
-  const postcode = document.querySelector('#venuePostcode').value || null
-  const spaceTypeId = document.querySelector('#spaceType').value || null
-  const venueTypeId = document.querySelector('#venueType').value || null
-  const genreTypeId = document.querySelector('#genreType').value || null
-  const eventTypeId = document.querySelector('#eventType').value || null
-  const dateStart = document.querySelector('#eventDateStart').value || null
-  const dateEnd = document.querySelector('#eventDateEnd').value || null
-
-  const baseUrl = 'https://api.uranus.oklabflensburg.de/event/'
-  let url = baseUrl
-
-  const params = []
-
-  if (city) {
-    params.push(`city=${city}`)
-  }
-
-  if (postcode) {
-    params.push(`postal_code=${postcode}`)
-  }
-
-  if (venueTypeId) {
-    params.push(`venue_type_id=${venueTypeId}`)
-  }
-
-  if (genreTypeId) {
-    params.push(`genre_type_id=${genreTypeId}`)
-  }
-
-  if (spaceTypeId) {
-    params.push(`space_type_id=${spaceTypeId}`)
-  }
-
-  if (eventTypeId) {
-    params.push(`event_type_id=${eventTypeId}`)
-  }
-
-  if (dateStart) {
-    params.push(`date_start=${encodeURIComponent('>=')}${formatDateToGerman(dateStart)}`)
-  }
-
-  if (dateEnd) {
-    params.push(`date_end=${encodeURIComponent('<=')}${formatDateToGerman(dateEnd)}`)
-  }
-
-  if (params.length > 0) {
-    const urlParams = params.join('&')
-    url = `${baseUrl}?${urlParams}`
-  }
-
-  console.log(url)
-
-  try {
-    const response = await fetch(url)
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    const events = await response.json()
-
-    const listContainer = document.querySelector('#list')
-    const mapContainer = document.querySelector('#map')
-    mapContainer.classList.add('hidden')
-    listContainer.classList.remove('hidden')
-
-    document.querySelector('#listResults').innerHTML = events.map((e) => `
-<div class="bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow">
-    <h3 class="text-lg lg:text-2xl font-semibold mb-2">${formatDateToGerman(e.event_date_start)} - ${e.event_title}</h3>
-    <p class="text-md text-gray-600 mb-3">${e.event_description}</p>
-    <div class="text-md text-gray-600 text-sm space-y-1 mb-1">
-        <p><strong>📍 Ort:</strong> ${e.venue_name} (${e.venue_city}, ${e.venue_postcode})</p>
-        <p><a href="event.ics" download class="inline-flex items-center text-blue-500 hover:text-pink-700 focus:text-pink-700 px-2 py-1 transition">📅 Termin in Kalender speichern</a></p>
-        <p><strong>🎟 Veranstalter:</strong> ${e.organizer_name}</p>
-    </div>
-
-
-    <div class="flex flex-wrap gap-2 mt-2">
-        ${renderTags(e.venue_type, 'font-sans text-xs font-medium px-2.5 py-1 rounded', 'bg-orange-100 text-orange-800 hover:bg-orange-500 hover:text-white')}
-        ${renderTags(e.event_type, 'font-sans text-xs font-medium px-2.5 py-1 rounded', 'bg-pink-100 text-pink-800 hover:bg-pink-500 hover:text-white')}
-        ${renderTags(e.genre_type, 'font-sans text-xs font-medium px-2.5 py-1 rounded', 'bg-blue-100 text-blue-800 hover:bg-blue-500 hover:text-white')}
-    </div>
-</div>
-`).join('')
-  }
-  catch (error) {
-    console.error('Error fetching events:', error)
-  }
-})
-
+document.querySelector('#eventForm').addEventListener('input', handleFormChange)
+document.querySelector('#eventForm').addEventListener('change', handleFormChange)
 
 
 // Handle initial page load
@@ -549,13 +555,13 @@ window.onload = () => {
   }).addTo(map)
 
   // Attach event listeners
-  map.on('moveend', fetchMonumentPointsByBounds)
-  map.on('click', cleanMonumentMeta)
+  map.on('moveend', fetchItemPointsByBounds)
+  map.on('click', cleanItemMeta)
 
   // Sidebar close button handler
   document.querySelector('#sidebarCloseButton').addEventListener('click', function (e) {
     e.preventDefault()
-    cleanMonumentMeta()
+    cleanItemMeta()
   })
 
   // Get the current path and determine screen
@@ -571,10 +577,10 @@ window.onload = () => {
 
   // Load content based on the screen
   if (screen === 'home') {
-    fetchMonumentPointsByBounds()
+    fetchItemPointsByBounds()
   }
   else {
-    fetchMonumentDetailBySlug(screen)
+    fetchItemDetailBySlug(screen)
   }
 }
 
@@ -584,11 +590,11 @@ window.addEventListener('popstate', (event) => {
   const screen = event.state && event.state.screen ? event.state.screen : 'home'
 
   if (screen === 'home') {
-    cleanMonumentMeta()
-    fetchMonumentPointsByBounds()
+    cleanItemMeta()
+    fetchItemPointsByBounds()
   }
   else {
-    fetchMonumentDetailBySlug(screen)
+    fetchItemDetailBySlug(screen)
   }
 })
 
