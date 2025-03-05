@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Request, Depends, Query
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
@@ -17,6 +17,7 @@ router = APIRouter()
 
 @router.get('/', response_model=List[EventResponse])
 async def fetch_events_by_filter(
+    request: Request,
     city: Optional[str] = Query(None),
     postal_code: Optional[str] = Query(None),
     venue_id: Optional[List[int]] = Query(None),
@@ -48,7 +49,8 @@ async def fetch_events_by_filter(
     if not active_filters:
         raise HTTPException(status_code=400, detail='At least one filter parameter is required')
 
-    events = await get_events_by_filter(db, active_filters)
+    base_url = str(request.base_url)
+    events = await get_events_by_filter(db, active_filters, base_url)
 
     if len(events) < 1:
         raise HTTPException(status_code=404, detail=f'No events found for filters: {active_filters}')

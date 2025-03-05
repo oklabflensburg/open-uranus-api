@@ -1,9 +1,12 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
 from app.api.v1.endpoints import venue, event, space, space_type, venue_type, event_type, genre_type
 
 
+app = FastAPI(title='Veranstaltungen finden')
+app.mount('/static', StaticFiles(directory='static'), name='static')
 
-app = FastAPI(title='Uranus Venue Map')
 
 app.include_router(venue.router, prefix='/venue', tags=['Veranstaltungsorte'])
 app.include_router(venue_type.router, prefix='/venue/type', tags=['Veranstaltungsorte'])

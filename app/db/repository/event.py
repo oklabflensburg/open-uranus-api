@@ -29,7 +29,9 @@ from app.core.parser import parse_date
 
 
 
-async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'):
+async def get_events_by_filter(db: AsyncSession, filters: dict, base_url: str, lang: str = 'de'):
+    print(base_url)
+
     filtered_i18n = (
         select(I18nLocale.id, I18nLocale.iso_639_1)
         .where(I18nLocale.iso_639_1 == lang)
@@ -82,8 +84,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Space.name.label('space_name'),
             spt.c.space_type,
             func.string_agg(func.distinct(gvt.c.venue_name), ', ').label('venue_type'),
-            Image.origin_name.label('image_origin_name'),
-            Image.source_name.label('image_source_name')
+            func.nullif(func.concat(base_url, 'static/images/', Image.source_name), base_url + 'static/images/').label('image_url')
         )
         .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
@@ -114,7 +115,6 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             EventDate.date_start,
             Space.name,
             spt.c.space_type,
-            Image.origin_name,
             Image.source_name
         )
         .order_by(EventDate.date_start)
