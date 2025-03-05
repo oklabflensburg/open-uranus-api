@@ -70,12 +70,12 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Event.title.label('event_title'),
             Event.description.label('event_description'),
             EventDate.date_start.label('event_date_start'),
-            func.string_agg(func.distinct(cet.c.event_name), ', '),
-            func.string_agg(func.distinct(get.c.genre_name), ', '),
+            func.string_agg(func.distinct(cet.c.event_name), ', ').label('event_type'),
+            func.string_agg(func.distinct(get.c.genre_name), ', ').label('genre_type'),
             Organizer.name.label('organizer_name'),
             Space.name.label('space_name'),
             spt.c.space_type,
-            func.string_agg(func.distinct(gvt.c.venue_name), ', ')
+            func.string_agg(func.distinct(gvt.c.venue_name), ', ').label('venue_type')
         )
         .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
