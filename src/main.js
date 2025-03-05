@@ -470,13 +470,14 @@ function createEventCard(eventObject) {
 
 
 
-function buildEventUrl({ city, postcode, venueTypeId, genreTypeId, spaceTypeId, eventTypeId, dateStart, dateEnd }) {
+function buildEventUrl({ city, postcode, venueId, venueTypeId, genreTypeId, spaceTypeId, eventTypeId, dateStart, dateEnd }) {
   const baseUrl = 'https://api.uranus.oklabflensburg.de/event/'
   const params = new URLSearchParams()
 
   const filters = {
     city,
     postal_code: postcode,
+    venue_id: venueId,
     venue_type_id: venueTypeId,
     genre_type_id: genreTypeId,
     space_type_id: spaceTypeId,
@@ -499,6 +500,7 @@ function buildEventUrl({ city, postcode, venueTypeId, genreTypeId, spaceTypeId, 
 async function handleFormChange() {
   const city = document.querySelector('#venueCity').value || null
   const postcode = document.querySelector('#venuePostcode').value || null
+  const venueId = document.querySelector('#venue').value || null
   const spaceTypeId = document.querySelector('#spaceType').value || null
   const venueTypeId = document.querySelector('#venueType').value || null
   const genreTypeId = document.querySelector('#genreType').value || null
@@ -506,7 +508,7 @@ async function handleFormChange() {
   const dateStart = document.querySelector('#eventDateStart').value || null
   const dateEnd = document.querySelector('#eventDateEnd').value || null
 
-  const url = buildEventUrl({ city, postcode, spaceTypeId, venueTypeId, genreTypeId, eventTypeId, dateStart, dateEnd })
+  const url = buildEventUrl({ city, postcode, venueId, spaceTypeId, venueTypeId, genreTypeId, eventTypeId, dateStart, dateEnd })
 
   try {
     const listResultsContainer = document.querySelector('#listResults')
@@ -549,6 +551,7 @@ async function fetchAndPopulate(url, elementId, idKey, nameKey) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/venue/', 'venue', 'venue_id', 'venue_name')
   fetchAndPopulate('https://api.uranus.oklabflensburg.de/event/type/', 'eventType', 'event_type_id', 'event_type_name')
   fetchAndPopulate('https://api.uranus.oklabflensburg.de/venue/type/', 'venueType', 'venue_type_id', 'venue_type_name')
   fetchAndPopulate('https://api.uranus.oklabflensburg.de/space/type/', 'spaceType', 'space_type_id', 'space_type_name')
