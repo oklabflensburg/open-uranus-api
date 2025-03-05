@@ -515,11 +515,11 @@ document.querySelector('#eventForm').addEventListener('submit', async function (
 
     document.querySelector('#listResults').innerHTML = events.map((e) => `
 <div class="bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow">
-    <h3 class="text-xl font-semibold mb-2">${e.event_title}</h3>
-    <p class="text-md text-gray-700 mb-3">${e.event_description}</p>
+    <h3 class="text-lg lg:text-2xl font-semibold mb-2">${formatDateToGerman(e.event_date_start)} - ${e.event_title}</h3>
+    <p class="text-md text-gray-600 mb-3">${e.event_description}</p>
     <div class="text-md text-gray-600 text-sm space-y-1 mb-1">
         <p><strong>📍 Ort:</strong> ${e.venue_name} (${e.venue_city}, ${e.venue_postcode})</p>
-        <p><strong>📅 Datum:</strong> ${formatDateToGerman(e.event_date_start)} <a href="event.ics" download class="inline-flex items-center gap-2 text-blue-500 hover:text-pink-700 focus:text-pink-700 px-2 py-1 rounded-md text-xs font-semibold transition">🗂️ Termin in Kalender speichern</a></p>
+        <p><a href="event.ics" download class="inline-flex items-center text-blue-500 hover:text-pink-700 focus:text-pink-700 px-2 py-1 transition">📅 Termin in Kalender speichern</a></p>
         <p><strong>🎟 Veranstalter:</strong> ${e.organizer_name}</p>
     </div>
 
