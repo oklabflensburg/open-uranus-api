@@ -6,6 +6,9 @@ from typing import List, Optional
 
 class EventResponse(BaseModel):
     event_id: int
+    venue_type_id: Optional[int] = None
+    space_type_id: Optional[int] = None
+    genre_type_id: Optional[int] = None
     venue_name: str
     venue_postcode: str
     venue_city: str

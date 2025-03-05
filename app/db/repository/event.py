@@ -31,25 +31,25 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
     )
 
     venue_types = (
-        select(VenueType, filtered_i18n.c.iso_639_1)
+        select(VenueType.type_id.label('venue_type_id'), VenueType.name.label('venue_name'), filtered_i18n.c.iso_639_1)
         .join(filtered_i18n, filtered_i18n.c.id == VenueType.i18n_locale_id)
         .cte('VenueTypes')
     )
 
     event_types = (
-        select(EventType, filtered_i18n.c.iso_639_1)
+        select(EventType.type_id.label('event_type_id'), EventType.name.label('event_name'), filtered_i18n.c.iso_639_1)
         .join(filtered_i18n, filtered_i18n.c.id == EventType.i18n_locale_id)
         .cte('EventTypes')
     )
 
     genre_types = (
-        select(GenreType, filtered_i18n.c.iso_639_1)
+        select(GenreType.type_id.label('genre_type_id'), GenreType.name.label('genre_name'), filtered_i18n.c.iso_639_1)
         .join(filtered_i18n, filtered_i18n.c.id == GenreType.i18n_locale_id)
         .cte('GenreTypes')
     )
 
     space_types = (
-        select(SpaceType.type_id, SpaceType.name.label('space_type'))
+        select(SpaceType.type_id.label('space_type_id'), SpaceType.name.label('space_type'))
         .join(filtered_i18n, filtered_i18n.c.id == SpaceType.i18n_locale_id)
         .cte('SpaceTypes')
     )
@@ -63,18 +63,21 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
     stmt = (
         select(
             Event.id.label('event_id'),
+            gvt.c.venue_type_id,
+            spt.c.space_type_id,
+            get.c.genre_type_id,
             Venue.name.label('venue_name'),
             Venue.postal_code.label('venue_postcode'),
             Venue.city.label('venue_city'),
             Event.title.label('event_title'),
             Event.description.label('event_description'),
             EventDate.date_start.label('event_date_start'),
-            func.string_agg(func.distinct(cet.c.name), ', ').label('event_type'),
-            func.string_agg(func.distinct(get.c.name), ', ').label('genre_type'),
+            func.string_agg(func.distinct(cet.c.event_name), ', '),
+            func.string_agg(func.distinct(get.c.genre_name), ', '),
             Organizer.name.label('organizer_name'),
             Space.name.label('space_name'),
             spt.c.space_type,
-            func.string_agg(func.distinct(gvt.c.name), ', ').label('venue_type')
+            func.string_agg(func.distinct(gvt.c.venue_name), ', ')
         )
         .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
@@ -82,16 +85,19 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
         .outerjoin(Space, Space.id == EventDate.space_id)
         .outerjoin(EventLinkTypes, EventLinkTypes.event_id == Event.id)
         .outerjoin(EventType, EventType.id == EventLinkTypes.event_type_id)
-        .outerjoin(cet, cet.c.type_id == EventLinkTypes.event_type_id)
+        .outerjoin(cet, cet.c.event_type_id == EventLinkTypes.event_type_id)
         .outerjoin(GenreLinkTypes, GenreLinkTypes.event_id == Event.id)
         .outerjoin(GenreType, GenreType.id == GenreLinkTypes.genre_type_id)
-        .outerjoin(get, get.c.type_id == GenreLinkTypes.genre_type_id)
+        .outerjoin(get, get.c.genre_type_id == GenreLinkTypes.genre_type_id)
         .outerjoin(VenueLinkTypes, VenueLinkTypes.venue_id == Venue.id)
-        .outerjoin(gvt, gvt.c.type_id == VenueLinkTypes.venue_type_id)
-        .outerjoin(spt, spt.c.type_id == Space.space_type_id)
+        .outerjoin(gvt, gvt.c.venue_type_id == VenueLinkTypes.venue_type_id)
+        .outerjoin(spt, spt.c.space_type_id == Space.space_type_id)
         .outerjoin(Organizer, Organizer.id == Event.organizer_id)
         .group_by(
             Event.id,
+            gvt.c.venue_type_id,
+            spt.c.space_type_id,
+            get.c.genre_type_id,
             Event.title,
             Event.description,
             Organizer.name,
@@ -131,15 +137,15 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             stmt = stmt.where(column_attr == filter_value)
 
         elif column_name == 'event_type_id':
-            column_attr = cet.c.type_id
+            column_attr = cet.c.event_type_id
             column_filters.setdefault(column_attr, []).extend(filter_value)
 
         elif column_name == 'venue_type_id':
-            column_attr = gvt.c.type_id
+            column_attr = gvt.c.venue_type_id
             column_filters.setdefault(column_attr, []).extend(filter_value)
 
         elif column_name == 'genre_type_id':
-            column_attr = get.c.type_id
+            column_attr = get.c.genre_type_id
             column_filters.setdefault(column_attr, []).extend(filter_value)
 
         elif column_name in ['id', 'venue_id', 'space_id']:
@@ -149,7 +155,6 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
     # Apply OR conditions for grouped filters
     for column_attr, values in column_filters.items():
         stmt = stmt.where(or_(*[column_attr == value for value in values]))
-
 
     result = await db.execute(stmt)
     events = result.mappings().all()
