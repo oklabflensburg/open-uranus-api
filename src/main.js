@@ -248,10 +248,25 @@ async function fetchItemDetailBySlug(slug) {
 
 
 async function fetchItemDetailById(id) {
-  const url = `https://api.uranus.oklabflensburg.de/event?venue_id=${id}`
+  const url = `https://api.uranus.oklabflensburg.de/event/?venue_id=${id}`
+  const listResultsContainer = document.querySelector('#listResults')
+  const listContainer = document.querySelector('#list')
+  const mapContainer = document.querySelector('#map')
+  const response = await fetch(url)
 
-  const data = await fetchJsonData(url)
-  renderItemMeta(data)
+  if (!response.ok) {
+    mapContainer.classList.remove('hidden')
+    listContainer.classList.add('hidden')
+    listResultsContainer.innerHTML = ''
+    throw new Error(`HTTP error! Status: ${response.status}`)
+  }
+
+  const eventObjects = await response.json()
+  mapContainer.classList.add('hidden')
+  listContainer.classList.remove('hidden')
+  listResultsContainer.innerHTML = ''
+
+  eventObjects.forEach((eventObject) => listResultsContainer.appendChild(createEventCard(eventObject)))
 }
 
 
