@@ -13,6 +13,8 @@ class EventResponse(BaseModel):
     event_title: str
     event_description: str
     event_date_start: datetime
+    image_origin_name: Optional[str] = None
+    image_source_name: Optional[str] = None
     organizer_name: Optional[str] = None
     event_type: Optional[str] = None
     genre_type: Optional[str] = None

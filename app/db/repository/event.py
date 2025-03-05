@@ -19,6 +19,12 @@ from app.schemas.genre_link_types import GenreLinkTypes
 from app.schemas.genre_type import GenreType
 from app.schemas.space_type import SpaceType
 
+from app.schemas.event_date_link_images import EventDateLinkImages
+from app.schemas.event_link_images import EventLinkImages
+from app.schemas.image import Image
+from app.schemas.image_type import ImageType
+from app.schemas.license_type import LicenseType
+
 from app.core.parser import parse_date
 
 
@@ -75,7 +81,9 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Organizer.name.label('organizer_name'),
             Space.name.label('space_name'),
             spt.c.space_type,
-            func.string_agg(func.distinct(gvt.c.venue_name), ', ').label('venue_type')
+            func.string_agg(func.distinct(gvt.c.venue_name), ', ').label('venue_type'),
+            Image.origin_name.label('image_origin_name'),
+            Image.source_name.label('image_source_name')
         )
         .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
@@ -91,6 +99,9 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
         .outerjoin(gvt, gvt.c.venue_type_id == VenueLinkTypes.venue_type_id)
         .outerjoin(spt, spt.c.space_type_id == Space.space_type_id)
         .outerjoin(Organizer, Organizer.id == Event.organizer_id)
+        .outerjoin(EventDateLinkImages, (EventDateLinkImages.event_date_id == EventDate.id) & (EventDateLinkImages.main_image == True))
+        .outerjoin(EventLinkImages, (EventLinkImages.event_id == Event.id) & (EventLinkImages.main_image == True))
+        .outerjoin(Image, Image.id == func.coalesce(EventDateLinkImages.image_id, EventLinkImages.image_id))
         .group_by(
             Event.id,
             Venue.id,
@@ -102,7 +113,9 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, lang: str = 'de'
             Venue.city,
             EventDate.date_start,
             Space.name,
-            spt.c.space_type
+            spt.c.space_type,
+            Image.origin_name,
+            Image.source_name
         )
         .order_by(EventDate.date_start)
     )
