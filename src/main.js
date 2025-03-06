@@ -36,6 +36,7 @@ let isBoundsSet = false
 let previousSelectedMarker = null
 let currentLayer = null
 
+
 const center = [54.79443515, 9.43205485]
 const zoomLevelInitial = 13
 const addItemsByBounds = false
@@ -342,8 +343,6 @@ function navigateTo(screen, updateHistory = true) {
 
 
 function renderTags(tags, baseClasses, hoverClasses) {
-  console.log(tags)
-
   if (!tags) {
     return null
   }
@@ -464,8 +463,6 @@ function createEventCard(eventObject) {
 }
 
 
-
-
 function buildEventUrl({ city, postcode, venueId, venueTypeId, genreTypeId, spaceTypeId, eventTypeId, dateStart, dateEnd }) {
   const baseUrl = 'https://api.uranus.oklabflensburg.de/event/'
   const params = new URLSearchParams()
@@ -504,14 +501,12 @@ async function handleFormChange() {
   const dateEnd = document.querySelector('#eventDateEnd').value || null
 
   const url = buildEventUrl({ city, postcode, venueId, spaceTypeId, venueTypeId, genreTypeId, eventTypeId, dateStart, dateEnd })
-  console.log(url)
 
   try {
     const listResultsContainer = document.querySelector('#listResults')
     const listContainer = document.querySelector('#list')
     const mapContainer = document.querySelector('#map')
     const response = await fetch(url)
-    console.log(response)
 
     if (!response.ok) {
       mapContainer.classList.remove('hidden')
@@ -521,7 +516,6 @@ async function handleFormChange() {
     }
 
     const eventObjects = await response.json()
-    console.log(eventObjects)
 
     mapContainer.classList.add('hidden')
     listContainer.classList.remove('hidden')
