@@ -15,6 +15,29 @@ from app.schemas.venue import Venue
 
 
 
+async def get_venues_by_name_junk(db: AsyncSession, query: str):
+    stmt = (
+        select(
+            Venue.id.label('venue_id'),
+            Venue.name.label('venue_name')
+        )
+        .where(
+            (func.lower(Venue.name).op('%')(query)) | (func.lower(Venue.name).ilike(f'%{query}%'))
+        )
+        .order_by(
+            func.lower(Venue.name).ilike(f'{query}%').desc(),
+            func.lower(Venue.name).ilike(f'%{query}%').desc(),
+            func.similarity(func.lower(Venue.name), query).desc()
+        )
+        .limit(10)
+    )
+
+    venues = await db.execute(stmt)
+
+    return venues.mappings().all()
+
+
+
 async def get_all_venues(db: AsyncSession, lang: str = 'de'):
     filtered_i18n = (
         select(I18nLocale.id, I18nLocale.iso_639_1)

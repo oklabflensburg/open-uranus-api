@@ -37,6 +37,8 @@ DB_PORT=5432
 
 ```sh
 psql -U uranus -h localhost -d uranus -p 5432 < data/uranus-venue-schema.sql
+psql -U uranus -h localhost -d uranus -p 5432 -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
+psql -U uranus -h localhost -d uranus -p 5432 -c "CREATE INDEX IF NOT EXISTS venue_name_gin_idx ON uranus.venue USING gin (LOWER(name) gin_trgm_ops)"
 ```
 
 2. Activate a Python virtual environment and install dependencies:

@@ -9,9 +9,10 @@ import json
 from app.db.session import get_db
 
 from app.schemas.venue_response import VenueResponse
+from app.schemas.venue_junk_response import VenueJunkResponse
 from app.schemas.venue_bounds_response import VenueBoundsResponse
 
-from app.db.repository.venue import get_all_venues, get_venue_by_id, get_venues_within_bounds
+from app.db.repository.venue import get_all_venues, get_venue_by_id, get_venues_within_bounds, get_venues_by_name_junk
 
 
 
@@ -22,6 +23,20 @@ async def fetch_all_venues(db: AsyncSession = Depends(get_db)):
     venues = await get_all_venues(db)
 
     return venues
+
+
+
+@router.get('/junk', response_model=List[VenueJunkResponse])
+async def fetch_venues_by_name_junk(
+    query: str,
+    db: AsyncSession = Depends(get_db)
+):
+    venue = await get_venues_by_name_junk(db, query)
+
+    if venue is None:
+        raise HTTPException(status_code=404, detail=f'No venue found for venue_id: {venue_id}')
+
+    return venue
 
 
 
