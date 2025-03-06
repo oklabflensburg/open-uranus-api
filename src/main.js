@@ -9,13 +9,7 @@ import markerSelected from 'url:../static/marker-icon-active.webp'
 import { Env } from './env.js'
 
 const env = new Env()
-env.injectLinkContent(
-  '.contact-mail',
-  'mailto:',
-  '',
-  env.contactMail,
-  'E-Mail'
-)
+env.injectLinkContent('.contact-mail', 'mailto:', '', env.contactMail, 'E-Mail')
 
 const defaultIcon = L.icon({
   iconUrl: markerDefault,
@@ -63,15 +57,11 @@ function updateScreen(screen) {
 
   if (screen === 'home') {
     document.title = title
-    document
-      .querySelector('meta[property="og:title"]')
-      .setAttribute('content', title)
+    document.querySelector('meta[property="og:title"]').setAttribute('content', title)
   }
   else {
     document.title = `${screen} - ${title}`
-    document
-      .querySelector('meta[property="og:title"]')
-      .setAttribute('content', `${screen} - ${title}`)
+    document.querySelector('meta[property="og:title"]').setAttribute('content', `${screen} - ${title}`)
   }
 }
 
@@ -131,9 +121,7 @@ function renderItemMeta(data) {
   const detailList = document.querySelector('#detailList')
 
   document.querySelector('title').innerHTML = title
-  document
-    .querySelector('meta[property="og:title"]')
-    .setAttribute('content', title)
+  document.querySelector('meta[property="og:title"]').setAttribute('content', title)
 
   detailList.innerHTML = detailOutput
   document.querySelector('#about').classList.add('hidden')
@@ -226,9 +214,7 @@ async function fetchItemDetailById(id) {
   listContainer.classList.remove('hidden')
   listResultsContainer.innerHTML = ''
 
-  eventObjects.forEach((eventObject) =>
-    listResultsContainer.appendChild(createEventCard(eventObject))
-  )
+  eventObjects.forEach((eventObject) => listResultsContainer.appendChild(createEventCard(eventObject)))
 }
 
 async function fetchItemPointsByBounds() {
@@ -377,8 +363,7 @@ function formatDateToGerman(dateString) {
 
 function createEventCard(eventObject) {
   const card = document.createElement('div')
-  card.className =
-    'bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow flex flex-col md:flex-row items-start'
+  card.className = 'bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow flex flex-col md:flex-row items-start'
 
   // Image Wrapper
   if (eventObject.image_url) {
@@ -387,10 +372,7 @@ function createEventCard(eventObject) {
 
     const imageElement = document.createElement('img')
     imageElement.src = eventObject.image_url
-    imageElement.setAttribute(
-      'alt',
-      eventObject.event_title || 'your text here johnny'
-    )
+    imageElement.setAttribute('alt', eventObject.event_title || 'your text here johnny')
     imageElement.className = 'w-full h-auto rounded-lg object-cover'
 
     imageWrapper.append(imageElement)
@@ -427,8 +409,7 @@ function createEventCard(eventObject) {
   const calendarAnchor = document.createElement('a')
   calendarAnchor.href = 'event.ics'
   calendarAnchor.download = ''
-  calendarAnchor.className =
-    'inline-flex items-center text-blue-500 hover:text-pink-700 focus:text-pink-700 px-2 py-1 transition'
+  calendarAnchor.className = 'inline-flex items-center text-blue-500 hover:text-pink-700 focus:text-pink-700 px-2 py-1 transition'
   calendarAnchor.textContent = '📅 Termin in Kalender speichern'
   calendarLink.appendChild(calendarAnchor)
 
@@ -480,17 +461,7 @@ function createEventCard(eventObject) {
   return card
 }
 
-function buildEventUrl({
-  city,
-  postcode,
-  venueId,
-  venueTypeId,
-  genreTypeId,
-  spaceTypeId,
-  eventTypeId,
-  dateStart,
-  dateEnd
-}) {
+function buildEventUrl({ city, postcode, venueId, venueTypeId, genreTypeId, spaceTypeId, eventTypeId, dateStart, dateEnd }) {
   const baseUrl = 'https://api.uranus.oklabflensburg.de/event/'
   const params = new URLSearchParams()
 
@@ -557,9 +528,7 @@ async function handleFormChange() {
     listContainer.classList.remove('hidden')
     listResultsContainer.innerHTML = ''
 
-    eventObjects.forEach((eventObject) =>
-      listResultsContainer.appendChild(createEventCard(eventObject))
-    )
+    eventObjects.forEach((eventObject) => listResultsContainer.appendChild(createEventCard(eventObject)))
   }
   catch (error) {
     console.error('Error fetching events:', error)
@@ -572,12 +541,7 @@ async function fetchAndPopulate(url, elementId, idKey, nameKey) {
     const data = await response.json()
     const selectElement = document.getElementById(elementId)
     selectElement.innerHTML = '<option selected value>Bitte auswählen</option>'
-    selectElement.innerHTML += data
-      .map(
-        (item) =>
-          `<option class="cursor-pointer" value="${item[idKey]}">${item[nameKey]}</option>`
-      )
-      .join('')
+    selectElement.innerHTML += data.map((item) => `<option class="cursor-pointer" value="${item[idKey]}">${item[nameKey]}</option>`).join('')
   }
   catch (error) {
     console.error(`Error fetching ${elementId}:`, error)
@@ -585,44 +549,15 @@ async function fetchAndPopulate(url, elementId, idKey, nameKey) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  fetchAndPopulate(
-    'https://api.uranus.oklabflensburg.de/venue/',
-    'venue',
-    'venue_id',
-    'venue_name'
-  )
-  fetchAndPopulate(
-    'https://api.uranus.oklabflensburg.de/event/type/',
-    'eventType',
-    'event_type_id',
-    'event_type_name'
-  )
-  fetchAndPopulate(
-    'https://api.uranus.oklabflensburg.de/venue/type/',
-    'venueType',
-    'venue_type_id',
-    'venue_type_name'
-  )
-  fetchAndPopulate(
-    'https://api.uranus.oklabflensburg.de/space/type/',
-    'spaceType',
-    'space_type_id',
-    'space_type_name'
-  )
-  fetchAndPopulate(
-    'https://api.uranus.oklabflensburg.de/genre/type/',
-    'genreType',
-    'genre_type_id',
-    'genre_type_name'
-  )
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/venue/', 'venue', 'venue_id', 'venue_name')
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/event/type/', 'eventType', 'event_type_id', 'event_type_name')
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/venue/type/', 'venueType', 'venue_type_id', 'venue_type_name')
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/space/type/', 'spaceType', 'space_type_id', 'space_type_name')
+  fetchAndPopulate('https://api.uranus.oklabflensburg.de/genre/type/', 'genreType', 'genre_type_id', 'genre_type_name')
 })
 
-document
-  .querySelector('#eventForm')
-  .addEventListener('input', handleFormChange)
-document
-  .querySelector('#eventForm')
-  .addEventListener('change', handleFormChange)
+document.querySelector('#eventForm').addEventListener('input', handleFormChange)
+document.querySelector('#eventForm').addEventListener('change', handleFormChange)
 
 // Handle initial page load
 window.onload = () => {
@@ -630,8 +565,7 @@ window.onload = () => {
   L.tileLayer('https://tiles.oklabflensburg.de/sgm/{z}/{x}/{y}.png', {
     maxZoom: 20,
     tileSize: 256,
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="dc:rights">OpenStreetMap</a> contributors'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="dc:rights">OpenStreetMap</a> contributors'
   }).addTo(map)
 
   // Attach event listeners
@@ -639,12 +573,10 @@ window.onload = () => {
   map.on('click', cleanItemMeta)
 
   // Sidebar close button handler
-  document
-    .querySelector('#sidebarCloseButton')
-    .addEventListener('click', function (e) {
-      e.preventDefault()
-      cleanItemMeta()
-    })
+  document.querySelector('#sidebarCloseButton').addEventListener('click', function (e) {
+    e.preventDefault()
+    cleanItemMeta()
+  })
 
   // Get the current path and determine screen
   const path = decodeURIComponent(window.location.pathname)
@@ -669,8 +601,7 @@ window.onload = () => {
 // Handle back/forward button navigation
 window.addEventListener('popstate', (event) => {
   // If event.state exists, use it; otherwise, determine from pathname
-  const screen =
-    event.state && event.state.screen ? event.state.screen : 'home'
+  const screen = event.state && event.state.screen ? event.state.screen : 'home'
 
   if (screen === 'home') {
     cleanItemMeta()

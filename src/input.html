@@ -19,10 +19,10 @@
   </head>
 
   <body class="bg-gray-100 p-6">
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-xs shadow-lg">
       <h2 class="text-2xl font-bold mb-4">Veranstaltung eintragen</h2>
 
-      <form action="#" method="POST" class="space-y-4">
+      <form id="venueForm" action="#" method="POST" class="space-y-4">
         <div>
           <label class="text-gray-700">Name des Veranstaltungsortes</label>
           <input type="text" id="venueName" class="w-full mt-1 p-2 border rounded-xs" placeholder="Location" oninvalid="this.setCustomValidity('Bitte einen Namen für den Veranstaltungsort eingeben')" required />
@@ -54,19 +54,8 @@
 
         <button type="submit" id="addVenueButton" class="mt-6 px-4 py-2 bg-green-500 text-white rounded-xs hover:bg-green-700 transition hidden">Weiter</button>
       </form>
-      <form action="input2.html" method="POST" class="space-y-4 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label class="block">
-            <span class="text-gray-700">Opened At</span>
-            <input type="date" name="opened_at" class="w-full mt-1 p-2 border rounded-xs" />
-          </label>
-          <label class="block">
-            <span class="text-gray-700">Closed At</span>
-            <input type="date" name="closed_at" class="w-full mt-1 p-2 border rounded-xs" />
-          </label>
-        </div>
 
-        <!-- Organizer -->
+      <form id="organizerForm" action="#" method="POST" class="space-y-4 hidden">
         <label class="block">
           <span class="text-gray-700">Organizer Name *</span>
           <input type="text" name="organizer_name" required class="w-full mt-1 p-2 border rounded-xs" placeholder="Enter organizer name" />
@@ -84,32 +73,32 @@
           <input type="url" name="website_url" class="w-full mt-1 p-2 border rounded-xs" placeholder="Enter website URL" />
         </label>
 
-        <!-- Submit Button -->
         <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-xs hover:bg-blue-700">Submit</button>
       </form>
-      <form action="#" method="POST" class="space-y-4">
+
+      <form id="eventForm" action="#" method="POST" class="space-y-4 hidden">
         <h2 class="text-2xl font-bold mb-4">Event eintragen</h2>
 
         <div class="">
           <label class="block text-gray-700" for="eventTitle">Veranstaltungs Titel</label>
-          <input type="text" id="eventTitle" name="eventTitle" class="mt-1 p-2 w-full border rounded-lg" oninvalid="this.setCustomValidity('Bitte einen Veranstaltungs Titel eingeben')" required />
+          <input type="text" id="eventTitle" name="eventTitle" class="mt-1 p-2 w-full border rounded-xs" oninvalid="this.setCustomValidity('Bitte einen Veranstaltungs Titel eingeben')" required />
         </div>
         <div>
           <label class="block text-gray-700" for="eventDescription">Veranstaltungs Beschreibung</label>
-          <textarea id="eventDescription" name="eventDescription" rows="4" class="mt-1 p-2 w-full border rounded-lg" oninvalid="this.setCustomValidity('Bitte einen Veranstaltungs Titel eingeben')" required></textarea>
+          <textarea id="eventDescription" name="eventDescription" rows="4" class="mt-1 p-2 w-full border rounded-xs" oninvalid="this.setCustomValidity('Bitte einen Veranstaltungs Titel eingeben')" required></textarea>
         </div>
         <div class="grid grid-cols-12 gap-4 mb-4">
           <div class="col-span-6">
             <label class="block text-gray-700" for="eventDateStart">Veranstaltungs Beginn</label>
-            <input type="datetime-local" name="eventDateStart" class="mt-1 p-2 w-full border rounded-lg" oninvalid="this.setCustomValidity('Bitte einen Veranstaltungs Titel eingeben')" required />
+            <input type="datetime-local" name="eventDateStart" class="mt-1 p-2 w-full border rounded-xs" oninvalid="this.setCustomValidity('Bitte einen Veranstaltungs Titel eingeben')" required />
           </div>
           <div class="col-span-6">
             <label class="block text-gray-700" for="eventDateEnd">Veranstaltungs Ende</label>
-            <input type="datetime-local" name="eventDateEnd" class="mt-1 p-2 w-full border rounded-lg" />
+            <input type="datetime-local" name="eventDateEnd" class="mt-1 p-2 w-full border rounded-xs" />
           </div>
         </div>
 
-        <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">Submit</button>
+        <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-xs hover:bg-blue-600">Submit</button>
       </form>
     </div>
 

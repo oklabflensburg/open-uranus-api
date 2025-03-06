@@ -1,8 +1,6 @@
 const addVenueButton = document.querySelector('#addVenueButton')
 const venueName = document.querySelector('#venueName')
-const venueNameSuggestionList = document.querySelector(
-  '#venueNameSuggestionList'
-)
+const venueNameSuggestionList = document.querySelector('#venueNameSuggestionList')
 const addressFields = document.querySelector('#addressFields')
 
 function toggleAddressFields() {
@@ -25,8 +23,7 @@ function updateVenueNameSuggestionList(venueNameSuggestions) {
 
     li.id = item.venue_id
     li.textContent = item.venue_name
-    li.className =
-      'px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white'
+    li.className = 'px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white'
 
     li.addEventListener('click', () => {
       fetchVenueById(item.venue_id)
@@ -97,9 +94,7 @@ async function fetchVenueNameSuggestions(e) {
   }
 
   try {
-    const response = await fetch(
-      `https://api.uranus.oklabflensburg.de/venue/junk?query=${e.target.value}`
-    )
+    const response = await fetch(`https://api.uranus.oklabflensburg.de/venue/junk?query=${e.target.value}`)
 
     if (!response.ok) {
       throw new Error('Error fetching venue junk name venueNameSuggestions')
