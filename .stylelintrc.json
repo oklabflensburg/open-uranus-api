@@ -2,14 +2,16 @@
   "extends": "stylelint-config-standard",
   "rules": {
     "rule-empty-line-before": [
-			"always-multi-line", {
-				"except": ["after-single-line-comment", "first-nested"]
-			}
-		],
+      "always-multi-line",
+      {
+        "except": ["after-single-line-comment", "first-nested"]
+      }
+    ],
     "selector-class-pattern": [
-      "^[a-z0-9\\-\\:]+$", {
+      "^[a-z0-9\\-\\:]+$",
+      {
         "message": "Expected class selector to be kebab-case"
-      }   
+      }
     ],
     "at-rule-no-unknown": null,
     "block-no-empty": true,

@@ -20,7 +20,6 @@ export class Env {
     })
   }
 
-
   injectTextContent(className, value) {
     const nodes = document.querySelectorAll(className)
 

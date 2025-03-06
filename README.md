@@ -2,7 +2,6 @@
 
 _Haftungsausschluss: Dieses Repository und die zugehörige Datenbank befinden sich derzeit in einer Beta-Version. Einige Aspekte des Codes und der Daten können noch Fehler enthalten. Bitte kontaktieren Sie uns per E-Mail oder erstellen Sie ein Issue auf GitHub, wenn Sie einen Fehler entdecken._
 
-
 ### Prerequisites
 
 1. **Database Setup**
@@ -10,7 +9,6 @@ _Haftungsausschluss: Dieses Repository und die zugehörige Datenbank befinden si
 - Ensure PostgreSQL is installed and running on `localhost` (default port: `5432`).
 - Create a database named `uranus`, owned by a user with the same name.
 - Make sure the database accepts connections from `localhost`.
-
 
 2. **Environment Variables**
 
@@ -24,12 +22,9 @@ DB_NAME=uranus
 DB_PORT=5432
 ```
 
-
 3. **Python**
 
 - Python 3 installed with `venv` and `pip` available.
-
-
 
 ### Steps
 
@@ -54,8 +49,6 @@ pip3 install -r requirements.txt
 ```sh
 uvicorn app.main:app --reload --env-file .env
 ```
-
-
 
 ## Export Data
 

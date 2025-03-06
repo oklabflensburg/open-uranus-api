@@ -8,10 +8,14 @@ import markerSelected from 'url:../static/marker-icon-active.webp'
 
 import { Env } from './env.js'
 
-
 const env = new Env()
-env.injectLinkContent('.contact-mail', 'mailto:', '', env.contactMail, 'E-Mail')
-
+env.injectLinkContent(
+  '.contact-mail',
+  'mailto:',
+  '',
+  env.contactMail,
+  'E-Mail'
+)
 
 const defaultIcon = L.icon({
   iconUrl: markerDefault,
@@ -19,7 +23,6 @@ const defaultIcon = L.icon({
   iconAnchor: [15, 36],
   tooltipAnchor: [0, -37]
 })
-
 
 const selectedIcon = L.icon({
   iconUrl: markerSelected,
@@ -36,7 +39,6 @@ let isBoundsSet = false
 let previousSelectedMarker = null
 let currentLayer = null
 
-
 const center = [54.79443515, 9.43205485]
 const zoomLevelInitial = 13
 const addItemsByBounds = false
@@ -50,32 +52,34 @@ const map = L.map('map', {
   zoomControl: false
 }).setView(center, zoomLevelInitial)
 
-
-let zoomControl = L.control.zoom({
-  position: 'bottomright'
-}).addTo(map)
-
+let zoomControl = L.control
+  .zoom({
+    position: 'bottomright'
+  })
+  .addTo(map)
 
 function updateScreen(screen) {
   const title = 'Veranstaltung finden - Uranus Venue Map'
 
   if (screen === 'home') {
     document.title = title
-    document.querySelector('meta[property="og:title"]').setAttribute('content', title)
+    document
+      .querySelector('meta[property="og:title"]')
+      .setAttribute('content', title)
   }
   else {
     document.title = `${screen} - ${title}`
-    document.querySelector('meta[property="og:title"]').setAttribute('content', `${screen} - ${title}`)
+    document
+      .querySelector('meta[property="og:title"]')
+      .setAttribute('content', `${screen} - ${title}`)
   }
 }
-
 
 function capitalizeEachWord(str) {
   return str.replace(/-/g, ' ').replace(/\w\S*/g, function (txt) {
     return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
   })
 }
-
 
 function isValidUrl(string) {
   try {
@@ -86,7 +90,6 @@ function isValidUrl(string) {
     return false
   }
 }
-
 
 function renderItemMeta(data) {
   const venueId = data.venue_id
@@ -100,7 +103,7 @@ function renderItemMeta(data) {
   const openedAt = data.opened_at
   const closedAt = data.closed_at
   const organizerName = data.organizer_name
-  const organizerURL	= data.organizer_url
+  const organizerURL = data.organizer_url
 
   const title = 'Open Uranus Venue Map'
   /* const title = `${capitalizeEachWord(slug)} - Veranstaltungskalender`
@@ -128,7 +131,9 @@ function renderItemMeta(data) {
   const detailList = document.querySelector('#detailList')
 
   document.querySelector('title').innerHTML = title
-  document.querySelector('meta[property="og:title"]').setAttribute('content', title)
+  document
+    .querySelector('meta[property="og:title"]')
+    .setAttribute('content', title)
 
   detailList.innerHTML = detailOutput
   document.querySelector('#about').classList.add('hidden')
@@ -138,7 +143,6 @@ function renderItemMeta(data) {
   document.querySelector('#sidebarCloseWrapper').classList.remove('block')
 }
 
-
 function cleanItemMeta() {
   document.querySelector('#detailList').innerHTML = ''
   document.querySelector('#detailImage').innerHTML = ''
@@ -147,7 +151,6 @@ function cleanItemMeta() {
   document.querySelector('#about').classList.remove('hidden')
   document.querySelector('#sidebarContent').classList.add('hidden')
 }
-
 
 async function fetchJsonData(url) {
   try {
@@ -166,7 +169,6 @@ async function fetchJsonData(url) {
   }
 }
 
-
 async function fetchItemDetailBySlug(slug) {
   const url = `https://api.uranus.oklabflensburg.de/monument/v1/detail?slug=${slug}`
 
@@ -174,19 +176,21 @@ async function fetchItemDetailBySlug(slug) {
   const zoomLevelDetail = 17
 
   const geoJsonData = {
-    'type': 'FeatureCollection',
-    'features': [{
-      'type': 'Feature',
-      'id': data['id'],
-      'geometry': {
-        'type': data['geojson']['type'],
-        'coordinates': data['geojson']['coordinates']
-      },
-      'properties': {
-        'label': data['label'],
-        'slug': data['slug']
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        id: data['id'],
+        geometry: {
+          type: data['geojson']['type'],
+          coordinates: data['geojson']['coordinates']
+        },
+        properties: {
+          label: data['label'],
+          slug: data['slug']
+        }
       }
-    }]
+    ]
   }
 
   if (isValidUrl(data.image_url)) {
@@ -202,7 +206,6 @@ async function fetchItemDetailBySlug(slug) {
     setSelectedMarker(matchingMarker)
   }
 }
-
 
 async function fetchItemDetailById(id) {
   const url = `https://api.uranus.oklabflensburg.de/event/?venue_id=${id}`
@@ -223,9 +226,10 @@ async function fetchItemDetailById(id) {
   listContainer.classList.remove('hidden')
   listResultsContainer.innerHTML = ''
 
-  eventObjects.forEach((eventObject) => listResultsContainer.appendChild(createEventCard(eventObject)))
+  eventObjects.forEach((eventObject) =>
+    listResultsContainer.appendChild(createEventCard(eventObject))
+  )
 }
-
 
 async function fetchItemPointsByBounds() {
   const bounds = map.getBounds()
@@ -242,7 +246,6 @@ async function fetchItemPointsByBounds() {
 
   addItemsToMap(data, addItemsByBounds, zoomLevelInitial)
 }
-
 
 function addItemsToMap(data, fetchAdditionalItems, zoomLevel) {
   // Remove the existing layer
@@ -276,7 +279,10 @@ function addItemsToMap(data, fetchAdditionalItems, zoomLevel) {
     },
     pointToLayer(feature, latlng) {
       return L.marker(latlng, { icon: defaultIcon })
-        .bindTooltip(feature.properties.label, { permanent: false, direction: 'top' })
+        .bindTooltip(feature.properties.label, {
+          permanent: false,
+          direction: 'top'
+        })
         .openTooltip()
     }
   })
@@ -291,28 +297,27 @@ function addItemsToMap(data, fetchAdditionalItems, zoomLevel) {
   }
 }
 
-
 function handleWindowSize() {
   const innerWidth = window.innerWidth
 
   if (innerWidth >= 1024) {
     map.removeControl(zoomControl)
 
-    zoomControl = L.control.zoom({
-      position: 'topleft'
-    }).addTo(map)
+    zoomControl = L.control
+      .zoom({
+        position: 'topleft'
+      })
+      .addTo(map)
   }
   else {
     map.removeControl(zoomControl)
   }
 }
 
-
 // Find marker by slug
 function findMarkerById(slug) {
   return markerMap.get(slug) || null
 }
-
 
 // Set the selected marker
 function setSelectedMarker(marker) {
@@ -323,7 +328,6 @@ function setSelectedMarker(marker) {
   marker.setIcon(selectedIcon)
   previousSelectedMarker = marker
 }
-
 
 // Function to handle navigation changes
 function navigateTo(screen, updateHistory = true) {
@@ -341,7 +345,6 @@ function navigateTo(screen, updateHistory = true) {
   updateScreen(screen)
 }
 
-
 function renderTags(tags, baseClasses, hoverClasses) {
   if (!tags) {
     return null
@@ -358,7 +361,6 @@ function renderTags(tags, baseClasses, hoverClasses) {
   })
 }
 
-
 function formatDateToGerman(dateString) {
   const date = new Date(dateString)
 
@@ -373,10 +375,10 @@ function formatDateToGerman(dateString) {
   return dateString
 }
 
-
 function createEventCard(eventObject) {
   const card = document.createElement('div')
-  card.className = 'bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow flex flex-col md:flex-row items-start'
+  card.className =
+    'bg-white rounded-lg shadow-lg p-4 mb-4 hover:shadow-xl transition-shadow flex flex-col md:flex-row items-start'
 
   // Image Wrapper
   if (eventObject.image_url) {
@@ -385,7 +387,10 @@ function createEventCard(eventObject) {
 
     const imageElement = document.createElement('img')
     imageElement.src = eventObject.image_url
-    imageElement.setAttribute('alt', eventObject.event_title || 'your text here johnny')
+    imageElement.setAttribute(
+      'alt',
+      eventObject.event_title || 'your text here johnny'
+    )
     imageElement.className = 'w-full h-auto rounded-lg object-cover'
 
     imageWrapper.append(imageElement)
@@ -422,7 +427,8 @@ function createEventCard(eventObject) {
   const calendarAnchor = document.createElement('a')
   calendarAnchor.href = 'event.ics'
   calendarAnchor.download = ''
-  calendarAnchor.className = 'inline-flex items-center text-blue-500 hover:text-pink-700 focus:text-pink-700 px-2 py-1 transition'
+  calendarAnchor.className =
+    'inline-flex items-center text-blue-500 hover:text-pink-700 focus:text-pink-700 px-2 py-1 transition'
   calendarAnchor.textContent = '📅 Termin in Kalender speichern'
   calendarLink.appendChild(calendarAnchor)
 
@@ -439,9 +445,21 @@ function createEventCard(eventObject) {
 
   // Define tag types and their styles
   const tagTypes = [
-    { data: eventObject.venue_type, baseClass: 'bg-orange-100 text-orange-800', hoverClass: 'hover:bg-orange-500 hover:text-white cursor-pointer' },
-    { data: eventObject.event_type, baseClass: 'bg-pink-100 text-pink-800', hoverClass: 'hover:bg-pink-500 hover:text-white cursor-pointer' },
-    { data: eventObject.genre_type, baseClass: 'bg-blue-100 text-blue-800', hoverClass: 'hover:bg-blue-500 hover:text-white cursor-pointer' }
+    {
+      data: eventObject.venue_type,
+      baseClass: 'bg-orange-100 text-orange-800',
+      hoverClass: 'hover:bg-orange-500 hover:text-white cursor-pointer'
+    },
+    {
+      data: eventObject.event_type,
+      baseClass: 'bg-pink-100 text-pink-800',
+      hoverClass: 'hover:bg-pink-500 hover:text-white cursor-pointer'
+    },
+    {
+      data: eventObject.genre_type,
+      baseClass: 'bg-blue-100 text-blue-800',
+      hoverClass: 'hover:bg-blue-500 hover:text-white cursor-pointer'
+    }
   ]
 
   // Render and append tags if they exist
@@ -462,8 +480,17 @@ function createEventCard(eventObject) {
   return card
 }
 
-
-function buildEventUrl({ city, postcode, venueId, venueTypeId, genreTypeId, spaceTypeId, eventTypeId, dateStart, dateEnd }) {
+function buildEventUrl({
+  city,
+  postcode,
+  venueId,
+  venueTypeId,
+  genreTypeId,
+  spaceTypeId,
+  eventTypeId,
+  dateStart,
+  dateEnd
+}) {
   const baseUrl = 'https://api.uranus.oklabflensburg.de/event/'
   const params = new URLSearchParams()
 
@@ -488,7 +515,6 @@ function buildEventUrl({ city, postcode, venueId, venueTypeId, genreTypeId, spac
   return params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl
 }
 
-
 async function handleFormChange() {
   const city = document.querySelector('#venueCity').value || null
   const postcode = document.querySelector('#venuePostcode').value || null
@@ -500,7 +526,17 @@ async function handleFormChange() {
   const dateStart = document.querySelector('#eventDateStart').value || null
   const dateEnd = document.querySelector('#eventDateEnd').value || null
 
-  const url = buildEventUrl({ city, postcode, venueId, spaceTypeId, venueTypeId, genreTypeId, eventTypeId, dateStart, dateEnd })
+  const url = buildEventUrl({
+    city,
+    postcode,
+    venueId,
+    spaceTypeId,
+    venueTypeId,
+    genreTypeId,
+    eventTypeId,
+    dateStart,
+    dateEnd
+  })
 
   try {
     const listResultsContainer = document.querySelector('#listResults')
@@ -521,13 +557,14 @@ async function handleFormChange() {
     listContainer.classList.remove('hidden')
     listResultsContainer.innerHTML = ''
 
-    eventObjects.forEach((eventObject) => listResultsContainer.appendChild(createEventCard(eventObject)))
+    eventObjects.forEach((eventObject) =>
+      listResultsContainer.appendChild(createEventCard(eventObject))
+    )
   }
   catch (error) {
     console.error('Error fetching events:', error)
   }
 }
-
 
 async function fetchAndPopulate(url, elementId, idKey, nameKey) {
   try {
@@ -535,7 +572,12 @@ async function fetchAndPopulate(url, elementId, idKey, nameKey) {
     const data = await response.json()
     const selectElement = document.getElementById(elementId)
     selectElement.innerHTML = '<option selected value>Bitte auswählen</option>'
-    selectElement.innerHTML += data.map((item) => `<option class="cursor-pointer" value="${item[idKey]}">${item[nameKey]}</option>`).join('')
+    selectElement.innerHTML += data
+      .map(
+        (item) =>
+          `<option class="cursor-pointer" value="${item[idKey]}">${item[nameKey]}</option>`
+      )
+      .join('')
   }
   catch (error) {
     console.error(`Error fetching ${elementId}:`, error)
@@ -543,17 +585,44 @@ async function fetchAndPopulate(url, elementId, idKey, nameKey) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  fetchAndPopulate('https://api.uranus.oklabflensburg.de/venue/', 'venue', 'venue_id', 'venue_name')
-  fetchAndPopulate('https://api.uranus.oklabflensburg.de/event/type/', 'eventType', 'event_type_id', 'event_type_name')
-  fetchAndPopulate('https://api.uranus.oklabflensburg.de/venue/type/', 'venueType', 'venue_type_id', 'venue_type_name')
-  fetchAndPopulate('https://api.uranus.oklabflensburg.de/space/type/', 'spaceType', 'space_type_id', 'space_type_name')
-  fetchAndPopulate('https://api.uranus.oklabflensburg.de/genre/type/', 'genreType', 'genre_type_id', 'genre_type_name')
+  fetchAndPopulate(
+    'https://api.uranus.oklabflensburg.de/venue/',
+    'venue',
+    'venue_id',
+    'venue_name'
+  )
+  fetchAndPopulate(
+    'https://api.uranus.oklabflensburg.de/event/type/',
+    'eventType',
+    'event_type_id',
+    'event_type_name'
+  )
+  fetchAndPopulate(
+    'https://api.uranus.oklabflensburg.de/venue/type/',
+    'venueType',
+    'venue_type_id',
+    'venue_type_name'
+  )
+  fetchAndPopulate(
+    'https://api.uranus.oklabflensburg.de/space/type/',
+    'spaceType',
+    'space_type_id',
+    'space_type_name'
+  )
+  fetchAndPopulate(
+    'https://api.uranus.oklabflensburg.de/genre/type/',
+    'genreType',
+    'genre_type_id',
+    'genre_type_name'
+  )
 })
 
-
-document.querySelector('#eventForm').addEventListener('input', handleFormChange)
-document.querySelector('#eventForm').addEventListener('change', handleFormChange)
-
+document
+  .querySelector('#eventForm')
+  .addEventListener('input', handleFormChange)
+document
+  .querySelector('#eventForm')
+  .addEventListener('change', handleFormChange)
 
 // Handle initial page load
 window.onload = () => {
@@ -561,7 +630,8 @@ window.onload = () => {
   L.tileLayer('https://tiles.oklabflensburg.de/sgm/{z}/{x}/{y}.png', {
     maxZoom: 20,
     tileSize: 256,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="dc:rights">OpenStreetMap</a> contributors'
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="dc:rights">OpenStreetMap</a> contributors'
   }).addTo(map)
 
   // Attach event listeners
@@ -569,10 +639,12 @@ window.onload = () => {
   map.on('click', cleanItemMeta)
 
   // Sidebar close button handler
-  document.querySelector('#sidebarCloseButton').addEventListener('click', function (e) {
-    e.preventDefault()
-    cleanItemMeta()
-  })
+  document
+    .querySelector('#sidebarCloseButton')
+    .addEventListener('click', function (e) {
+      e.preventDefault()
+      cleanItemMeta()
+    })
 
   // Get the current path and determine screen
   const path = decodeURIComponent(window.location.pathname)
@@ -597,7 +669,8 @@ window.onload = () => {
 // Handle back/forward button navigation
 window.addEventListener('popstate', (event) => {
   // If event.state exists, use it; otherwise, determine from pathname
-  const screen = event.state && event.state.screen ? event.state.screen : 'home'
+  const screen =
+    event.state && event.state.screen ? event.state.screen : 'home'
 
   if (screen === 'home') {
     cleanItemMeta()
@@ -607,7 +680,6 @@ window.addEventListener('popstate', (event) => {
     fetchItemDetailBySlug(screen)
   }
 })
-
 
 // Attach the resize event listener, but ensure proper function reference
 window.addEventListener('resize', handleWindowSize)

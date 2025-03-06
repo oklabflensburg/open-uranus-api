@@ -1,90 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html prefix="og: https://ogp.me/ns#" lang="de">
-<head>
+  <head>
     <title>tbd.</title>
-    <link rel="canonical" href="https://domain.tld">
-    <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico">
-    <link href="./main.css" rel="stylesheet">
+    <link rel="canonical" href="https://domain.tld" />
+    <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico" />
+    <link href="./main.css" rel="stylesheet" />
 
-    <meta charset="utf-8">
-    <meta property="og:locale" content="de_DE">
-    <meta property="og:title" content="tbd.">
-    <meta property="og:site_name" content="tbd.">
-    <meta property="og:url" content="https://domain.tld">
-    <meta property="og:description" content="tbd.">
-    <meta property="og:type" content="website">
+    <meta charset="utf-8" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:title" content="tbd." />
+    <meta property="og:site_name" content="tbd." />
+    <meta property="og:url" content="https://domain.tld" />
+    <meta property="og:description" content="tbd." />
+    <meta property="og:type" content="website" />
 
-    <meta name="description" content="tbd.">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-</head>
+    <meta name="description" content="tbd." />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  </head>
 
-<body class="relative flex justify-center flex-col h-dvh w-full">
-  <div class="relative sm:flex sm:flex-row w-full h-dvh overflow-hidden">
-    <div class="h-dvh flex flex-col w-full xs:w-5/12 sm:w-6/12 md:w-7/12 lg:w-8/12 xl:w-9/12">
-      <div id="map" class="h-[95dvh] w-full"></div>
-      <div id="list" class="h-[95dvh] px-3 pt-3 bg-gray-100 w-full overflow-scroll hidden">
-        <h1 class="font-bold leading-normal lg:text-4xl mb-6 md:text-3xl px-1 text-1xl tracking-normal">Suchergebnisse</h1>
-        <div id="listResults" class"space-y-10"></div>
-      </div>
-      <footer class="grow w-full bg-gray-200 border-t md:border-t border-gray-300 text-sm flex justify-center items-center">
-        <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./impressum.html">Impressum</a> <span class="inline-block text-gray-700 px-3">|</span> <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./impressum.html#privacypolicy">Datenschutzerklärung</a> <span class="inline-block text-gray-700 px-3">|</span> <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./lizenz.html">Lizenz</a>
-      </footer>
-    </div>
-
-    <div id="sidebar" class="absolute left-0 bottom-0 max-h-[45dvh] sm:max-h-dvh sm:block sm:relative w-full xs:w-7/12 sm:w-6/12 md:w-5/12 lg:w-4/12 xl:w-3/12 overflow-scroll bg-gray-100 z-1200">
-      <div id="sidebarCloseWrapper" class="absolute right-3 top-3 z-1300 sm:hidden">
-        <a id="sidebarCloseButton" class="flex justify-center items-center relative inline-block shadow-md bg-gray-200 text-sky-900 hover:bg-gray-300 focus:bg-gray-300 active:bg-gray-300 rounded-full w-8 h-8 cursor-pointer font-bold" role="button">
-          <svg class="h-5 w-5 inline" viewBox="0 0 50 50" fill="currentColor" xmlns="http://www.w3.org/2000/svg" stroke-width="0">
-            <path d="M 9.15625 6.3125 L 6.3125 9.15625 L 22.15625 25 L 6.21875 40.96875 L 9.03125 43.78125 L 25 27.84375 L 40.9375 43.78125 L 43.78125 40.9375 L 27.84375 25 L 43.6875 9.15625 L 40.84375 6.3125 L 25 22.15625 Z" />
-          </svg>
-        </a>
+  <body class="relative flex justify-center flex-col h-dvh w-full">
+    <div class="relative sm:flex sm:flex-row w-full h-dvh overflow-hidden">
+      <div class="h-dvh flex flex-col w-full xs:w-5/12 sm:w-6/12 md:w-7/12 lg:w-8/12 xl:w-9/12">
+        <div id="map" class="h-[95dvh] w-full"></div>
+        <div id="list" class="h-[95dvh] px-3 pt-3 bg-gray-100 w-full overflow-scroll hidden">
+          <h1 class="font-bold leading-normal lg:text-4xl mb-6 md:text-3xl px-1 text-1xl tracking-normal">Suchergebnisse</h1>
+          <div id="listResults" class="space-y-10"></div>
+        </div>
+        <footer class="grow w-full bg-gray-200 border-t md:border-t border-gray-300 text-sm flex justify-center items-center">
+          <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./impressum.html">Impressum</a>
+          <span class="inline-block text-gray-700 px-3">|</span>
+          <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./impressum.html#privacypolicy">Datenschutzerklärung</a>
+          <span class="inline-block text-gray-700 px-3">|</span>
+          <a class="inline-block text-gray-700 hover:text-blue-800 focus:text-blue-800" href="./lizenz.html">Lizenz</a>
+        </footer>
       </div>
 
-      <div id="sidebarHeader" class="py-2 px-3 mb-1">
-        <h1 class="tracking-normal leading-normal font-bold text-1xl md:text-3xl lg:text-4xl px-1 mb-6">Heute in Flensburg</h1>
-
-        <div class="" id="about">
-          <a href="input.html" class="flex justify-center items-center relative inline-block shadow-md bg-gray-200 text-sky-900 hover:bg-gray-300 focus:bg-gray-300 active:bg-gray-300 font-bold" role="link">Veranstaltung eintragen</a>
+      <div id="sidebar" class="absolute left-0 bottom-0 max-h-[45dvh] sm:max-h-dvh sm:block sm:relative w-full xs:w-7/12 sm:w-6/12 md:w-5/12 lg:w-4/12 xl:w-3/12 overflow-scroll bg-gray-100 z-1200">
+        <div id="sidebarCloseWrapper" class="absolute right-3 top-3 z-1300 sm:hidden">
+          <a id="sidebarCloseButton" class="flex justify-center items-center relative inline-block shadow-md bg-gray-200 text-sky-900 hover:bg-gray-300 focus:bg-gray-300 active:bg-gray-300 rounded-full w-8 h-8 cursor-pointer font-bold" role="button">
+            <svg class="h-5 w-5 inline" viewBox="0 0 50 50" fill="currentColor" xmlns="http://www.w3.org/2000/svg" stroke-width="0">
+              <path d="M 9.15625 6.3125 L 6.3125 9.15625 L 22.15625 25 L 6.21875 40.96875 L 9.03125 43.78125 L 25 27.84375 L 40.9375 43.78125 L 43.78125 40.9375 L 27.84375 25 L 43.6875 9.15625 L 40.84375 6.3125 L 25 22.15625 Z" />
+            </svg>
+          </a>
         </div>
 
-        <div id="sidebarContent" class="relative bg-white rounded-sm shadow-sm w-full lg:text-lg text-black text-md hidden">
-          <div id="detailImage"></div>
-          <ul class="p-3 space-y-3 mb-6" id="detailList"></ul>
+        <div id="sidebarHeader" class="py-2 px-3 mb-1">
+          <h1 class="tracking-normal leading-normal font-bold text-1xl md:text-3xl lg:text-4xl px-1 mb-6">Heute in Flensburg</h1>
+
+          <div class="" id="about">
+            <a href="input.html" class="flex justify-center items-center relative inline-block shadow-md bg-gray-200 text-sky-900 hover:bg-gray-300 focus:bg-gray-300 active:bg-gray-300 font-bold" role="link">Veranstaltung eintragen</a>
+          </div>
+
+          <div id="sidebarContent" class="relative bg-white rounded-sm shadow-sm w-full lg:text-lg text-black text-md hidden">
+            <div id="detailImage"></div>
+            <ul class="p-3 space-y-3 mb-6" id="detailList"></ul>
+          </div>
+
+          <form id="eventForm" class="bg-white p-3 rounded-sm shadow-lg w-full" aria-labelledby="form-title">
+            <h2 id="form-title" class="text-xl font-bold mb-4">Veranstaltung finden</h2>
+
+            <label for="venueCity" class="block font-medium mb-1">Ort</label>
+            <input type="text" id="venueCity" class="w-full p-2 border rounded mb-4" aria-describedby="venueCity-desc" placeholder="Ort oder Stadt" />
+
+            <label for="venuePostcode" class="block font-medium mb-1">PLZ</label>
+            <input type="text" id="venuePostcode" class="w-full p-2 border rounded mb-4" aria-describedby="venuePostcode-desc" placeholder="PLZ" />
+
+            <label for="venue" class="block font-medium mb-1">Veranstaltungsort</label>
+            <select id="venue" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="venue-desc"></select>
+
+            <label for="eventType" class="block font-medium mb-1">Veranstaltungsart</label>
+            <select id="eventType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="eventType-desc"></select>
+
+            <label for="venueType" class="block font-medium mb-1">Art des Veranstaltungsortes</label>
+            <select id="venueType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="venueType-desc"></select>
+
+            <label for="spaceType" class="block font-medium mb-1">Art des Veranstaltungsraumes</label>
+            <select id="spaceType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="spaceType-desc"></select>
+
+            <label for="genreType" class="block font-medium mb-1">Genre</label>
+            <select id="genreType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="genreType-desc"></select>
+
+            <label for="eventDateStart" class="block font-medium mb-1">Frühster Beginn</label>
+            <input type="date" id="eventDateStart" class="w-full p-2 border rounded mb-4" aria-describedby="eventDateStart-desc" />
+
+            <label for="eventDateEnd" class="block font-medium mb-1">Spätestes Datum</label>
+            <input type="date" id="eventDateEnd" class="w-full p-2 border rounded" aria-describedby="eventDateEnd-desc" />
+          </form>
         </div>
-
-        <form id="eventForm" class="bg-white p-3 rounded-sm shadow-lg w-full" aria-labelledby="form-title">
-          <h2 id="form-title" class="text-xl font-bold mb-4">Veranstaltung finden</h2>
-
-          <label for="venueCity" class="block font-medium mb-1">Ort</label>
-          <input type="text" id="venueCity" class="w-full p-2 border rounded mb-4" aria-describedby="venueCity-desc" placeholder="Ort oder Stadt">
-
-          <label for="venuePostcode" class="block font-medium mb-1">PLZ</label>
-          <input type="text" id="venuePostcode" class="w-full p-2 border rounded mb-4" aria-describedby="venuePostcode-desc" placeholder="PLZ">
-
-          <label for="venue" class="block font-medium mb-1">Veranstaltungsort</label>
-          <select id="venue" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="venue-desc"></select>
-
-          <label for="eventType" class="block font-medium mb-1">Veranstaltungsart</label>
-          <select id="eventType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="eventType-desc"></select>
-
-          <label for="venueType" class="block font-medium mb-1">Art des Veranstaltungsortes</label>
-          <select id="venueType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="venueType-desc"></select>
-
-          <label for="spaceType" class="block font-medium mb-1">Art des Veranstaltungsraumes</label>
-          <select id="spaceType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="spaceType-desc"></select>
-
-          <label for="genreType" class="block font-medium mb-1">Genre</label>
-          <select id="genreType" class="w-full p-2 border rounded mb-4 cursor-pointer" aria-describedby="genreType-desc"></select>
-
-          <label for="eventDateStart" class="block font-medium mb-1">Frühster Beginn</label>
-          <input type="date" id="eventDateStart" class="w-full p-2 border rounded mb-4" aria-describedby="eventDateStart-desc">
-
-          <label for="eventDateEnd" class="block font-medium mb-1">Spätestes Datum</label>
-          <input type="date" id="eventDateEnd" class="w-full p-2 border rounded" aria-describedby="eventDateEnd-desc">
-        </form>
       </div>
     </div>
 
-  <script type="module" src="./main.js"></script>
-</body>
+    <script type="module" src="./main.js"></script>
+  </body>
 </html>

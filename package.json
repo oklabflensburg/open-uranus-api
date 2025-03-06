@@ -6,8 +6,9 @@
     "staticPath": "static"
   },
   "scripts": {
-    "start": "parcel",
+    "start": "parcel serve",
     "build": "parcel build",
+    "prettier": "prettier \"src/**/*.html\" --write",
     "htmlhint": "htmlhint \"src/**/*.html\" --ignore \"dist/**/*.html\" --format unix",
     "lint:js": "pnpm exec eslint \"src/**/*.js\" --no-error-on-unmatched-pattern",
     "lint:html": "pnpm run htmlhint",
@@ -30,6 +31,7 @@
     "leaflet.markercluster": "^1.5.3",
     "parcel-reporter-static-files-copy": "^1.5.3",
     "postcss": "^8.5.1",
+    "prettier": "^3.5.3",
     "stylelint": "^16.14.1",
     "stylelint-config-standard": "^36.0.1",
     "svgo": "^3.3.2",

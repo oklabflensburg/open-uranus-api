@@ -1,14 +1,14 @@
 const addVenueButton = document.querySelector('#addVenueButton')
 const venueName = document.querySelector('#venueName')
-const venueNameSuggestionList = document.querySelector('#venueNameSuggestionList')
+const venueNameSuggestionList = document.querySelector(
+  '#venueNameSuggestionList'
+)
 const addressFields = document.querySelector('#addressFields')
-
 
 function toggleAddressFields() {
   addressFields.classList.toggle('hidden')
   addVenueButton.classList.toggle('hidden')
 }
-
 
 function updateVenueNameSuggestionList(venueNameSuggestions) {
   venueNameSuggestionList.innerHTML = ''
@@ -25,7 +25,8 @@ function updateVenueNameSuggestionList(venueNameSuggestions) {
 
     li.id = item.venue_id
     li.textContent = item.venue_name
-    li.className = 'px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white'
+    li.className =
+      'px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white'
 
     li.addEventListener('click', () => {
       fetchVenueById(item.venue_id)
@@ -39,7 +40,6 @@ function updateVenueNameSuggestionList(venueNameSuggestions) {
   venueNameSuggestionList.classList.remove('hidden')
 }
 
-
 function toggleVenueNameListeners(enable) {
   const events = ['input', 'click']
 
@@ -52,7 +52,6 @@ function toggleVenueNameListeners(enable) {
     }
   })
 }
-
 
 async function fetchVenueById(id) {
   const url = `https://api.uranus.oklabflensburg.de/venue/id/?venue_id=${id}`
@@ -89,7 +88,6 @@ async function fetchVenueById(id) {
   }
 }
 
-
 async function fetchVenueNameSuggestions(e) {
   if (!e.target.value || e.target.value.length < 2) {
     venueNameSuggestionList.classList.add('hidden')
@@ -99,7 +97,9 @@ async function fetchVenueNameSuggestions(e) {
   }
 
   try {
-    const response = await fetch(`https://api.uranus.oklabflensburg.de/venue/junk?query=${e.target.value}`)
+    const response = await fetch(
+      `https://api.uranus.oklabflensburg.de/venue/junk?query=${e.target.value}`
+    )
 
     if (!response.ok) {
       throw new Error('Error fetching venue junk name venueNameSuggestions')
@@ -113,7 +113,6 @@ async function fetchVenueNameSuggestions(e) {
     console.error('Error:', error)
   }
 }
-
 
 addVenueButton.addEventListener('click', toggleAddressFields)
 toggleVenueNameListeners(true)
