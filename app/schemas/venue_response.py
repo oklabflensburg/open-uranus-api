@@ -14,11 +14,10 @@ class VenueResponse(BaseModel):
     venue_id: int
     venue_name: str
     venue_type: Optional[str] = None
-    street: Optional[str] = None
-    house_number: Optional[str] = None
-    postal_code: Optional[str] = None
-    city: Optional[str] = None
-    country_code: Optional[str] = None
+    venue_street: Optional[str] = None
+    venue_house_number: Optional[str] = None
+    venue_postal_code: Optional[str] = None
+    venue_city: Optional[str] = None
     opened_at: Optional[date] = None
     closed_at: Optional[date] = None
     organizer_name: Optional[str] = None
