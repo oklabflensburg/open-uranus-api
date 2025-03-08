@@ -84,6 +84,8 @@ async def get_all_venues(db: AsyncSession, lang: str = 'de'):
             Venue.opened_at,
             Venue.closed_at,
             Venue.wkb_geometry
+        ).order_by(
+            func.lower(Venue.name).asc()
         )
     )
 
