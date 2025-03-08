@@ -7,9 +7,10 @@ from sqlmodel import select
 from app.db.session import get_db
 from app.db.repository.event import get_events_by_filter, get_events_sort_by
 
-from app.schemas.event import Event
+from app.models.event import Event
 from app.schemas.event_response import EventResponse
-from app.schemas.sort_order import SortOrder
+
+from app.enum.sort_order import SortOrder
 
 
 

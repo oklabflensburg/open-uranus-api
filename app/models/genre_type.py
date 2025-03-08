@@ -16,5 +16,3 @@ class GenreType(SQLModel, table=True):
     type_id: int = Field(nullable=False)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     modified_at: Optional[datetime] = None
-
-    #genre_links: List['GenreLinkTypes'] = Relationship(back_populates='genre_type')

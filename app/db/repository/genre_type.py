@@ -1,8 +1,8 @@
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.i18n_locale import I18nLocale
-from app.schemas.genre_type import GenreType
+from app.models.i18n_locale import I18nLocale
+from app.models.genre_type import GenreType
 
 
 

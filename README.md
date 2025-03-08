@@ -15,11 +15,8 @@ _Haftungsausschluss: Dieses Repository und die zugehörige Datenbank befinden si
 - Create a `.env` file in the root directory of this repository and add the following environment variables with your specific values:
 
 ```sh
-DB_PASS=YOUR_PASSWORD_HERE
-DB_HOST=localhost
-DB_USER=uranus
-DB_NAME=uranus
-DB_PORT=5432
+SECRET_KEY={SECRET_KEY}
+DATABASE_URL="postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 ```
 
 3. **Python**

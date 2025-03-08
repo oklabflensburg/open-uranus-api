@@ -1,10 +1,14 @@
+from typing import Annotated
+
 from fastapi import FastAPI
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.endpoints import venue, event, space, space_type, venue_type, event_type, genre_type
 
 
 app = FastAPI(title='Veranstaltungen finden')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
 

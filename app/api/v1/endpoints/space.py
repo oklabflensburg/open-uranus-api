@@ -1,9 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.db.session import get_db
-from app.schemas.space import Space
-from app.db.repository.space import get_all_spaces, get_spaces_by_filter
+
 from typing import List, Optional
+
+from app.models.space import Space
+
+from app.db.repository.space import get_all_spaces, get_spaces_by_filter, get_space_by_id
+
 
 
 

@@ -5,27 +5,27 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.sql import func
 from sqlalchemy import asc, desc, or_
 
-from app.schemas.i18n_locale import I18nLocale
-from app.schemas.organizer import Organizer
-from app.schemas.event import Event
-from app.schemas.event_date import EventDate
-from app.schemas.event_link_types import EventLinkTypes
-from app.schemas.event_type import EventType
-from app.schemas.space import Space
-from app.schemas.venue_link_types import VenueLinkTypes
-from app.schemas.venue_type import VenueType
-from app.schemas.venue import Venue
-from app.schemas.genre_link_types import GenreLinkTypes
-from app.schemas.genre_type import GenreType
-from app.schemas.space_type import SpaceType
+from app.models.i18n_locale import I18nLocale
+from app.models.organizer import Organizer
+from app.models.event import Event
+from app.models.event_date import EventDate
+from app.models.event_link_types import EventLinkTypes
+from app.models.event_type import EventType
+from app.models.space import Space
+from app.models.venue_link_types import VenueLinkTypes
+from app.models.venue_type import VenueType
+from app.models.venue import Venue
+from app.models.genre_link_types import GenreLinkTypes
+from app.models.genre_type import GenreType
+from app.models.space_type import SpaceType
 
-from app.schemas.event_date_link_images import EventDateLinkImages
-from app.schemas.event_link_images import EventLinkImages
-from app.schemas.image import Image
-from app.schemas.image_type import ImageType
-from app.schemas.license_type import LicenseType
+from app.models.event_date_link_images import EventDateLinkImages
+from app.models.event_link_images import EventLinkImages
+from app.models.image import Image
+from app.models.image_type import ImageType
+from app.models.license_type import LicenseType
 
-from app.schemas.sort_order import SortOrder
+from app.enum.sort_order import SortOrder
 from app.core.parser import parse_date
 
 

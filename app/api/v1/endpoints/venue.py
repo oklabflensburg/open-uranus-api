@@ -11,7 +11,7 @@ import json
 
 from app.db.session import get_db
 
-from app.schemas.venue import Venue
+from app.models.venue import Venue
 from app.schemas.venue_create import VenueCreate
 from app.schemas.venue_response import VenueResponse, VenueGeoJSONPoint
 from app.schemas.venue_junk_response import VenueJunkResponse

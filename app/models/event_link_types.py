@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
 from datetime import datetime
 
-from app.schemas.event_type import EventType
+from app.models.event_type import EventType
 
 
 

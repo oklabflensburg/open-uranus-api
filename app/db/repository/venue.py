@@ -7,11 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from geoalchemy2.functions import ST_AsGeoJSON, ST_MakeEnvelope
 
-from app.schemas.i18n_locale import I18nLocale
-from app.schemas.organizer import Organizer
-from app.schemas.venue_link_types import VenueLinkTypes
-from app.schemas.venue_type import VenueType
-from app.schemas.venue import Venue
+from app.models.i18n_locale import I18nLocale
+from app.models.organizer import Organizer
+from app.models.venue_link_types import VenueLinkTypes
+from app.models.venue_type import VenueType
+from app.models.venue import Venue
 
 
 
