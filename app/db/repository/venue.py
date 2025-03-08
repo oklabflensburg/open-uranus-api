@@ -94,6 +94,18 @@ async def get_all_venues(db: AsyncSession, lang: str = 'de'):
 
 
 
+async def get_simple_venue_by_id(db: AsyncSession, venue_id: int):
+    stmt = (
+        select(Venue).where(Venue.id == venue_id)
+    )
+
+    result = await db.execute(stmt)
+    venue = result.scalars().first()
+
+    return venue
+
+
+
 async def get_venue_by_id(db: AsyncSession, venue_id: int, lang: str = 'de'):
     filtered_i18n = (
         select(I18nLocale.id, I18nLocale.iso_639_1)
