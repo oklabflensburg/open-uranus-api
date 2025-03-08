@@ -15,4 +15,7 @@ class UserBase(SQLModel):
 
 
 class User(UserBase, table=True):
+    __tablename__ = 'user'
+    __table_args__ = {'schema': 'uranus'}
+
     id: Optional[int] = Field(default=None, primary_key=True)
