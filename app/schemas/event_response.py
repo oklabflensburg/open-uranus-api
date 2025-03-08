@@ -13,6 +13,7 @@ class EventResponse(BaseModel):
     event_title: str
     event_description: str
     event_date_start: datetime
+    event_created_at: datetime
     image_url: Optional[str] = None
     organizer_name: Optional[str] = None
     event_type: Optional[str] = None

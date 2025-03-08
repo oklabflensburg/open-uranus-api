@@ -5,10 +5,11 @@ from typing import Optional, List
 from sqlmodel import select
 
 from app.db.session import get_db
-from app.db.repository.event import get_events_by_filter
+from app.db.repository.event import get_events_by_filter, get_events_sort_by
 
 from app.schemas.event import Event
 from app.schemas.event_response import EventResponse
+from app.schemas.sort_order import SortOrder
 
 
 
@@ -51,6 +52,24 @@ async def fetch_events_by_filter(
 
     base_url = str(request.base_url)
     events = await get_events_by_filter(db, active_filters, base_url)
+
+    if len(events) < 1:
+        raise HTTPException(status_code=404, detail=f'No events found for filters: {active_filters}')
+
+    return events
+
+
+
+
+
+@router.get('/sort', response_model=List[EventResponse])
+async def fetch_events_sort_by(
+    request: Request,
+    order_by: SortOrder = SortOrder.asc,
+    db: AsyncSession = Depends(get_db)
+):
+    base_url = str(request.base_url)
+    events = await get_events_sort_by(db, order_by, base_url)
 
     if len(events) < 1:
         raise HTTPException(status_code=404, detail=f'No events found for filters: {active_filters}')
