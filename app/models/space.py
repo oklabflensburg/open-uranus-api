@@ -4,11 +4,7 @@ from datetime import datetime, date
 
 
 
-class Space(SQLModel, table=True):
-    __tablename__ = 'space'
-    __table_args__ = {'schema': 'uranus'}
-
-    id: int = Field(primary_key=True)
+class SpaceBase(SQLModel):
     venue_id: int = Field(foreign_key='uranus.venue.id')
     name: str = Field(max_length=255)
     total_capacity: Optional[int] = None
@@ -31,3 +27,11 @@ class Space(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     modified_at: Optional[datetime] = None
     area: Optional[float] = None
+
+
+
+class Space(SpaceBase, table=True):
+    __tablename__ = 'space'
+    __table_args__ = {'schema': 'uranus'}
+
+    id: Optional[int] = Field(default=None, primary_key=True)

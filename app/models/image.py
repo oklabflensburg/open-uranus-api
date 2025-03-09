@@ -4,11 +4,7 @@ from datetime import datetime
 
 
 
-class Image(SQLModel, table=True):
-    __tablename__ = 'image'
-    __table_args__ = {'schema': 'uranus'}
-
-    id: int = Field(primary_key=True)
+class ImageBase(SQLModel):
     origin_name: str = Field(max_length=255)
     mime_type: str = Field(max_length=255)
     license_type_id: int = Field(foreign_key='uranus.license_type.id')
@@ -20,3 +16,11 @@ class Image(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     modified_at: Optional[datetime] = None
     source_name: str = Field(max_length=64, unique=True)
+
+
+
+class Image(ImageBase, table=True):
+    __tablename__ = 'image'
+    __table_args__ = {'schema': 'uranus'}
+
+    id: Optional[int] = Field(default=None, primary_key=True)

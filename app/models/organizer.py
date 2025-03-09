@@ -1,14 +1,10 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
-from datetime import datetime, date
+from datetime import datetime
 
 
 
-class Organizer(SQLModel, table=True):
-    __tablename__ = 'organizer'
-    __table_args__ = {'schema': 'uranus'}
-
-    id: int = Field(primary_key=True)
+class OrganizerBase(SQLModel):
     name: str = Field(max_length=255)
     description: Optional[str] = None
     contact_email: Optional[str] = Field(max_length=255, default=None)
@@ -21,3 +17,11 @@ class Organizer(SQLModel, table=True):
     country: Optional[str] = Field(max_length=100, default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     modified_at: Optional[datetime] = None
+
+
+
+class Organizer(OrganizerBase, table=True):
+    __tablename__ = 'organizer'
+    __table_args__ = {'schema': 'uranus'}
+
+    id: Optional[int] = Field(default=None, primary_key=True)

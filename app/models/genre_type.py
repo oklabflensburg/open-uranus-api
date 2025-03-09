@@ -2,8 +2,6 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
 from datetime import datetime
 
-#from app.schemas.genre_link_types import GenreLinkTypes
-
 
 
 class GenreType(SQLModel, table=True):

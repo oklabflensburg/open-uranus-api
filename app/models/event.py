@@ -5,9 +5,6 @@ from datetime import datetime, date
 
 
 class EventBase(SQLModel):
-    __tablename__ = 'event'
-    __table_args__ = {'schema': 'uranus'}
-
     organizer_id: int = Field(foreign_key='uranus.organizer.id')
     venue_id: int = Field(foreign_key='uranus.venue.id')
     space_id: Optional[int] = Field(foreign_key='uranus.space.id', default=None)
@@ -20,4 +17,7 @@ class EventBase(SQLModel):
 
 
 class Event(EventBase, table=True):
+    __tablename__ = 'event'
+    __table_args__ = {'schema': 'uranus'}
+
     id: Optional[int] = Field(default=None, primary_key=True)

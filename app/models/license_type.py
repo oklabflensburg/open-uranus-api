@@ -3,11 +3,15 @@ from typing import Optional
 
 
 
-class LicenseType(SQLModel, table=True):
-    __tablename__ = 'license_type'
-    __table_args__ = {'schema': 'uranus'}
-
-    id: int = Field(primary_key=True)
+class LicenseTypeBase(SQLModel):
     name: str = Field(max_length=255)
     short_name: str = Field(max_length=255)
     url: str = Field(max_length=255)
+
+
+
+class LicenseType(LicenseTypeBase, table=True):
+    __tablename__ = 'license_type'
+    __table_args__ = {'schema': 'uranus'}
+
+    id: Optional[int] = Field(default=None, primary_key=True)

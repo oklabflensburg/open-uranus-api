@@ -8,9 +8,6 @@ from datetime import datetime, date
 
 
 class VenueBase(SQLModel):
-    __tablename__ = 'venue'
-    __table_args__ = {'schema': 'uranus'}
-
     organizer_id: Optional[int] = Field(foreign_key='uranus.organizer.id')
     name: str = Field(max_length=255)
     street: Optional[str] = Field(max_length=255, default=None)
@@ -31,4 +28,7 @@ class VenueBase(SQLModel):
 
 
 class Venue(VenueBase, table=True):
+    __tablename__ = 'venue'
+    __table_args__ = {'schema': 'uranus'}
+
     id: Optional[int] = Field(default=None, primary_key=True)
