@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
@@ -12,12 +10,11 @@ from passlib.context import CryptContext
 
 from app.services.auth import verify_password, create_access_token, get_current_user
 
-from app.schemas.user_roles_venue_response import UserRolesVenueResponse
 from app.schemas.user import UserRead, UserCreate, UserUpdate, UserSignin, Token
 
 from app.models.user import User
-from app.db.repository.user_roles import get_roles_venue_by_user_id
 
+from app.db.repository.user import get_user_by_id, get_user_by_username, get_user_by_email
 from app.db.session import get_db
 
 
@@ -32,7 +29,6 @@ async def signup_user(
     db: AsyncSession = Depends(get_db)
 ):
     hashed_password = pwd_context.hash(user.password)
-    print(hashed_password)
     new_user = User(**user.dict(exclude={'password'}), password_hash=hashed_password)
 
     try:
@@ -55,8 +51,7 @@ async def signin_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(User).where(User.username == form_data.username))
-    db_user = result.scalar_one_or_none()
+    db_user = await get_user_by_username(db, form_data.username)
 
     if not db_user or not verify_password(form_data.password, db_user.password_hash):
         raise HTTPException(
@@ -77,19 +72,21 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Fetch the user from the database
-    result = await db.execute(select(User).where(User.id == current_user.id))
-    user = result.scalars().first()
+    user = await get_user_by_id(db, current_user.id)
 
     if not user:
-        raise HTTPException(status_code=404, detail='User not found')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'User not found by user id {current_user.id}'
+        )
 
     # Prevent updating username and email
     update_data = user_update.dict(exclude_unset=True)
 
     if 'username' in update_data or 'email_address' in update_data:
         raise HTTPException(
-            status_code=400, detail='Username and email cannot be changed'
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Username and email address cannot be changed here'
         )
 
     # Hash password if being updated
@@ -112,30 +109,23 @@ async def user_change_email(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Check if new email already exists
-    result = await db.execute(select(User).where(User.email_address == new_email))
-    existing_user = result.scalars().first()
+    user = await get_user_by_email(db, new_email)
 
-    if existing_user:
-        raise HTTPException(status_code=400, detail='Email already in use')
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Email address already in use'
+        )
 
     # Send a verification email before updating (Example)
-    send_verification_email(current_user, new_email)
+    # send_verification_email(current_user, new_email)
 
     return {'message': 'Verification email sent. Please confirm to update email.'}
 
 
 
 @router.get('/profile', response_model=UserRead)
-async def get_profile(current_user: User = Depends(get_current_user)):
-    return current_user
-
-
-
-@router.get('/roles/venue', response_model=List[UserRolesVenueResponse])
-async def fetch_roles_venue_by_user_id(
-  current_user: User = Depends(get_current_user),
-  db: AsyncSession = Depends(get_db)
+async def fetch_user_profile(
+    current_user: User = Depends(get_current_user)
 ):
-    user_roles = await get_roles_venue_by_user_id(db, current_user.id)
-    return user_roles
+    return current_user

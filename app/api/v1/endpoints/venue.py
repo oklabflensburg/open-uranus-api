@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from geojson import Feature, FeatureCollection, Point
 from geoalchemy2.shape import from_shape
@@ -39,7 +39,7 @@ async def fetch_venues_by_name_junk(
     venue = await get_venues_by_name_junk(db, query)
 
     if not venue:
-        raise HTTPException(status_code=404, detail=f'No venue found for venue_id: {venue_id}')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venue found for venue_id: {venue_id}')
 
     return venue
 
@@ -53,7 +53,7 @@ async def fetch_venue_by_id(
     venue = await get_venue_by_id(db, venue_id)
 
     if not venue:
-        raise HTTPException(status_code=404, detail=f'No venue found for venue_id: {venue_id}')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venue found for venue_id: {venue_id}')
 
     return venue
 
@@ -67,7 +67,7 @@ async def fetch_venues_within_bounds(
     rows = await get_venues_within_bounds(db, xmin, ymin, xmax, ymax)
 
     if len(rows) < 1:
-        raise HTTPException(status_code=404, detail=f'No venues found for bounds xmin: {xmin}, ymin; {ymin}, xmax: {xmax}, ymax: {ymax}')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venues found for bounds xmin: {xmin}, ymin; {ymin}, xmax: {xmax}, ymax: {ymax}')
 
     features = [
         Feature(
@@ -142,7 +142,7 @@ async def update_venue(
     venue = await get_simple_venue_by_id(db, venue_id)
 
     if not venue:
-        raise HTTPException(status_code=404, detail=f'No venue found for venue_id: {venue_id}')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venue found for venue_id: {venue_id}')
 
     update_data = venue_update.dict(exclude_unset=True)  # Get only provided fields
 
@@ -179,7 +179,7 @@ async def delete_venue_by_id(
     venue = await get_simple_venue_by_id(db, venue_id)
 
     if not venue:
-        raise HTTPException(status_code=404, detail=f'No venue found for venue_id: {venue_id}')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venue found for venue_id: {venue_id}')
 
     await db.delete(venue)
     await db.commit()
