@@ -32,4 +32,5 @@ async def get_roles_venue_by_user_id(db: AsyncSession, user_id: int):
 
     result = await db.execute(stmt)
     user_venues = result.mappings().all()
+
     return user_venues
