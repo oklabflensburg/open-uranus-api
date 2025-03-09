@@ -1,3 +1,5 @@
+import re
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +17,7 @@ from app.models.user import User
 
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/user/login')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/user/signin')
 
 
 def hash_password(password: str) -> str:
@@ -34,6 +36,29 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode.update({'exp': expire})
 
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def validate_password(password: str) -> str:  # Return the password instead of bool
+    if len(password) < 12:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must be at least 12 characters long.')
+
+    # Check for uppercase letters, lowercase letters, numbers, and special characters
+    if not re.search(r'[A-Z]', password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must contain at least one uppercase letter.')
+    if not re.search(r'[a-z]', password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must contain at least one lowercase letter.')
+    if not re.search(r'[0-9]', password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must contain at least one number.')
+    if not re.search(r'[^a-zA-Z0-9]', password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must contain at least one special character.')
+
+    # Avoid common dictionary words (this is a basic check; can be expanded)
+    common_passwords = ['password123', 'qwerty', '123456', 'letmein', 'admin']
+
+    if password.lower() in common_passwords:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password is too common. Please choose a different password.')
+
+    return password
 
 
 
