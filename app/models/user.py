@@ -8,7 +8,6 @@ class UserBase(SQLModel):
     last_name: str
     email_address: str
     username: str
-    password_hash: str
     disabled: bool = False
     i18n_locale_id: int
 
@@ -19,3 +18,4 @@ class User(UserBase, table=True):
     __table_args__ = {'schema': 'uranus'}
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    password_hash: str
