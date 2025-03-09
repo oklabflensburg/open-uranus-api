@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -10,8 +12,10 @@ from app.services.auth import verify_password, create_access_token, get_current_
 
 from app.schemas.user import UserRead, UserCreate
 from app.schemas.user import UserLogin, Token
+from app.schemas.user_roles_venue_response import UserRolesVenueResponse
 
 from app.models.user import User
+from app.db.repository.user_roles import get_roles_venue_by_user_id
 
 from app.db.session import get_db
 
@@ -63,3 +67,13 @@ async def login_user(
 @router.get('/profile', response_model=UserRead)
 async def get_profile(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+
+@router.get('/roles/venue', response_model=List[UserRolesVenueResponse])
+async def fetch_roles_venue_by_user_id(
+  current_user: User = Depends(get_current_user),
+  db: AsyncSession = Depends(get_db)
+):
+    user_roles = await get_roles_venue_by_user_id(db, current_user.id)
+    return user_roles
