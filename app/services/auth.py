@@ -14,8 +14,6 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import User
 
-from app.db.repository.password import is_common_password
-
 from app.db.repository.user import get_user_by_username
 
 
