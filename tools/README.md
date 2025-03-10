@@ -35,10 +35,11 @@ DB_PORT=5432
 ```
 
 
-### Create Tables
+### Create Table and Index
 
 ```psql
-CREATE TABLE uranus.common_passwords (password VARCHAR(255) PRIMARY KEY);
+CREATE TABLE uranus.common_passwords (password TEXT PRIMARY KEY);
+CREATE INDEX idx_common_passwords ON uranus.common_passwords (password);
 ```
 
 

@@ -66,7 +66,7 @@ async def signin_user(
 
 
 
-@router.put('/update-user', response_model=UserRead)
+@router.put('/update', response_model=UserRead)
 async def update_user(
     user_update: UserUpdate,
     db: AsyncSession = Depends(get_db),
@@ -103,7 +103,7 @@ async def update_user(
 
 
 
-@router.post('/change-email')
+@router.post('/update/email')
 async def user_change_email(
     new_email: EmailStr,
     db: AsyncSession = Depends(get_db),

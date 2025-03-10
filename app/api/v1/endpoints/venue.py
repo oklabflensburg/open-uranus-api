@@ -12,16 +12,26 @@ import json
 from app.db.session import get_db
 
 from app.models.venue import Venue
-from app.schemas.venue_create import VenueCreate
+
+from app.schemas.venue import VenueCreate
 from app.schemas.venue_response import VenueResponse, VenueGeoJSONPoint
 from app.schemas.venue_junk_response import VenueJunkResponse
 from app.schemas.venue_bounds_response import VenueBoundsResponse
 
 from app.db.repository.venue import get_all_venues, get_venue_by_id, get_simple_venue_by_id, get_venues_within_bounds, get_venues_by_name_junk
 
+from app.services.validators import validate_positive_int32, validate_not_none
+
+
 
 
 router = APIRouter()
+
+
+
+def validate_venue_id_param(venue_id: int):
+    return validate_positive_int32(venue_id)
+
 
 @router.get('/', response_model=List[VenueResponse])
 async def fetch_all_venues(db: AsyncSession = Depends(get_db)):
@@ -39,7 +49,7 @@ async def fetch_venues_by_name_junk(
     venue = await get_venues_by_name_junk(db, query)
 
     if not venue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venue found for venue_id: {venue_id}')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venues found by query: {query}')
 
     return venue
 
@@ -47,7 +57,7 @@ async def fetch_venues_by_name_junk(
 
 @router.get('/id', response_model=VenueResponse)
 async def fetch_venue_by_id(
-    venue_id: int,
+    venue_id: int = Depends(validate_venue_id_param),
     db: AsyncSession = Depends(get_db)
 ):
     venue = await get_venue_by_id(db, venue_id)
@@ -82,6 +92,7 @@ async def fetch_venues_within_bounds(
     venues = FeatureCollection(features)
 
     return venues
+
 
 
 @router.post('/', response_model=VenueResponse)
@@ -142,19 +153,22 @@ async def update_venue(
     venue = await get_simple_venue_by_id(db, venue_id)
 
     if not venue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venue found for venue_id: {venue_id}')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'No venue found for venue_id: {venue_id}'
+        )
 
-    update_data = venue_update.dict(exclude_unset=True)  # Get only provided fields
+    update_data = venue_update.dict(exclude_unset=True)
 
     for old_field, new_field in FIELD_MAPPING.items():
         if old_field in update_data:
-            setattr(venue, new_field, update_data[old_field])  # Apply mapping
+            setattr(venue, new_field, update_data[old_field])
 
     await db.commit()
-    await db.refresh(venue)  # Refresh the instance to reflect changes
+    await db.refresh(venue)
 
     # Convert geometry to GeoJSON format
-    geom = loads(bytes(venue.wkb_geometry.data))  # Convert WKB to Shapely object
+    geom = loads(bytes(venue.wkb_geometry.data))
     geojson = VenueGeoJSONPoint(type='Point', coordinates=[geom.x, geom.y])
 
     return VenueResponse(
@@ -179,7 +193,10 @@ async def delete_venue_by_id(
     venue = await get_simple_venue_by_id(db, venue_id)
 
     if not venue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venue found for venue_id: {venue_id}')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'No venue found for venue_id: {venue_id}'
+        )
 
     await db.delete(venue)
     await db.commit()

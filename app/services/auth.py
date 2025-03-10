@@ -2,17 +2,21 @@ import re
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
-from sqlmodel import select
 
+from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from typing import Optional
 
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import User
+
+from app.db.repository.password import is_common_password
+
+from app.db.repository.user import get_user_by_username
 
 
 
@@ -38,25 +42,35 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-def validate_password(password: str) -> str:  # Return the password instead of bool
+
+def validate_password(password: str) -> str:
     if len(password) < 12:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must be at least 12 characters long.')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Password must be at least 12 characters long.'
+        )
 
     # Check for uppercase letters, lowercase letters, numbers, and special characters
     if not re.search(r'[A-Z]', password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must contain at least one uppercase letter.')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Password must contain at least one uppercase letter.'
+        )
     if not re.search(r'[a-z]', password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must contain at least one lowercase letter.')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Password must contain at least one lowercase letter.'
+        )
     if not re.search(r'[0-9]', password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must contain at least one number.')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Password must contain at least one number.'
+        )
     if not re.search(r'[^a-zA-Z0-9]', password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password must contain at least one special character.')
-
-    # Avoid common dictionary words (this is a basic check; can be expanded)
-    common_passwords = ['password123', 'qwerty', '123456', 'letmein', 'admin']
-
-    if password.lower() in common_passwords:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password is too common. Please choose a different password.')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Password must contain at least one special character.'
+        )
 
     return password
 
@@ -70,8 +84,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         if username is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid token')
 
-        result = await db.execute(select(User).where(User.username == username))
-        user = result.scalar_one_or_none()
+        user = await get_user_by_username(db, username)
 
         if user is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
