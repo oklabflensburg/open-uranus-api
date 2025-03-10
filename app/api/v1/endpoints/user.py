@@ -8,14 +8,27 @@ from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 
-from app.services.auth import verify_password, create_access_token, get_current_user
-
-from app.schemas.user import UserRead, UserCreate, UserUpdate, UserSignin, Token
+from app.db.repository.user import get_user_by_id, get_user_by_email_or_username
+from app.db.session import get_db
 
 from app.models.user import User
 
-from app.db.repository.user import get_user_by_id, get_user_by_email_or_username
-from app.db.session import get_db
+from app.services.auth import (
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    verify_refresh_token,
+    get_current_user
+)
+
+from app.schemas.user import (
+    UserRead,
+    UserCreate,
+    UserUpdate,
+    UserSignin,
+    Token,
+    RefreshToken
+)
 
 
 
@@ -33,7 +46,7 @@ async def signup_user(
 
     try:
         db.add(new_user)
-        await db.flush()
+
         await db.commit()
         await db.refresh(new_user)
 
@@ -52,7 +65,6 @@ async def signin_user(
     db: AsyncSession = Depends(get_db)
 ):
     db_user = await get_user_by_email_or_username(db, form_data.username)
-    print(db_user)
 
     if not db_user or not verify_password(form_data.password, db_user.password_hash):
         raise HTTPException(
@@ -61,9 +73,30 @@ async def signin_user(
             headers={'WWW-Authenticate': 'Bearer'}
         )
 
-    access_token = create_access_token(data={'sub': db_user.email_address})
+    access_token = create_access_token({'sub': db_user.email_address})
+    refresh_token = create_refresh_token({'sub': db_user.email_address})
 
-    return {'access_token': access_token, 'token_type': 'bearer'}
+    return {
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        'token_type': 'bearer'
+    }
+
+
+
+@router.post('/token/refresh')
+def refresh_access_token(data: RefreshToken):
+    user_email_address = verify_refresh_token(data.refresh_token)
+
+    if not user_email_address:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Invalid refresh token'
+        )
+
+    new_access_token = create_access_token({'sub': user_email_address})
+
+    return {'access_token': new_access_token}
 
 
 

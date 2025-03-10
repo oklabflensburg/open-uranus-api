@@ -15,8 +15,10 @@ _Haftungsausschluss: Dieses Repository und die zugehörige Datenbank befinden si
 - Create a `.env` file in the root directory of this repository and add the following environment variables with your specific values:
 
 ```sh
-SECRET_KEY={SECRET_KEY}
-DATABASE_URL="postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+SECRET_KEY=YOUR_SECRET_KEY
+REFRESH_TOKEN_EXPIRE_DAYS=DAYS
+REFRESH_SECRET_KEY=YOUR_REFRESH_SECRET_KEY
+DATABASE_URL="postgresql+asyncpg://YOUR_DB_USER:YOUR_DB_PASS@YOUR_DB_HOST:YOUR_DB_PORT/YOUR_DB_NAME"
 ```
 
 3. **Python**

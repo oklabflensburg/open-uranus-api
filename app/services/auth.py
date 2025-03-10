@@ -42,6 +42,28 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS))
+    to_encode.update({'exp': expire})
+
+    return jwt.encode(to_encode, settings.REFRESH_SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+
+def verify_refresh_token(token: str) -> Optional[int]:
+    try:
+        payload = jwt.decode(token, settings.REFRESH_SECRET_KEY, algorithms=[settings.ALGORITHM])
+
+        return payload.get('sub')
+    except JWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Invalid or expired refresh token'
+        )
+
+
+
 def validate_password(password: str) -> str:
     if len(password) < 12:
         raise HTTPException(
@@ -82,7 +104,6 @@ async def get_current_user(
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: EmailStr = payload.get('sub')
-        print(email)
 
         if email is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid token')
