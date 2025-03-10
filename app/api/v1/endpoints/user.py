@@ -23,7 +23,7 @@ router = APIRouter()
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
-@router.post('/signup', response_model=UserRead)
+@router.post('/signup', response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def signup_user(
     user: UserCreate,
     db: AsyncSession = Depends(get_db)

@@ -7,17 +7,13 @@ from datetime import datetime
 class OrganizerBase(SQLModel):
     name: str = Field(max_length=255)
     description: Optional[str] = None
-    contact_email: Optional[str] = Field(max_length=255, default=None)
-    contact_phone: Optional[str] = Field(max_length=50, default=None)
+    contact_email: Optional[str] = Field(default=None, max_length=255)
+    contact_phone: Optional[str] = Field(default=None, max_length=50)
     website_url: Optional[str] = None
-    street: Optional[str] = Field(max_length=255, default=None)
-    house_number: Optional[str] = Field(max_length=50, default=None)
-    postal_code: Optional[str] = Field(max_length=20, default=None)
-    city: Optional[str] = Field(max_length=100, default=None)
-    country: Optional[str] = Field(max_length=100, default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    modified_at: Optional[datetime] = None
-
+    street: Optional[str] = Field(default=None, max_length=255)
+    house_number: Optional[str] = Field(default=None, max_length=50)
+    postal_code: Optional[str] = Field(default=None, max_length=20)
+    city: Optional[str] = Field(default=None, max_length=100)
 
 
 class Organizer(OrganizerBase, table=True):
@@ -25,3 +21,13 @@ class Organizer(OrganizerBase, table=True):
     __table_args__ = {'schema': 'uranus'}
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    modified_at: Optional[datetime] = None
+
+
+class OrganizerCreate(OrganizerBase):
+    pass  # Used for request payload validation
+
+
+class OrganizerRead(OrganizerBase):
+    id: int  # Used for response serialization
