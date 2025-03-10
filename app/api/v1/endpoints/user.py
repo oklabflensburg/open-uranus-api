@@ -14,7 +14,7 @@ from app.schemas.user import UserRead, UserCreate, UserUpdate, UserSignin, Token
 
 from app.models.user import User
 
-from app.db.repository.user import get_user_by_id, get_user_by_username_or_email
+from app.db.repository.user import get_user_by_id, get_user_by_email_or_username
 from app.db.session import get_db
 
 
@@ -51,12 +51,13 @@ async def signin_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-    db_user = await get_user_by_username_or_email(db, form_data.username)
+    db_user = await get_user_by_email_or_username(db, form_data.username)
+    print(db_user)
 
     if not db_user or not verify_password(form_data.password, db_user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Invalid email address or password',
+            detail='Authentication error invalid credentials',
             headers={'WWW-Authenticate': 'Bearer'}
         )
 
