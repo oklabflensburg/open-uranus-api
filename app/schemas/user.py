@@ -1,5 +1,6 @@
+from fastapi import Form
 from sqlmodel import SQLModel, Field
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, EmailStr, validator
 from typing import Optional
 
 from app.models.user import UserBase
@@ -36,7 +37,7 @@ class UserRead(UserBase):
 
 
 class UserSignin(BaseModel):
-    username: str
+    email_address: EmailStr
     password: str
 
 
