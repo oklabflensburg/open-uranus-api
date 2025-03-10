@@ -12,20 +12,9 @@ from app.schemas.event_response import EventResponse
 
 from app.enum.sort_order import SortOrder
 
-from app.services.validators import validate_positive_int32, validate_not_none
-
 
 
 router = APIRouter()
-
-
-def validate_date_start_param(date_start: str):
-    return validate_not_none(date_start)
-
-
-def validate_date_end_param(date_end: str):
-    return validate_not_none(date_end)
-
 
 
 @router.get('/', response_model=List[EventResponse])
@@ -39,8 +28,8 @@ async def fetch_events_by_filter(
     event_type_id: Optional[List[int]] = Query(None),
     venue_type_id: Optional[List[int]] = Query(None),
     genre_type_id: Optional[List[int]] = Query(None),
-    date_start: Optional[str] = Depends(validate_date_start_param),
-    date_end: Optional[str] = Depends(validate_date_end_param),
+    date_start: Optional[str] = Query(None),
+    date_end: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     filters = {
