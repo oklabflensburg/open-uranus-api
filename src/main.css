@@ -4,6 +4,7 @@
 
 :root {
   font-family: Inter, sans-serif;
+  --cluster-color: 55, 96, 226;
 }
 
 @supports (font-variation-settings: normal) {
@@ -100,27 +101,27 @@ body {
 }
 
 .marker-cluster-small {
-  background-color: rgb(64 64 65 / 50%);
+  background-color: rgba(var(--cluster-color), 0.5);
 }
 
 .marker-cluster-small div {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .marker-cluster-medium {
-  background-color: rgb(64 64 65 / 50%);
+  background-color: rgba(var(--cluster-color), 0.5);
 }
 
 .marker-cluster-medium div {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .marker-cluster-large {
-  background-color: rgb(64 64 65 / 50%);
+  background-color: rgba(var(--cluster-color), 0.5);
 }
 
 .marker-cluster-large div {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .marker-cluster {
@@ -149,27 +150,27 @@ body {
 
 /* IE 6-8 fallback colors */
 .leaflet-oldie .marker-cluster-small {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .leaflet-oldie .marker-cluster-small div {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .leaflet-oldie .marker-cluster-medium {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .leaflet-oldie .marker-cluster-medium div {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .leaflet-oldie .marker-cluster-large {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .leaflet-oldie .marker-cluster-large div {
-  background-color: rgb(64 64 65 / 70%);
+  background-color: rgba(var(--cluster-color), 0.7);
 }
 
 .leaflet-left {
