@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2 (Postgres.app)
 -- Dumped by pg_dump version 16.2 (Postgres.app)
 
--- Started on 2025-03-11 09:14:59 CET
+-- Started on 2025-03-11 09:49:30 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1418,6 +1418,15 @@ ALTER TABLE ONLY uranus.image
 
 
 --
+-- TOC entry 5444 (class 2606 OID 1094851)
+-- Name: user_organizer_links fk_organizer_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
+--
+
+ALTER TABLE ONLY uranus.user_organizer_links
+    ADD CONSTRAINT fk_organizer_id FOREIGN KEY (organizer_id) REFERENCES uranus.organizer(id) ON DELETE CASCADE;
+
+
+--
 -- TOC entry 5439 (class 2606 OID 1094729)
 -- Name: user_link_roles fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
@@ -1436,7 +1445,7 @@ ALTER TABLE ONLY uranus.user_venue_links
 
 
 --
--- TOC entry 5444 (class 2606 OID 1094836)
+-- TOC entry 5445 (class 2606 OID 1094836)
 -- Name: user_organizer_links fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1463,7 +1472,7 @@ ALTER TABLE ONLY uranus.user_venue_links
 
 
 --
--- TOC entry 5445 (class 2606 OID 1094829)
+-- TOC entry 5446 (class 2606 OID 1094829)
 -- Name: user_organizer_links fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1478,15 +1487,6 @@ ALTER TABLE ONLY uranus.user_organizer_links
 
 ALTER TABLE ONLY uranus.user_venue_links
     ADD CONSTRAINT fk_venue_id FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 5446 (class 2606 OID 1094841)
--- Name: user_organizer_links fk_venue_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
---
-
-ALTER TABLE ONLY uranus.user_organizer_links
-    ADD CONSTRAINT fk_venue_id FOREIGN KEY (organizer_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
 --
@@ -1525,7 +1525,7 @@ ALTER TABLE ONLY uranus.venue_url
     ADD CONSTRAINT venue_url_venue_id_fkey FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
--- Completed on 2025-03-11 09:14:59 CET
+-- Completed on 2025-03-11 09:49:31 CET
 
 --
 -- PostgreSQL database dump complete
