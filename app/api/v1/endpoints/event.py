@@ -71,6 +71,7 @@ async def create_event(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # organizer missing current_user
     new_event = await create_event_entry(db, event)
 
     return EventResponse(
