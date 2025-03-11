@@ -6,6 +6,7 @@ from sqlmodel import select
 
 from app.db.session import get_db
 from app.db.repository.event import get_events_by_filter, get_events_sort_by, create_event_entry
+from app.db.repository.event_date import create_event_date_entry
 
 from app.models.event import Event
 from app.models.user import User
@@ -67,12 +68,13 @@ async def fetch_events_by_filter(
 
 @router.post('/', response_model=EventResponse)
 async def create_event(
-    event: EventCreate,
+    event_data: EventCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     # organizer missing current_user
-    new_event = await create_event_entry(db, event)
+    new_event = await create_event_entry(db, event_data)
+    new_event_date = await create_event_date_entry(db, event_data, new_event)
 
     return EventResponse(
         event_id=new_event.id,
@@ -80,7 +82,9 @@ async def create_event(
         event_description=new_event.description,
         event_organizer_id=new_event.organizer_id,
         event_venue_id=new_event.venue_id,
-        event_space_id=new_event.space_id
+        event_space_id=new_event.space_id,
+        event_date_start=new_event_date.date_start,
+        event_date_end=new_event_date.date_end
     )
 
 

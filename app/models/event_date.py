@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, time
 
 
 
@@ -9,10 +9,10 @@ class EventDateBase(SQLModel):
     venue_id: int = Field(foreign_key='uranus.venue.id')
     space_id: Optional[int] = Field(foreign_key='uranus.space.id', default=None)
     date_start: datetime
-    date_end: Optional[datetime] = None
+    date_end: Optional[datetime] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    modified_at: Optional[datetime] = None
-    entry_time: Optional[datetime] = None
+    modified_at: Optional[datetime] = Field(default=None)
+    entry_time: Optional[time] = Field(default=None)
 
 
 

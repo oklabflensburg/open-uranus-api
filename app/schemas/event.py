@@ -10,6 +10,9 @@ class EventCreate(BaseModel):
     event_organizer_id: int
     event_venue_id: int
     event_space_id: Optional[int] = None
+    event_date_start: datetime
+    event_date_end: Optional[datetime] = None
+
 
 
 class EventResponse(BaseModel):
@@ -19,6 +22,8 @@ class EventResponse(BaseModel):
     event_organizer_id: int
     event_venue_id: int
     event_space_id: Optional[int] = None
+    event_date_start: datetime
+    event_date_end: Optional[datetime] = None
 
 
 
