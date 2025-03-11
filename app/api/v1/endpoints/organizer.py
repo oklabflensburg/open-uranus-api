@@ -7,11 +7,11 @@ from app.db.session import get_db
 
 from app.services.auth import get_current_user
 
-from app.schemas.organizer import OrganizerRead
+from app.db.repository.organizer import get_organizer_by_user_id, create_organizer_entry
 
-from app.db.repository.organizer import get_organizer_by_user_id
+from app.schemas.organizer import OrganizerRead, OrganizerCreate
 
-from app.models.organizer import Organizer, OrganizerCreate
+from app.models.organizer import Organizer
 
 from app.models.user import User
 
@@ -20,19 +20,15 @@ from app.models.user import User
 router = APIRouter()
 
 
-@router.post('/', response_model=OrganizerRead, status_code=status.HTTP_201_CREATED)
+@router.post('/', response_model=Organizer, status_code=status.HTTP_201_CREATED)
 async def create_organizer(
     organizer: OrganizerCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    db_organizer = Organizer(**organizer.dict())
-    db.add(db_organizer)
+    new_organizer = await create_organizer_entry(db, organizer)
 
-    await db.commit()
-    await db.refresh(db_organizer)
-
-    return db_organizer
+    return new_organizer
 
 
 

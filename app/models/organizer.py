@@ -23,11 +23,3 @@ class Organizer(OrganizerBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     modified_at: Optional[datetime] = None
-
-
-class OrganizerCreate(OrganizerBase):
-    pass  # Used for request payload validation
-
-
-class OrganizerRead(OrganizerBase):
-    id: int  # Used for response serialization
