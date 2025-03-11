@@ -5,19 +5,23 @@ from typing import Optional, List
 from sqlmodel import select
 
 from app.db.session import get_db
-from app.db.repository.event import get_events_by_filter, get_events_sort_by
+from app.db.repository.event import get_events_by_filter, get_events_sort_by, create_event_entry
 
 from app.models.event import Event
-from app.schemas.event_response import EventResponse
+from app.models.user import User
+
+from app.schemas.event import EventCreate, EventResponse, EventQueryResponse
 
 from app.enum.sort_order import SortOrder
+
+from app.services.auth import get_current_user
 
 
 
 router = APIRouter()
 
 
-@router.get('/', response_model=List[EventResponse])
+@router.get('/', response_model=List[EventQueryResponse])
 async def fetch_events_by_filter(
     request: Request,
     city: Optional[str] = Query(None),
@@ -61,9 +65,26 @@ async def fetch_events_by_filter(
 
 
 
+@router.post('/', response_model=EventResponse)
+async def create_event(
+    event: EventCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    new_event = await create_event_entry(db, event)
+
+    return EventResponse(
+        event_id=new_event.id,
+        event_title=new_event.title,
+        event_description=new_event.description,
+        event_organizer_id=new_event.organizer_id,
+        event_venue_id=new_event.venue_id,
+        event_space_id=new_event.space_id
+    )
 
 
-@router.get('/sort', response_model=List[EventResponse])
+
+@router.get('/sort', response_model=List[EventQueryResponse])
 async def fetch_events_sort_by(
     request: Request,
     order_by: SortOrder = SortOrder.asc,

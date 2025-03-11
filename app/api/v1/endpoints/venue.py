@@ -12,6 +12,7 @@ import json
 from app.db.session import get_db
 
 from app.models.venue import Venue
+from app.models.user import User
 
 from app.schemas.venue import VenueCreate
 from app.schemas.venue_response import VenueResponse, VenueGeoJSONPoint
@@ -22,6 +23,7 @@ from app.db.repository.venue import get_all_venues, get_venue_by_id, get_simple_
 
 from app.services.validators import validate_positive_int32, validate_not_none
 
+from app.services.auth import get_current_user
 
 
 
@@ -31,6 +33,7 @@ router = APIRouter()
 
 def validate_venue_id_param(venue_id: int):
     return validate_positive_int32(venue_id)
+
 
 
 @router.get('/', response_model=List[VenueResponse])
@@ -97,8 +100,9 @@ async def fetch_venues_within_bounds(
 
 @router.post('/', response_model=VenueResponse)
 async def create_venue(
-        venue: VenueCreate,
-        db: AsyncSession = Depends(get_db)
+    venue: VenueCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     point = from_shape(Point(venue.venue_longitude, venue.venue_latitude), srid=4326)
     new_venue = Venue(
@@ -113,7 +117,6 @@ async def create_venue(
 
     db.add(new_venue)
 
-    await db.flush()
     await db.commit()
     await db.refresh(new_venue)
 
@@ -138,6 +141,7 @@ async def create_venue(
 async def update_venue(
     venue_id: int,
     venue_update: VenueCreate,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     FIELD_MAPPING = {
@@ -187,8 +191,9 @@ async def update_venue(
 
 @router.delete('/{venue_id}', response_model=dict)
 async def delete_venue_by_id(
-        venue_id: int,
-        db: AsyncSession = Depends(get_db)
+    venue_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     venue = await get_simple_venue_by_id(db, venue_id)
 

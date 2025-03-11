@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional, List, Literal
 from datetime import date
 
+from app.models.venue import VenueBase
+
 
 
 class VenueCreate(BaseModel):
@@ -15,3 +17,8 @@ class VenueCreate(BaseModel):
     venue_longitude: float
     organizer_name: Optional[str] = None
     organizer_url: Optional[str] = None
+
+
+
+class VenueRead(VenueBase):
+    id: int

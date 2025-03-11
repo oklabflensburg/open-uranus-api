@@ -1,9 +1,16 @@
+import re
+
+from fastapi import HTTPException, status
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import func
 from sqlalchemy import asc, desc, or_
+
+from app.schemas.event import EventCreate
 
 from app.models.i18n_locale import I18nLocale
 from app.models.organizer import Organizer
@@ -274,3 +281,42 @@ async def get_events_sort_by(db: AsyncSession, order: dict, base_url: str, lang:
     events = result.mappings().all()
 
     return events
+
+
+
+async def create_event_entry(db: AsyncSession, event: EventCreate):
+    new_event = Event(
+        title=event.event_title,
+        description=event.event_description,
+        organizer_id=event.event_organizer_id,
+        venue_id=event.event_venue_id,
+        space_id=event.event_space_id
+    )
+
+    db.add(new_event)
+
+    try:
+        await db.commit()
+        await db.refresh(new_event)
+
+        return new_event
+    except IntegrityError as e:
+        await db.rollback()
+
+        error_message = str(e.orig)
+        match = re.search(r'\(([a-zA-Z\_]+)\)=\((-?\d+)\)', error_message)
+
+        if match:
+            column_name = match.group(1)
+            column_value = match.group(2)
+
+            if column_name in ['venue_id', 'space_id', 'organizer_id']:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f'The {column_name} ({column_value}) provided is invalid.'
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail='Foreign key constraint violation.'
+            )
