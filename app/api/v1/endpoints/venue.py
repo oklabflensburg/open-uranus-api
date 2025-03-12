@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from geojson import Feature, FeatureCollection, Point
-from geoalchemy2.shape import from_shape
-from shapely.geometry import Point
+
 from shapely.wkb import loads
+
 from decimal import Decimal
 from typing import List
 
@@ -19,9 +18,20 @@ from app.schemas.venue_response import VenueResponse, VenueGeoJSONPoint
 from app.schemas.venue_junk_response import VenueJunkResponse
 from app.schemas.venue_bounds_response import VenueBoundsResponse
 
-from app.db.repository.venue import get_all_venues, get_venue_by_id, get_simple_venue_by_id, get_venues_within_bounds, get_venues_by_name_junk
+from app.db.repository.venue import (
+    get_all_venues,
+    get_venue_by_id,
+    get_simple_venue_by_id,
+    get_venues_within_bounds,
+    get_venues_by_name_junk,
+    add_venue,
+    add_user_venue
+)
 
-from app.services.validators import validate_positive_int32, validate_not_none
+from app.services.validators import (
+    validate_positive_int32,
+    validate_not_none
+)
 
 from app.services.auth import get_current_user
 
@@ -74,7 +84,10 @@ async def fetch_venue_by_id(
 
 @router.get('/bounds', response_model=VenueBoundsResponse)
 async def fetch_venues_within_bounds(
-    xmin: Decimal, ymin: Decimal, xmax: Decimal, ymax: Decimal,
+    xmin: Decimal,
+    ymin: Decimal,
+    xmax: Decimal,
+    ymax: Decimal,
     db: AsyncSession = Depends(get_db)
 ):
     rows = await get_venues_within_bounds(db, xmin, ymin, xmax, ymax)
@@ -100,25 +113,12 @@ async def fetch_venues_within_bounds(
 
 @router.post('/', response_model=VenueResponse)
 async def create_venue(
-    venue: VenueCreate,
+    venue_data: VenueCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    point = from_shape(Point(venue.venue_longitude, venue.venue_latitude), srid=4326)
-    new_venue = Venue(
-        name=venue.venue_name,
-        street=venue.venue_street,
-        house_number=venue.venue_house_number,
-        postal_code=venue.venue_postal_code,
-        city=venue.venue_city,
-        opened_at=venue.venue_opened_at,
-        wkb_geometry=point
-    )
-
-    db.add(new_venue)
-
-    await db.commit()
-    await db.refresh(new_venue)
+    new_venue = await add_venue(db, venue_data)
+    new_user_venue = await add_user_venue(db, current_user.id, new_venue.id, 1)
 
     geom = loads(bytes(new_venue.wkb_geometry.data))
     geojson = VenueGeoJSONPoint(type='Point', coordinates=[geom.x, geom.y])

@@ -16,7 +16,7 @@ from app.models.event import Event
 
 
 
-async def create_event_date_entry(db: AsyncSession, event: EventCreate, new_event: Event):
+async def add_event_date(db: AsyncSession, event: EventCreate, new_event: Event):
     date_start = None
     date_end = None
 

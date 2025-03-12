@@ -284,7 +284,7 @@ async def get_events_sort_by(db: AsyncSession, order: dict, base_url: str, lang:
 
 
 
-async def create_event_entry(db: AsyncSession, event: EventCreate):
+async def add_event(db: AsyncSession, event: EventCreate):
     new_event = Event(
         title=event.event_title,
         description=event.event_description,

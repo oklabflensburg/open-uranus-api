@@ -10,20 +10,20 @@ from app.schemas.organizer import OrganizerCreate
 
 
 
-async def add_user_organizer_link(db: AsyncSession, user_id: int, organizer_id: int, user_role_id: int):
-    new_user_organizer_link = UserOrganizerLinks(
+async def add_user_organizer(db: AsyncSession, user_id: int, organizer_id: int, user_role_id: int):
+    new_user_organizer = UserOrganizerLinks(
         user_id=user_id,
         organizer_id=organizer_id,
         user_role_id=user_role_id
     )
 
-    db.add(new_user_organizer_link)
+    db.add(new_user_organizer)
 
     try:
         await db.commit()
-        await db.refresh(new_user_organizer_link)
+        await db.refresh(new_user_organizer)
 
-        return new_user_organizer_link
+        return new_user_organizer
     except IntegrityError as e:
         await db.rollback()
 

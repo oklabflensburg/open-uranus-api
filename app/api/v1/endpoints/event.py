@@ -5,8 +5,8 @@ from typing import Optional, List
 from sqlmodel import select
 
 from app.db.session import get_db
-from app.db.repository.event import get_events_by_filter, get_events_sort_by, create_event_entry
-from app.db.repository.event_date import create_event_date_entry
+from app.db.repository.event import get_events_by_filter, get_events_sort_by, add_event
+from app.db.repository.event_date import add_event_date
 
 from app.models.event import Event
 from app.models.user import User
@@ -72,9 +72,8 @@ async def create_event(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # organizer missing current_user
-    new_event = await create_event_entry(db, event_data)
-    new_event_date = await create_event_date_entry(db, event_data, new_event)
+    new_event = await add_event(db, event_data)
+    new_event_date = await add_event_date(db, event_data, new_event)
 
     return EventResponse(
         event_id=new_event.id,

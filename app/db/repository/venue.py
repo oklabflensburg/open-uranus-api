@@ -6,6 +6,10 @@ from sqlalchemy.sql.expression import cast
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from geoalchemy2.functions import ST_AsGeoJSON, ST_MakeEnvelope
+from geoalchemy2.shape import from_shape
+from shapely.geometry import Point
+
+from app.schemas.venue import VenueCreate
 
 from app.models.i18n_locale import I18nLocale
 from app.models.organizer import Organizer
@@ -203,3 +207,44 @@ async def get_venues_by_user_id(db: AsyncSession, user_id: int):
     organizer = result.mappings().all()
 
     return organizer
+
+
+
+async def add_venue(db: AsyncSession, venue: VenueCreate):
+    point = from_shape(Point(venue.venue_longitude, venue.venue_latitude), srid=4326)
+
+    new_venue = Venue(
+        name=venue.venue_name,
+        street=venue.venue_street,
+        house_number=venue.venue_house_number,
+        postal_code=venue.venue_postal_code,
+        city=venue.venue_city,
+        opened_at=venue.venue_opened_at,
+        wkb_geometry=point
+    )
+
+    db.add(new_venue)
+
+    await db.commit()
+    await db.refresh(new_venue)
+
+    return new_venue
+
+
+
+async def add_user_venue(db: AsyncSession, user_id: int, venue_id: int, user_role_id: int):
+    new_user_venue = UserVenueLinks(
+        user_id=user_id,
+        venue_id=venue_id,
+        user_role_id=user_role_id
+    )
+
+    db.add(new_user_venue)
+
+    try:
+        await db.commit()
+        await db.refresh(new_user_venue)
+
+        return new_user_venue
+    except IntegrityError as e:
+        await db.rollback()
