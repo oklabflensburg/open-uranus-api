@@ -30,7 +30,6 @@ from app.schemas.user import (
     UserRead,
     UserCreate,
     UserUpdate,
-    UserSignin,
     Token,
     RefreshToken
 )

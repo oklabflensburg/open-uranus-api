@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Request, Depends, Query
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
-from sqlmodel import select
 
 from app.db.session import get_db
 from app.db.repository.event import get_events_by_filter, get_events_sort_by, add_event
