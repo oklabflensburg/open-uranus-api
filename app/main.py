@@ -13,7 +13,8 @@ from app.api.v1.endpoints import (
     event_type,
     genre_type,
     license_type,
-    image_type
+    image_type,
+    i18n_locale
 )
 
 
@@ -41,3 +42,4 @@ app.include_router(genre_type.router, prefix='/genre/type', tags=['Genre'])
 app.include_router(license_type.router, prefix='/license/type', tags=['License'])
 app.include_router(image_type.router, prefix='/image/type', tags=['Image'])
 app.include_router(image_type.router, prefix='/image/type', tags=['Image'])
+app.include_router(i18n_locale.router, prefix='/locale/type', tags=['Locale'])

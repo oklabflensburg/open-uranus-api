@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 
 
@@ -9,7 +9,7 @@ class VenueURLBase(SQLModel):
     link_type: Optional[str] = Field(max_length=255, default=None)
     url: str
     title: Optional[str] = Field(max_length=255, default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     modified_at: Optional[datetime] = None
 
 

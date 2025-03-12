@@ -1,12 +1,13 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 
 class I18nLocaleBase(SQLModel):
     iso_639_1: str = Field(max_length=2, unique=True, nullable=False)
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    name: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     modified_at: Optional[datetime] = None
 
 

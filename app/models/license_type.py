@@ -4,6 +4,7 @@ from typing import Optional
 
 
 class LicenseTypeBase(SQLModel):
+    i18n_locale_id: int = Field(foreign_key='uranus.i18n_locale.id', nullable=False)
     name: str = Field(max_length=255)
     short_name: str = Field(max_length=255)
     url: str = Field(max_length=255)

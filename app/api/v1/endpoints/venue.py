@@ -8,15 +8,19 @@ from typing import List
 
 import json
 
+from geojson import Feature, FeatureCollection
+
 from app.db.session import get_db
 
-from app.models.venue import Venue
 from app.models.user import User
 
 from app.schemas.venue import VenueCreate
 from app.schemas.venue_response import VenueResponse, VenueGeoJSONPoint
 from app.schemas.venue_junk_response import VenueJunkResponse
 from app.schemas.venue_bounds_response import VenueBoundsResponse
+
+from app.services.validators import validate_positive_int32
+from app.services.auth import get_current_user
 
 from app.db.repository.venue import (
     get_all_venues,
@@ -27,13 +31,6 @@ from app.db.repository.venue import (
     add_venue,
     add_user_venue
 )
-
-from app.services.validators import (
-    validate_positive_int32,
-    validate_not_none
-)
-
-from app.services.auth import get_current_user
 
 
 
@@ -118,7 +115,7 @@ async def create_venue(
     db: AsyncSession = Depends(get_db)
 ):
     new_venue = await add_venue(db, venue_data)
-    new_user_venue = await add_user_venue(db, current_user.id, new_venue.id, 1)
+    await add_user_venue(db, current_user.id, new_venue.id, 1)
 
     geom = loads(bytes(new_venue.wkb_geometry.data))
     geojson = VenueGeoJSONPoint(type='Point', coordinates=[geom.x, geom.y])
