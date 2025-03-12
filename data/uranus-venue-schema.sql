@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2 (Postgres.app)
 -- Dumped by pg_dump version 16.2 (Postgres.app)
 
--- Started on 2025-03-12 11:52:23 CET
+-- Started on 2025-03-12 12:04:12 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -535,7 +535,8 @@ CREATE TABLE uranus."user" (
 
 CREATE TABLE uranus.user_event_links (
     user_id integer NOT NULL,
-    event_id integer NOT NULL
+    event_id integer NOT NULL,
+    user_role_id integer NOT NULL
 );
 
 
@@ -1109,6 +1110,14 @@ CREATE UNIQUE INDEX user_event_links_user_id_event_id_idx ON uranus.user_event_l
 
 
 --
+-- TOC entry 5428 (class 1259 OID 1094897)
+-- Name: user_event_links_user_id_event_id_user_role_id_idx; Type: INDEX; Schema: uranus; Owner: -
+--
+
+CREATE UNIQUE INDEX user_event_links_user_id_event_id_user_role_id_idx ON uranus.user_event_links USING btree (user_id, event_id, user_role_id);
+
+
+--
 -- TOC entry 5419 (class 1259 OID 1094747)
 -- Name: user_link_roles_user_id_user_role_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
@@ -1237,7 +1246,7 @@ CREATE INDEX venue_wkb_geometry_idx ON uranus.venue USING gist (wkb_geometry);
 
 
 --
--- TOC entry 5461 (class 2620 OID 1086393)
+-- TOC entry 5463 (class 2620 OID 1086393)
 -- Name: event set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1245,7 +1254,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.event FOR EACH ROW EXECUT
 
 
 --
--- TOC entry 5466 (class 2620 OID 1086394)
+-- TOC entry 5468 (class 2620 OID 1086394)
 -- Name: event_date set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1253,7 +1262,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.event_date FOR EACH ROW E
 
 
 --
--- TOC entry 5462 (class 2620 OID 1086395)
+-- TOC entry 5464 (class 2620 OID 1086395)
 -- Name: image set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1261,7 +1270,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.image FOR EACH ROW EXECUT
 
 
 --
--- TOC entry 5463 (class 2620 OID 1086396)
+-- TOC entry 5465 (class 2620 OID 1086396)
 -- Name: logo set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1269,7 +1278,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.logo FOR EACH ROW EXECUTE
 
 
 --
--- TOC entry 5458 (class 2620 OID 1086397)
+-- TOC entry 5460 (class 2620 OID 1086397)
 -- Name: organizer set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1277,7 +1286,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.organizer FOR EACH ROW EX
 
 
 --
--- TOC entry 5460 (class 2620 OID 1086398)
+-- TOC entry 5462 (class 2620 OID 1086398)
 -- Name: space set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1285,7 +1294,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.space FOR EACH ROW EXECUT
 
 
 --
--- TOC entry 5467 (class 2620 OID 1086399)
+-- TOC entry 5469 (class 2620 OID 1086399)
 -- Name: space_type set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1293,7 +1302,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.space_type FOR EACH ROW E
 
 
 --
--- TOC entry 5464 (class 2620 OID 1086400)
+-- TOC entry 5466 (class 2620 OID 1086400)
 -- Name: transport_station set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1301,7 +1310,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.transport_station FOR EAC
 
 
 --
--- TOC entry 5459 (class 2620 OID 1086401)
+-- TOC entry 5461 (class 2620 OID 1086401)
 -- Name: venue set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1309,7 +1318,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.venue FOR EACH ROW EXECUT
 
 
 --
--- TOC entry 5468 (class 2620 OID 1086402)
+-- TOC entry 5470 (class 2620 OID 1086402)
 -- Name: venue_type set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1317,7 +1326,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.venue_type FOR EACH ROW E
 
 
 --
--- TOC entry 5465 (class 2620 OID 1086403)
+-- TOC entry 5467 (class 2620 OID 1086403)
 -- Name: venue_url set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1325,7 +1334,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.venue_url FOR EACH ROW EX
 
 
 --
--- TOC entry 5435 (class 2606 OID 1086329)
+-- TOC entry 5436 (class 2606 OID 1086329)
 -- Name: event_date event_date_event_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1334,7 +1343,7 @@ ALTER TABLE ONLY uranus.event_date
 
 
 --
--- TOC entry 5436 (class 2606 OID 1086339)
+-- TOC entry 5437 (class 2606 OID 1086339)
 -- Name: event_date event_date_space_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1343,7 +1352,7 @@ ALTER TABLE ONLY uranus.event_date
 
 
 --
--- TOC entry 5437 (class 2606 OID 1086334)
+-- TOC entry 5438 (class 2606 OID 1086334)
 -- Name: event_date event_date_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1352,7 +1361,7 @@ ALTER TABLE ONLY uranus.event_date
 
 
 --
--- TOC entry 5430 (class 2606 OID 1086275)
+-- TOC entry 5431 (class 2606 OID 1086275)
 -- Name: event event_organizer_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1361,7 +1370,7 @@ ALTER TABLE ONLY uranus.event
 
 
 --
--- TOC entry 5431 (class 2606 OID 1086270)
+-- TOC entry 5432 (class 2606 OID 1086270)
 -- Name: event event_space_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1370,7 +1379,7 @@ ALTER TABLE ONLY uranus.event
 
 
 --
--- TOC entry 5432 (class 2606 OID 1086280)
+-- TOC entry 5433 (class 2606 OID 1086280)
 -- Name: event event_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1379,7 +1388,7 @@ ALTER TABLE ONLY uranus.event
 
 
 --
--- TOC entry 5445 (class 2606 OID 1086541)
+-- TOC entry 5446 (class 2606 OID 1086541)
 -- Name: event_date_link_images fk_event_date_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1388,7 +1397,7 @@ ALTER TABLE ONLY uranus.event_date_link_images
 
 
 --
--- TOC entry 5440 (class 2606 OID 1086461)
+-- TOC entry 5441 (class 2606 OID 1086461)
 -- Name: event_link_types fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1397,7 +1406,7 @@ ALTER TABLE ONLY uranus.event_link_types
 
 
 --
--- TOC entry 5442 (class 2606 OID 1086514)
+-- TOC entry 5443 (class 2606 OID 1086514)
 -- Name: genre_link_types fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1406,7 +1415,7 @@ ALTER TABLE ONLY uranus.genre_link_types
 
 
 --
--- TOC entry 5443 (class 2606 OID 1086528)
+-- TOC entry 5444 (class 2606 OID 1086528)
 -- Name: event_link_images fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1415,7 +1424,7 @@ ALTER TABLE ONLY uranus.event_link_images
 
 
 --
--- TOC entry 5456 (class 2606 OID 1094881)
+-- TOC entry 5457 (class 2606 OID 1094881)
 -- Name: user_event_links fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1424,7 +1433,7 @@ ALTER TABLE ONLY uranus.user_event_links
 
 
 --
--- TOC entry 5441 (class 2606 OID 1086478)
+-- TOC entry 5442 (class 2606 OID 1086478)
 -- Name: event_link_types fk_event_type_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1433,7 +1442,7 @@ ALTER TABLE ONLY uranus.event_link_types
 
 
 --
--- TOC entry 5438 (class 2606 OID 1086444)
+-- TOC entry 5439 (class 2606 OID 1086444)
 -- Name: space_type fk_i18n_locale_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1442,7 +1451,7 @@ ALTER TABLE ONLY uranus.space_type
 
 
 --
--- TOC entry 5447 (class 2606 OID 1086601)
+-- TOC entry 5448 (class 2606 OID 1086601)
 -- Name: image_type fk_i18n_locale_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1451,7 +1460,7 @@ ALTER TABLE ONLY uranus.image_type
 
 
 --
--- TOC entry 5444 (class 2606 OID 1086533)
+-- TOC entry 5445 (class 2606 OID 1086533)
 -- Name: event_link_images fk_image_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1460,7 +1469,7 @@ ALTER TABLE ONLY uranus.event_link_images
 
 
 --
--- TOC entry 5446 (class 2606 OID 1086546)
+-- TOC entry 5447 (class 2606 OID 1086546)
 -- Name: event_date_link_images fk_image_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1469,7 +1478,7 @@ ALTER TABLE ONLY uranus.event_date_link_images
 
 
 --
--- TOC entry 5433 (class 2606 OID 1086588)
+-- TOC entry 5434 (class 2606 OID 1086588)
 -- Name: image fk_license_type_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1478,7 +1487,7 @@ ALTER TABLE ONLY uranus.image
 
 
 --
--- TOC entry 5453 (class 2606 OID 1094851)
+-- TOC entry 5454 (class 2606 OID 1094851)
 -- Name: user_organizer_links fk_organizer_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1487,7 +1496,7 @@ ALTER TABLE ONLY uranus.user_organizer_links
 
 
 --
--- TOC entry 5448 (class 2606 OID 1094729)
+-- TOC entry 5449 (class 2606 OID 1094729)
 -- Name: user_link_roles fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1496,7 +1505,7 @@ ALTER TABLE ONLY uranus.user_link_roles
 
 
 --
--- TOC entry 5450 (class 2606 OID 1094789)
+-- TOC entry 5451 (class 2606 OID 1094789)
 -- Name: user_venue_links fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1505,7 +1514,7 @@ ALTER TABLE ONLY uranus.user_venue_links
 
 
 --
--- TOC entry 5454 (class 2606 OID 1094836)
+-- TOC entry 5455 (class 2606 OID 1094836)
 -- Name: user_organizer_links fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1514,7 +1523,7 @@ ALTER TABLE ONLY uranus.user_organizer_links
 
 
 --
--- TOC entry 5457 (class 2606 OID 1094876)
+-- TOC entry 5458 (class 2606 OID 1094876)
 -- Name: user_event_links fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1523,7 +1532,7 @@ ALTER TABLE ONLY uranus.user_event_links
 
 
 --
--- TOC entry 5449 (class 2606 OID 1094742)
+-- TOC entry 5450 (class 2606 OID 1094742)
 -- Name: user_link_roles fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1532,7 +1541,7 @@ ALTER TABLE ONLY uranus.user_link_roles
 
 
 --
--- TOC entry 5451 (class 2606 OID 1094799)
+-- TOC entry 5452 (class 2606 OID 1094799)
 -- Name: user_venue_links fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1541,7 +1550,7 @@ ALTER TABLE ONLY uranus.user_venue_links
 
 
 --
--- TOC entry 5455 (class 2606 OID 1094829)
+-- TOC entry 5456 (class 2606 OID 1094829)
 -- Name: user_organizer_links fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1550,7 +1559,16 @@ ALTER TABLE ONLY uranus.user_organizer_links
 
 
 --
--- TOC entry 5452 (class 2606 OID 1094794)
+-- TOC entry 5459 (class 2606 OID 1094892)
+-- Name: user_event_links fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
+--
+
+ALTER TABLE ONLY uranus.user_event_links
+    ADD CONSTRAINT fk_user_role_id FOREIGN KEY (user_role_id) REFERENCES uranus.user_role(id);
+
+
+--
+-- TOC entry 5453 (class 2606 OID 1094794)
 -- Name: user_venue_links fk_venue_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1559,7 +1577,7 @@ ALTER TABLE ONLY uranus.user_venue_links
 
 
 --
--- TOC entry 5429 (class 2606 OID 1086256)
+-- TOC entry 5430 (class 2606 OID 1086256)
 -- Name: space space_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1568,7 +1586,7 @@ ALTER TABLE ONLY uranus.space
 
 
 --
--- TOC entry 5439 (class 2606 OID 1086383)
+-- TOC entry 5440 (class 2606 OID 1086383)
 -- Name: venue_link_types venue_link_types_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1577,7 +1595,7 @@ ALTER TABLE ONLY uranus.venue_link_types
 
 
 --
--- TOC entry 5428 (class 2606 OID 1086242)
+-- TOC entry 5429 (class 2606 OID 1086242)
 -- Name: venue venue_organizer_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1586,7 +1604,7 @@ ALTER TABLE ONLY uranus.venue
 
 
 --
--- TOC entry 5434 (class 2606 OID 1086317)
+-- TOC entry 5435 (class 2606 OID 1086317)
 -- Name: venue_url venue_url_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1594,7 +1612,7 @@ ALTER TABLE ONLY uranus.venue_url
     ADD CONSTRAINT venue_url_venue_id_fkey FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
--- Completed on 2025-03-12 11:52:23 CET
+-- Completed on 2025-03-12 12:04:12 CET
 
 --
 -- PostgreSQL database dump complete
