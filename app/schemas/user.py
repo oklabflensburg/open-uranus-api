@@ -1,6 +1,4 @@
-from fastapi import Form
-from sqlmodel import SQLModel, Field
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 
 from app.models.user import UserBase
@@ -14,7 +12,7 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     i18n_locale_id: Optional[int] = None
 
-    @validator('password')
+    @field_validator('password')
     def validate_user_password(cls, password):
         return validate_password(password)
 
@@ -26,7 +24,7 @@ class UserUpdate(BaseModel):
 class UserCreate(UserBase):
     password: str
 
-    @validator('password')
+    @field_validator('password')
     def validate_user_password(cls, password):
         return validate_password(password)
 

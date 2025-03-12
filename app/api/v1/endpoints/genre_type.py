@@ -11,8 +11,9 @@ router = APIRouter()
 
 @router.get('/', response_model=List[GenreTypeResponse])
 async def fetch_all_genre_types(
+    lang: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
-    genre_types = await get_all_genre_types(db)
+    genre_types = await get_all_genre_types(db, lang)
 
     return genre_types

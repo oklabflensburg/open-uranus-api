@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas.space_type_response import SpaceTypeResponse
@@ -11,8 +11,9 @@ router = APIRouter()
 
 @router.get('/', response_model=List[SpaceTypeResponse])
 async def fetch_all_space_types(
+    lang: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
-    space_types = await get_all_space_types(db)
+    space_types = await get_all_space_types(db, lang)
 
     return space_types
