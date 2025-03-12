@@ -5,6 +5,8 @@ from pydantic import EmailStr
 
 from app.models.organizer import Organizer
 from app.models.user_organizer_links import UserOrganizerLinks
+from app.models.user_role import UserRole
+from app.models.user import User
 
 from app.schemas.organizer import OrganizerCreate
 
@@ -54,13 +56,16 @@ async def add_organizer(db: AsyncSession, organizer: OrganizerCreate, current_us
 
 
 
-async def get_organizer_by_user_id(db: AsyncSession, user_id: int):
-    stmt = ( 
+async def get_organizers_by_user_id(db: AsyncSession, user_id: int):
+    stmt = (
         select(
-            Organizer.id.label('organizer_id'),
-            Organizer.name.label('organizer_name')
+            UserOrganizerLinks.organizer_id,
+            Organizer.name.label('organizer_name'),
+            UserRole.organization.label('can_edit')
         )
-        .join(UserOrganizerLinks, UserOrganizerLinks.organizer_id == Organizer.id)
+        .join(User, User.id == UserOrganizerLinks.user_id)
+        .join(Organizer, Organizer.id == UserOrganizerLinks.organizer_id)
+        .join(UserRole, UserRole.id == UserOrganizerLinks.user_role_id)
         .where(UserOrganizerLinks.user_id == user_id)
     )
 

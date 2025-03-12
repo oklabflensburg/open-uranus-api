@@ -2,6 +2,13 @@ from pydantic import BaseModel, EmailStr
 
 
 
+class UserOrganizerResponse(BaseModel):
+    organizer_id: int
+    organizer_name: str
+    can_edit: bool
+
+
+
 class OrganizerCreateResponse(BaseModel):
     organizer_id: int
     organizer_name: str

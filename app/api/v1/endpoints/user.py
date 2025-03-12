@@ -11,6 +11,7 @@ from passlib.context import CryptContext
 
 from app.db.repository.user import get_user_by_id, get_user_by_email_or_username
 from app.db.repository.venue import get_venues_by_user_id
+from app.db.repository.organizer import get_organizers_by_user_id
 
 from app.db.session import get_db
 
@@ -34,6 +35,7 @@ from app.schemas.user import (
 )
 
 from app.schemas.venue_response import UserVenueResponse
+from app.schemas.organizer import UserOrganizerResponse
 
 
 
@@ -179,3 +181,14 @@ async def fetch_venues_by_user_id(
     venues = await get_venues_by_user_id(db, current_user.id)
 
     return venues
+
+
+
+@router.get('/organizer', response_model=List[UserOrganizerResponse])
+async def fetch_organizers_by_user_id(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    organizers = await get_organizers_by_user_id(db, current_user.id)
+
+    return organizers
