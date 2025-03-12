@@ -1,6 +1,8 @@
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from pydantic import EmailStr
+
 from app.models.organizer import Organizer
 from app.models.user_organizer_links import UserOrganizerLinks
 
@@ -27,11 +29,11 @@ async def add_user_organizer_link(db: AsyncSession, user_id: int, organizer_id: 
 
 
 
-async def add_organizer(db: AsyncSession, organizer: OrganizerCreate):
+async def add_organizer(db: AsyncSession, organizer: OrganizerCreate, current_user_email: EmailStr):
     new_organizer = Organizer(
         name=organizer.organizer_name,
         description=organizer.organizer_description,
-        contact_email=organizer.organizer_contact_email,
+        contact_email=current_user_email,
         contact_phone=organizer.organizer_contact_phone,
         website_url=organizer.organizer_website_url,
         street=organizer.organizer_street,
