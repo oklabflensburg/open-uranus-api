@@ -1,13 +1,12 @@
-from fastapi import APIRouter, HTTPException, Request, Depends, Query
+from fastapi import APIRouter, HTTPException, Request, Depends, Query, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
 from app.db.session import get_db
-from app.db.repository.event import get_events_by_filter, get_events_sort_by, add_event
+from app.db.repository.event import get_events_by_filter, get_events_sort_by, get_simple_event_by_id, add_event
 from app.db.repository.event_date import add_event_date
 
-from app.models.event import Event
 from app.models.user import User
 
 from app.schemas.event import EventCreate, EventResponse, EventQueryResponse
@@ -84,6 +83,27 @@ async def create_event(
         event_date_start=new_event_date.date_start,
         event_date_end=new_event_date.date_end
     )
+
+
+
+@router.delete('/{event_id}', response_model=dict)
+async def delete_event_by_id(
+    event_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    venue = await get_simple_event_by_id(db, event_id)
+
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'No venue found for event_id: {event_id}'
+        )
+
+    await db.delete(venue)
+    await db.commit()
+
+    return {'message': 'Venue deleted successfully'}
 
 
 

@@ -29,8 +29,6 @@ from app.models.space_type import SpaceType
 from app.models.event_date_link_images import EventDateLinkImages
 from app.models.event_link_images import EventLinkImages
 from app.models.image import Image
-from app.models.image_type import ImageType
-from app.models.license_type import LicenseType
 
 from app.models.user_event_links import UserEventLinks
 from app.models.user_role import UserRole
@@ -344,3 +342,15 @@ async def get_events_by_user_id(db: AsyncSession, user_id: int):
     events = result.mappings().all()
 
     return events
+
+
+
+async def get_simple_event_by_id(db: AsyncSession, event_id: int):
+    stmt = (
+        select(Event).where(Event.id == event_id)
+    )
+
+    result = await db.execute(stmt)
+    event = result.scalars().first()
+
+    return event
