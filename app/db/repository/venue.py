@@ -10,8 +10,11 @@ from geoalchemy2.functions import ST_AsGeoJSON, ST_MakeEnvelope
 from app.models.i18n_locale import I18nLocale
 from app.models.organizer import Organizer
 from app.models.venue_link_types import VenueLinkTypes
+from app.models.user_venue_links import UserVenueLinks
 from app.models.venue_type import VenueType
 from app.models.venue import Venue
+from app.models.user import User
+from app.models.user_role import UserRole
 
 
 
@@ -180,3 +183,23 @@ async def get_venues_within_bounds(db: AsyncSession, xmin: float, ymin: float, x
     venues = await db.execute(stmt)
 
     return venues.mappings().all()
+
+
+
+async def get_venues_by_user_id(db: AsyncSession, user_id: int):
+    stmt = (
+        select(
+            UserVenueLinks.venue_id.label('venue_id'),
+            Venue.name.label('venue_name'),
+            UserRole.venue.label('can_edit')
+        )
+        .join(User, User.id == UserVenueLinks.user_id)
+        .join(Venue, Venue.id == UserVenueLinks.venue_id)
+        .join(UserRole, UserRole.id == UserVenueLinks.user_role_id)
+        .where(UserVenueLinks.user_id == user_id)
+    )
+
+    result = await db.execute(stmt)
+    organizer = result.mappings().all()
+
+    return organizer

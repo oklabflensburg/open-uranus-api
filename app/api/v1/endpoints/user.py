@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
+from typing import List
 
 from sqlmodel import select
 from pydantic import EmailStr
@@ -9,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 
 from app.db.repository.user import get_user_by_id, get_user_by_email_or_username
+from app.db.repository.venue import get_venues_by_user_id
+
 from app.db.session import get_db
 
 from app.models.user import User
@@ -29,6 +32,8 @@ from app.schemas.user import (
     Token,
     RefreshToken
 )
+
+from app.schemas.venue_response import UserVenueResponse
 
 
 
@@ -163,3 +168,14 @@ async def fetch_user_profile(
     current_user: User = Depends(get_current_user)
 ):
     return current_user
+
+
+
+@router.get('/venue', response_model=List[UserVenueResponse])
+async def fetch_venues_by_user_id(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    venues = await get_venues_by_user_id(db, current_user.id)
+
+    return venues

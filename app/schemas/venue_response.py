@@ -30,3 +30,9 @@ class VenueResponse(BaseModel):
     def validate_user_password(cls, value):
         return validate_positive_int32(value)
 
+
+
+class UserVenueResponse(BaseModel):
+    venue_id: int
+    venue_name: str
+    can_edit: bool

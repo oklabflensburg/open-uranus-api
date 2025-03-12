@@ -17,9 +17,18 @@ from app.models.event import Event
 
 
 async def create_event_date_entry(db: AsyncSession, event: EventCreate, new_event: Event):
+    date_start = None
+    date_end = None
+
+    if event.event_date_start:
+        date_start = event.event_date_start.replace(tzinfo=None)
+
+    if event.event_date_end:
+        date_end = event.event_date_end.replace(tzinfo=None)
+
     new_event_date = EventDate(
-        date_start = event.event_date_start.replace(tzinfo=None),
-        date_end = event.event_date_end.replace(tzinfo=None),
+        date_start = date_start,
+        date_end = date_end,
         event_id=new_event.id,
         venue_id=event.event_venue_id,
         space_id=event.event_space_id
