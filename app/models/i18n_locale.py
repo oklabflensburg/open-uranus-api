@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 class I18nLocaleBase(SQLModel):
     iso_639_1: str = Field(max_length=2, unique=True, nullable=False)
     name: Optional[str] = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=datetime.now)
     modified_at: Optional[datetime] = None
 
 

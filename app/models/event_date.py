@@ -10,7 +10,7 @@ class EventDateBase(SQLModel):
     space_id: Optional[int] = Field(foreign_key='uranus.space.id', default=None)
     date_start: datetime
     date_end: Optional[datetime] = Field(default=None)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=datetime.now)
     modified_at: Optional[datetime] = Field(default=None)
     entry_time: Optional[time] = Field(default=None)
 

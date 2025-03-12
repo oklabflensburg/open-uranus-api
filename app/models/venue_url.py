@@ -9,7 +9,7 @@ class VenueURLBase(SQLModel):
     link_type: Optional[str] = Field(max_length=255, default=None)
     url: str
     title: Optional[str] = Field(max_length=255, default=None)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=datetime.now)
     modified_at: Optional[datetime] = None
 
 
