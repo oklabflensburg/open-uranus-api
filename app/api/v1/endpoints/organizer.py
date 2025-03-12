@@ -7,7 +7,7 @@ from app.db.session import get_db
 
 from app.services.auth import get_current_user
 
-from app.db.repository.organizer import get_organizer_by_user_id, create_organizer_entry
+from app.db.repository.organizer import get_organizer_by_user_id, add_user_organizer_link, add_organizer
 
 from app.schemas.organizer import OrganizerRead, OrganizerCreate
 
@@ -26,7 +26,10 @@ async def create_organizer(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    new_organizer = await create_organizer_entry(db, organizer)
+    new_organizer = await add_organizer(db, organizer)
+    new_user_organizer_link = add_user_organizer_link(
+        db, current_user.id, new_organizer.id, 2
+    )
 
     return new_organizer
 
