@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2 (Postgres.app)
 -- Dumped by pg_dump version 16.2 (Postgres.app)
 
--- Started on 2025-03-12 15:56:19 CET
+-- Started on 2025-03-12 20:05:28 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -57,8 +57,8 @@ CREATE TABLE uranus.event (
     space_id integer,
     title character varying(255) NOT NULL,
     description text NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp with time zone
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone
 );
 
 
@@ -72,11 +72,11 @@ CREATE TABLE uranus.event_date (
     event_id integer NOT NULL,
     venue_id integer,
     space_id integer,
-    date_start timestamp with time zone NOT NULL,
-    date_end timestamp with time zone,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp with time zone,
-    entry_time time with time zone
+    date_start timestamp without time zone NOT NULL,
+    date_end timestamp without time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone,
+    entry_time time without time zone
 );
 
 
@@ -155,8 +155,8 @@ CREATE TABLE uranus.event_type (
     i18n_locale_id integer NOT NULL,
     name text NOT NULL,
     type_id integer NOT NULL,
-    modified_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    modified_at timestamp without time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -196,8 +196,8 @@ CREATE TABLE uranus.genre_type (
     i18n_locale_id integer NOT NULL,
     name text NOT NULL,
     type_id integer NOT NULL,
-    modified_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    modified_at timestamp without time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -224,8 +224,8 @@ ALTER TABLE uranus.genre_type ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 CREATE TABLE uranus.i18n_locale (
     id integer NOT NULL,
     iso_639_1 character varying(2) NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    modified_at timestamp with time zone
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    modified_at timestamp without time zone
 );
 
 
@@ -259,8 +259,8 @@ CREATE TABLE uranus.image (
     image_type_id integer NOT NULL,
     alt_text text,
     caption text,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp with time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone,
     source_name character varying(64) NOT NULL
 );
 
@@ -348,8 +348,8 @@ CREATE TABLE uranus.logo (
     name character varying(255) NOT NULL,
     file_type character varying(50) NOT NULL,
     background_type character varying(50),
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp with time zone
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone
 );
 
 
@@ -385,8 +385,8 @@ CREATE TABLE uranus.organizer (
     postal_code character varying(20),
     city character varying(100),
     country_code character varying(100),
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp with time zone
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone
 );
 
 
@@ -431,8 +431,8 @@ CREATE TABLE uranus.space (
     url text,
     floor_plan text,
     tech_rider text,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp with time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone,
     area numeric
 );
 
@@ -461,8 +461,8 @@ CREATE TABLE uranus.space_type (
     id integer NOT NULL,
     i18n_locale_id integer NOT NULL,
     name text NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp with time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone,
     type_id integer NOT NULL
 );
 
@@ -492,8 +492,8 @@ CREATE TABLE uranus.transport_station (
     station_type character varying(50) NOT NULL,
     name character varying(255) NOT NULL,
     distance_by_foot integer,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp with time zone
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone
 );
 
 
@@ -935,7 +935,7 @@ CREATE INDEX event_date_space_id_idx ON uranus.event_date USING btree (space_id)
 
 
 --
--- TOC entry 5382 (class 1259 OID 1094870)
+-- TOC entry 5382 (class 1259 OID 1094916)
 -- Name: event_date_start_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1613,7 +1613,7 @@ ALTER TABLE ONLY uranus.venue_url
     ADD CONSTRAINT venue_url_venue_id_fkey FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
--- Completed on 2025-03-12 15:56:19 CET
+-- Completed on 2025-03-12 20:05:28 CET
 
 --
 -- PostgreSQL database dump complete
