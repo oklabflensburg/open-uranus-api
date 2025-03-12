@@ -32,6 +32,10 @@ from app.models.image import Image
 from app.models.image_type import ImageType
 from app.models.license_type import LicenseType
 
+from app.models.user_event_links import UserEventLinks
+from app.models.user_role import UserRole
+from app.models.user import User
+
 from app.enum.sort_order import SortOrder
 from app.core.parser import parse_date
 
@@ -320,3 +324,23 @@ async def add_event(db: AsyncSession, event: EventCreate):
                 status_code=status.HTTP_409_CONFLICT,
                 detail='Foreign key constraint violation.'
             )
+
+
+
+async def get_events_by_user_id(db: AsyncSession, user_id: int):
+    stmt = (
+        select(
+            UserEventLinks.event_id,
+            Event.title.label('event_title'),
+            UserRole.organization.label('can_edit')
+        )
+        .join(User, User.id == UserEventLinks.user_id)
+        .join(Event, Event.id == UserEventLinks.event_id)
+        .join(UserRole, UserRole.id == UserEventLinks.user_role_id)
+        .where(UserEventLinks.user_id == user_id)
+    )
+
+    result = await db.execute(stmt)
+    events = result.mappings().all()
+
+    return events

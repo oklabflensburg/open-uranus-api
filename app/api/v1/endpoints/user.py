@@ -12,6 +12,7 @@ from passlib.context import CryptContext
 from app.db.repository.user import get_user_by_id, get_user_by_email_or_username
 from app.db.repository.venue import get_venues_by_user_id
 from app.db.repository.organizer import get_organizers_by_user_id
+from app.db.repository.event import get_events_by_user_id
 
 from app.db.session import get_db
 
@@ -36,6 +37,7 @@ from app.schemas.user import (
 
 from app.schemas.venue_response import UserVenueResponse
 from app.schemas.organizer import UserOrganizerResponse
+from app.schemas.event import UserEventResponse
 
 
 
@@ -192,3 +194,14 @@ async def fetch_organizers_by_user_id(
     organizers = await get_organizers_by_user_id(db, current_user.id)
 
     return organizers
+
+
+
+@router.get('/event', response_model=List[UserEventResponse])
+async def fetch_events_by_user_id(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    events = await get_events_by_user_id(db, current_user.id)
+
+    return events

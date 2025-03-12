@@ -4,6 +4,13 @@ from typing import List, Optional
 
 
 
+class UserEventResponse(BaseModel):
+    event_id: int
+    event_title: str
+    can_edit: bool
+
+
+
 class EventCreate(BaseModel):
     event_title: str 
     event_description: str
