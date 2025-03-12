@@ -14,6 +14,8 @@ _Haftungsausschluss: Dieses Repository und die zugehörige Datenbank befinden si
 
 - Create a `.env` file in the root directory of this repository and add the following environment variables with your specific values:
 
+> You may use `openssl rand -hex 32` to generate your `SECRET_KEY` and `REFRESH_SECRET_KEY` keys.
+
 ```sh
 SECRET_KEY=YOUR_SECRET_KEY
 REFRESH_TOKEN_EXPIRE_DAYS=DAYS
