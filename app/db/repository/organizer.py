@@ -1,6 +1,7 @@
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
 
 from pydantic import EmailStr
 
@@ -8,6 +9,8 @@ from app.models.organizer import Organizer
 from app.models.user_organizer_links import UserOrganizerLinks
 from app.models.user_role import UserRole
 from app.models.user import User
+from app.models.venue import Venue
+from app.models.space import Space
 
 from app.schemas.organizer import OrganizerCreate
 
@@ -74,3 +77,21 @@ async def get_organizers_by_user_id(db: AsyncSession, user_id: int):
     organizer = result.mappings().all()
 
     return organizer
+
+
+
+async def get_organizer_stats(db: AsyncSession, organizer_id: int):
+    stmt = (
+        select(
+            func.count(Venue.id.distinct()).label('count_venue'),
+            func.count(Space.id).label('count_space')
+        )
+        .join(Organizer, Organizer.id == Venue.organizer_id)
+        .outerjoin(Space, Space.venue_id == Venue.id)
+        .where(Organizer.id == organizer_id)
+    )
+
+    result = await db.execute(stmt)
+    stats = result.mappings().first()
+
+    return stats
