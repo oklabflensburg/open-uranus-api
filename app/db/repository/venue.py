@@ -1,9 +1,11 @@
 from sqlalchemy.sql import func
+from datetime import datetime
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import aliased
 from sqlalchemy.future import select
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from geoalchemy2.functions import ST_AsGeoJSON, ST_MakeEnvelope
 from geoalchemy2.shape import from_shape
@@ -19,6 +21,9 @@ from app.models.venue_type import VenueType
 from app.models.venue import Venue
 from app.models.user import User
 from app.models.user_role import UserRole
+from app.models.event import Event
+from app.models.event_date import EventDate
+from app.models.space import Space
 
 
 
@@ -248,3 +253,21 @@ async def add_user_venue(db: AsyncSession, user_id: int, venue_id: int, user_rol
         return new_user_venue
     except IntegrityError as e:
         await db.rollback()
+
+
+
+async def get_venue_stats(db: AsyncSession, venue_id: int):
+    stmt = (
+        select(
+            func.count(Event.id).label('count_event'),
+            func.count(Space.id.distinct()).label('count_space')
+        )
+        .join(EventDate, EventDate.event_id == Event.id)
+        .outerjoin(Space, Event.space_id == Space.id)
+        .where(Event.venue_id == venue_id, EventDate.date_start >= datetime.now())
+    )
+
+    result = await db.execute(stmt)
+    stats = result.mappings().first()
+
+    return stats

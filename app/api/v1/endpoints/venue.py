@@ -25,6 +25,7 @@ from app.services.auth import get_current_user
 from app.db.repository.venue import (
     get_all_venues,
     get_venue_by_id,
+    get_venue_stats,
     get_simple_venue_by_id,
     get_venues_within_bounds,
     get_venues_by_name_junk,
@@ -204,3 +205,20 @@ async def delete_venue_by_id(
     await db.commit()
 
     return {'message': 'Venue deleted successfully'}
+
+
+
+@router.get('/stats', response_model=dict)
+async def fetch_venue_stats(
+    venue_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    stats = await get_venue_stats(db, venue_id)
+
+    if not stats:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'No stats found for venue_id: {venue_id}'
+        )
+
+    return stats
