@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2 (Postgres.app)
 -- Dumped by pg_dump version 16.2 (Postgres.app)
 
--- Started on 2025-03-12 20:05:28 CET
+-- Started on 2025-03-13 09:57:43 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -418,22 +418,9 @@ CREATE TABLE uranus.space (
     seating_capacity integer,
     space_type_id integer,
     building_level integer,
-    platform_lift character varying(255),
-    wheelchair text,
-    toilets text,
-    elevator text,
-    ramp text,
-    tactile_guidance text,
-    accessibility_info text,
-    personalized_accessibility_services boolean,
-    wheelchair_friendly_surface text,
-    quiet_zones text,
     url text,
-    floor_plan text,
-    tech_rider text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_at timestamp without time zone,
-    area numeric
+    modified_at timestamp without time zone
 );
 
 
@@ -1398,24 +1385,6 @@ ALTER TABLE ONLY uranus.event_date_link_images
 
 
 --
--- TOC entry 5441 (class 2606 OID 1086461)
--- Name: event_link_types fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
---
-
-ALTER TABLE ONLY uranus.event_link_types
-    ADD CONSTRAINT fk_event_id FOREIGN KEY (event_id) REFERENCES uranus.event(id);
-
-
---
--- TOC entry 5443 (class 2606 OID 1086514)
--- Name: genre_link_types fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
---
-
-ALTER TABLE ONLY uranus.genre_link_types
-    ADD CONSTRAINT fk_event_id FOREIGN KEY (event_id) REFERENCES uranus.event(id);
-
-
---
 -- TOC entry 5444 (class 2606 OID 1086528)
 -- Name: event_link_images fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
@@ -1434,12 +1403,30 @@ ALTER TABLE ONLY uranus.user_event_links
 
 
 --
--- TOC entry 5442 (class 2606 OID 1086478)
+-- TOC entry 5441 (class 2606 OID 1094987)
+-- Name: event_link_types fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
+--
+
+ALTER TABLE ONLY uranus.event_link_types
+    ADD CONSTRAINT fk_event_id FOREIGN KEY (event_id) REFERENCES uranus.event(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 5443 (class 2606 OID 1094997)
+-- Name: genre_link_types fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
+--
+
+ALTER TABLE ONLY uranus.genre_link_types
+    ADD CONSTRAINT fk_event_id FOREIGN KEY (event_id) REFERENCES uranus.event(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 5442 (class 2606 OID 1094992)
 -- Name: event_link_types fk_event_type_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
 ALTER TABLE ONLY uranus.event_link_types
-    ADD CONSTRAINT fk_event_type_id FOREIGN KEY (event_type_id) REFERENCES uranus.event_type(id);
+    ADD CONSTRAINT fk_event_type_id FOREIGN KEY (event_type_id) REFERENCES uranus.event_type(id) ON DELETE CASCADE;
 
 
 --
@@ -1596,12 +1583,12 @@ ALTER TABLE ONLY uranus.venue_link_types
 
 
 --
--- TOC entry 5429 (class 2606 OID 1086242)
+-- TOC entry 5429 (class 2606 OID 1095002)
 -- Name: venue venue_organizer_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
 ALTER TABLE ONLY uranus.venue
-    ADD CONSTRAINT venue_organizer_id_fkey FOREIGN KEY (organizer_id) REFERENCES uranus.organizer(id);
+    ADD CONSTRAINT venue_organizer_id_fkey FOREIGN KEY (organizer_id) REFERENCES uranus.organizer(id) ON DELETE SET NULL;
 
 
 --
@@ -1613,7 +1600,7 @@ ALTER TABLE ONLY uranus.venue_url
     ADD CONSTRAINT venue_url_venue_id_fkey FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
--- Completed on 2025-03-12 20:05:28 CET
+-- Completed on 2025-03-13 09:57:44 CET
 
 --
 -- PostgreSQL database dump complete
