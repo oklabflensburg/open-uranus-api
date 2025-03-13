@@ -10,8 +10,6 @@ class EventDateBase(SQLModel):
     space_id: Optional[int] = Field(foreign_key='uranus.space.id', default=None)
     date_start: datetime
     date_end: Optional[datetime] = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.now)
-    modified_at: Optional[datetime] = Field(default=None)
     entry_time: Optional[time] = Field(default=None)
 
 
@@ -21,3 +19,5 @@ class EventDate(EventDateBase, table=True):
     __table_args__ = {'schema': 'uranus'}
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    modified_at: Optional[datetime] = None
