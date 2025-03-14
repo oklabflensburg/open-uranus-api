@@ -93,9 +93,9 @@ async def get_organizer_stats(db: AsyncSession, organizer_id: int):
         )
         .select_from(Organizer)
         .join(Venue, Venue.organizer_id == Organizer.id)
-        .join(Space, Space.venue_id == Venue.id)
-        .join(Event, Event.venue_id == Venue.id)
-        .join(EventDate, EventDate.event_id == Event.id)
+        .outerjoin(Space, Space.venue_id == Venue.id)
+        .outerjoin(Event, Event.venue_id == Venue.id)
+        .outerjoin(EventDate, EventDate.event_id == Event.id)
         .where(Organizer.id == organizer_id, EventDate.date_start >= datetime.now())
     )
 
