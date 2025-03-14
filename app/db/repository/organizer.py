@@ -1,7 +1,7 @@
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from datetime import datetime
 
 from pydantic import EmailStr
@@ -87,16 +87,21 @@ async def get_organizers_by_user_id(db: AsyncSession, user_id: int):
 async def get_organizer_stats(db: AsyncSession, organizer_id: int):
     stmt = (
         select(
-            func.count(Venue.id.distinct()).label('count_venue'),
-            func.count(Space.id.distinct()).label('count_space'),
-            func.count(Event.id.distinct()).label('count_event')
+            func.count(func.distinct(Venue.id)).label('count_venue'),
+            func.count(func.distinct(Space.id)).label('count_space'),
+            func.coalesce(func.count(func.distinct(Event.id)), 0).label('count_events')
         )
-        .select_from(Organizer)
         .join(Venue, Venue.organizer_id == Organizer.id)
         .outerjoin(Space, Space.venue_id == Venue.id)
         .outerjoin(Event, Event.venue_id == Venue.id)
         .outerjoin(EventDate, EventDate.event_id == Event.id)
-        .where(Organizer.id == organizer_id, EventDate.date_start >= datetime.now())
+        .filter(
+            Organizer.id == organizer_id,
+            or_(
+            EventDate.date_start >= datetime.now(),
+            EventDate.date_start == None
+            )
+        )
     )
 
     result = await db.execute(stmt)
