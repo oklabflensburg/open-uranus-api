@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from fastapi import HTTPException, status
 
@@ -8,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import func
-from sqlalchemy import asc, desc, or_
+from sqlalchemy import asc, desc, or_, case
 
 from app.schemas.event import EventCreate
 
@@ -31,11 +32,13 @@ from app.models.event_link_images import EventLinkImages
 from app.models.image import Image
 
 from app.models.user_event_links import UserEventLinks
+
 from app.models.user_role import UserRole
 from app.models.user import User
 
 from app.enum.sort_order import SortOrder
 from app.core.parser import parse_date
+from app.models.user_venue_links import UserVenueLinks
 
 
 
@@ -328,14 +331,23 @@ async def add_event(db: AsyncSession, event: EventCreate):
 async def get_events_by_user_id(db: AsyncSession, user_id: int):
     stmt = (
         select(
-            UserEventLinks.event_id,
-            Event.title.label('event_title'),
-            UserRole.organization.label('can_edit')
+        Event.id.label('event_id'),
+        Event.title.label('event_title'),
+        Venue.name.label('event_venue_name'),
+        func.min(EventDate.date_start).label('event_date_start_first'),
+        func.max(EventDate.date_start).label('event_date_start_last'),
+        case(
+            (UserRole.venue == True, True),
+            else_=False
+        ).label('can_edit')
         )
-        .join(User, User.id == UserEventLinks.user_id)
-        .join(Event, Event.id == UserEventLinks.event_id)
-        .join(UserRole, UserRole.id == UserEventLinks.user_role_id)
-        .where(UserEventLinks.user_id == user_id)
+        .join(Venue, Venue.id == Event.venue_id)
+        .join(UserVenueLinks, UserVenueLinks.venue_id == Venue.id)
+        .join(EventDate, EventDate.event_id == Event.id)
+        .join(UserRole, UserRole.id == UserVenueLinks.user_role_id)
+        .where(UserVenueLinks.user_id == user_id)
+        .where(EventDate.date_start >= datetime.now())
+        .group_by(Event.id, Venue.id, Venue.name, UserRole.venue)
     )
 
     result = await db.execute(stmt)

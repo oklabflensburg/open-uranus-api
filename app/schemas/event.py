@@ -7,6 +7,9 @@ from typing import List, Optional
 class UserEventResponse(BaseModel):
     event_id: int
     event_title: str
+    event_date_start_first: datetime
+    event_date_start_last: datetime
+    event_venue_name: str
     can_edit: bool
 
 
