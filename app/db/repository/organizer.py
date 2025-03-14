@@ -91,6 +91,7 @@ async def get_organizer_stats(db: AsyncSession, organizer_id: int):
             func.count(func.distinct(Space.id)).label('count_space'),
             func.coalesce(func.count(func.distinct(Event.id)), 0).label('count_events')
         )
+        .select_from(Organizer)
         .join(Venue, Venue.organizer_id == Organizer.id)
         .outerjoin(Space, Space.venue_id == Venue.id)
         .outerjoin(Event, Event.venue_id == Venue.id)
