@@ -21,7 +21,8 @@ class UserUpdate(BaseModel):
 
 
 
-class UserCreate(UserBase):
+class UserCreate(BaseModel):
+    username: EmailStr
     password: str
 
     @field_validator('password')
@@ -35,7 +36,7 @@ class UserRead(UserBase):
 
 
 class UserSignin(BaseModel):
-    email_address: EmailStr
+    username: EmailStr
     password: str
 
 

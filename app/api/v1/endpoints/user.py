@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 from typing import List
 
-from sqlmodel import select
 from pydantic import EmailStr
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -50,7 +49,11 @@ async def signup_user(
     db: AsyncSession = Depends(get_db)
 ):
     hashed_password = pwd_context.hash(user.password)
-    new_user = User(**user.dict(exclude={'password'}), password_hash=hashed_password)
+    new_user = User(
+        email_address=user.username,
+        password_hash=hashed_password,
+        disabled=False
+    )
 
     try:
         db.add(new_user)
@@ -62,7 +65,7 @@ async def signup_user(
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail='User with email address or username already exists'
+            detail=f'User with email address {user.username} already exists'
         )
 
 
