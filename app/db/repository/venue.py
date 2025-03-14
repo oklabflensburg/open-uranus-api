@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import aliased
 from sqlalchemy.future import select
-from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.expression import cast, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -259,14 +259,20 @@ async def add_user_venue(db: AsyncSession, user_id: int, venue_id: int, user_rol
 async def get_venue_stats(db: AsyncSession, venue_id: int):
     stmt = (
         select(
-            func.count(Space.id.distinct()).label('count_space'),
-            func.count(Event.id.distinct()).label('count_event')
+            func.count(func.distinct(Space.id)).label('count_space'),
+            func.count(func.distinct(Event.id)).label('count_event')
         )
         .select_from(Venue)
         .join(Space, Space.venue_id == Venue.id)
         .outerjoin(Event, Event.venue_id == Venue.id)
         .outerjoin(EventDate, EventDate.event_id == Event.id)
-        .where(Venue.id == venue_id, EventDate.date_start >= datetime.now())
+        .where(
+            Venue.id == venue_id,
+            or_(
+                EventDate.date_start >= datetime.now(),
+                EventDate.date_start == None
+            )
+        )
     )
 
     result = await db.execute(stmt)
