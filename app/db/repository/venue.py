@@ -220,6 +220,7 @@ async def add_venue(db: AsyncSession, venue: VenueCreate):
 
     new_venue = Venue(
         name=venue.venue_name,
+        organizer_id=venue.venue_organizer_id,
         street=venue.venue_street,
         house_number=venue.venue_house_number,
         postal_code=venue.venue_postal_code,

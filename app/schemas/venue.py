@@ -17,6 +17,7 @@ class VenueCreate(BaseModel):
     venue_longitude: float
     organizer_name: Optional[str] = None
     organizer_url: Optional[str] = None
+    venue_organizer_id: int
 
 
 
