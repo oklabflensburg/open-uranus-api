@@ -264,8 +264,8 @@ async def get_venue_stats(db: AsyncSession, venue_id: int):
         )
         .select_from(Venue)
         .join(Space, Space.venue_id == Venue.id)
-        .join(Event, Event.venue_id == Venue.id)
-        .join(EventDate, EventDate.event_id == Event.id)
+        .outerjoin(Event, Event.venue_id == Venue.id)
+        .outerjoin(EventDate, EventDate.event_id == Event.id)
         .where(Venue.id == venue_id, EventDate.date_start >= datetime.now())
     )
 
