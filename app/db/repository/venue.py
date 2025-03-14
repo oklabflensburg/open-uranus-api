@@ -259,12 +259,14 @@ async def add_user_venue(db: AsyncSession, user_id: int, venue_id: int, user_rol
 async def get_venue_stats(db: AsyncSession, venue_id: int):
     stmt = (
         select(
-            func.count(Event.id).label('count_event'),
-            func.count(Space.id.distinct()).label('count_space')
+            func.count(Space.id.distinct()).label('count_space'),
+            func.count(Event.id.distinct()).label('count_event')
         )
+        .select_from(Venue)
+        .join(Space, Space.venue_id == Venue.id)
+        .join(Event, Event.venue_id == Venue.id)
         .join(EventDate, EventDate.event_id == Event.id)
-        .outerjoin(Space, Event.space_id == Space.id)
-        .where(Event.venue_id == venue_id, EventDate.date_start >= datetime.now())
+        .where(Venue.id == venue_id, EventDate.date_start >= datetime.now())
     )
 
     result = await db.execute(stmt)

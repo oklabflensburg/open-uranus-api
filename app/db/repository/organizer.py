@@ -2,6 +2,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
+from datetime import datetime
 
 from pydantic import EmailStr
 
@@ -11,6 +12,8 @@ from app.models.user_role import UserRole
 from app.models.user import User
 from app.models.venue import Venue
 from app.models.space import Space
+from app.models.event import Event
+from app.models.event_date import EventDate
 
 from app.schemas.organizer import OrganizerCreate
 
@@ -80,15 +83,20 @@ async def get_organizers_by_user_id(db: AsyncSession, user_id: int):
 
 
 
+
 async def get_organizer_stats(db: AsyncSession, organizer_id: int):
     stmt = (
         select(
             func.count(Venue.id.distinct()).label('count_venue'),
-            func.count(Space.id).label('count_space')
+            func.count(Space.id.distinct()).label('count_space'),
+            func.count(Event.id.distinct()).label('count_event')
         )
-        .join(Organizer, Organizer.id == Venue.organizer_id)
-        .outerjoin(Space, Space.venue_id == Venue.id)
-        .where(Organizer.id == organizer_id)
+        .select_from(Organizer)
+        .join(Venue, Venue.organizer_id == Organizer.id)
+        .join(Space, Space.venue_id == Venue.id)
+        .join(Event, Event.venue_id == Venue.id)
+        .join(EventDate, EventDate.event_id == Event.id)
+        .where(Organizer.id == organizer_id, EventDate.date_start >= datetime.now())
     )
 
     result = await db.execute(stmt)
