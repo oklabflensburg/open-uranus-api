@@ -99,8 +99,8 @@ async def get_organizer_stats(db: AsyncSession, organizer_id: int):
         .filter(
             Organizer.id == organizer_id,
             or_(
-            EventDate.date_start >= datetime.now(),
-            EventDate.date_start == None
+                EventDate.date_start >= datetime.now(),
+                EventDate.date_start == None
             )
         )
     )
