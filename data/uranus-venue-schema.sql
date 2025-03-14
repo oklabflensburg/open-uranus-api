@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2 (Postgres.app)
 -- Dumped by pg_dump version 16.2 (Postgres.app)
 
--- Started on 2025-03-13 15:03:43 CET
+-- Started on 2025-03-14 13:51:21 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -27,7 +27,7 @@ CREATE SCHEMA uranus;
 
 
 --
--- TOC entry 810 (class 1255 OID 1086222)
+-- TOC entry 812 (class 1255 OID 1086222)
 -- Name: update_modified_at(); Type: FUNCTION; Schema: uranus; Owner: -
 --
 
@@ -54,7 +54,7 @@ CREATE TABLE uranus.event (
     id integer NOT NULL,
     organizer_id integer NOT NULL,
     venue_id integer NOT NULL,
-    space_id integer,
+    space_id integer NOT NULL,
     title character varying(255) NOT NULL,
     description text NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -506,13 +506,9 @@ ALTER TABLE uranus.transport_station ALTER COLUMN id ADD GENERATED ALWAYS AS IDE
 
 CREATE TABLE uranus."user" (
     id integer NOT NULL,
-    first_name character varying NOT NULL,
-    last_name character varying NOT NULL,
     email_address character varying NOT NULL,
-    username character varying NOT NULL,
     password_hash text NOT NULL,
     disabled boolean DEFAULT false NOT NULL,
-    i18n_locale_id integer NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     modified_at timestamp without time zone
 );
@@ -565,6 +561,38 @@ CREATE TABLE uranus.user_organizer_links (
     user_id integer NOT NULL,
     organizer_id integer NOT NULL,
     user_role_id integer NOT NULL
+);
+
+
+--
+-- TOC entry 570 (class 1259 OID 1103200)
+-- Name: user_profile; Type: TABLE; Schema: uranus; Owner: -
+--
+
+CREATE TABLE uranus.user_profile (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    user_name character varying,
+    first_name character varying,
+    last_name character varying,
+    i18n_locale_id integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modified_at timestamp without time zone
+);
+
+
+--
+-- TOC entry 569 (class 1259 OID 1103199)
+-- Name: user_profile_id_seq; Type: SEQUENCE; Schema: uranus; Owner: -
+--
+
+ALTER TABLE uranus.user_profile ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME uranus.user_profile_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
 
@@ -634,7 +662,7 @@ CREATE TABLE uranus.venue (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     modified_at timestamp with time zone,
     wkb_geometry public.geometry(Point,4326) NOT NULL,
-    county_code character varying(10),
+    county_code text,
     opened_at date,
     closed_at date,
     CONSTRAINT country_length_check CHECK ((char_length((country_code)::text) = 3))
@@ -729,7 +757,7 @@ ALTER TABLE uranus.venue_url ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 
 --
--- TOC entry 5381 (class 2606 OID 1086328)
+-- TOC entry 5387 (class 2606 OID 1086328)
 -- Name: event_date event_date_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -738,7 +766,7 @@ ALTER TABLE ONLY uranus.event_date
 
 
 --
--- TOC entry 5364 (class 2606 OID 1086269)
+-- TOC entry 5370 (class 2606 OID 1086269)
 -- Name: event event_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -747,7 +775,7 @@ ALTER TABLE ONLY uranus.event
 
 
 --
--- TOC entry 5401 (class 2606 OID 1086475)
+-- TOC entry 5407 (class 2606 OID 1086475)
 -- Name: event_type event_type_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -756,7 +784,7 @@ ALTER TABLE ONLY uranus.event_type
 
 
 --
--- TOC entry 5406 (class 2606 OID 1086501)
+-- TOC entry 5412 (class 2606 OID 1086501)
 -- Name: genre_type genre_type_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -765,7 +793,7 @@ ALTER TABLE ONLY uranus.genre_type
 
 
 --
--- TOC entry 5398 (class 2606 OID 1086410)
+-- TOC entry 5404 (class 2606 OID 1086410)
 -- Name: i18n_locale i18n_locale_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -774,7 +802,7 @@ ALTER TABLE ONLY uranus.i18n_locale
 
 
 --
--- TOC entry 5370 (class 2606 OID 1086293)
+-- TOC entry 5376 (class 2606 OID 1086293)
 -- Name: image image_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -783,7 +811,7 @@ ALTER TABLE ONLY uranus.image
 
 
 --
--- TOC entry 5414 (class 2606 OID 1086600)
+-- TOC entry 5420 (class 2606 OID 1086600)
 -- Name: image_type image_type_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -792,7 +820,7 @@ ALTER TABLE ONLY uranus.image_type
 
 
 --
--- TOC entry 5412 (class 2606 OID 1086587)
+-- TOC entry 5418 (class 2606 OID 1086587)
 -- Name: license_type license_type_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -801,7 +829,7 @@ ALTER TABLE ONLY uranus.license_type
 
 
 --
--- TOC entry 5373 (class 2606 OID 1086300)
+-- TOC entry 5379 (class 2606 OID 1086300)
 -- Name: logo logo_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -810,7 +838,7 @@ ALTER TABLE ONLY uranus.logo
 
 
 --
--- TOC entry 5351 (class 2606 OID 1086231)
+-- TOC entry 5357 (class 2606 OID 1086231)
 -- Name: organizer organizer_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -819,7 +847,7 @@ ALTER TABLE ONLY uranus.organizer
 
 
 --
--- TOC entry 5360 (class 2606 OID 1086255)
+-- TOC entry 5366 (class 2606 OID 1086255)
 -- Name: space space_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -828,7 +856,7 @@ ALTER TABLE ONLY uranus.space
 
 
 --
--- TOC entry 5387 (class 2606 OID 1086359)
+-- TOC entry 5393 (class 2606 OID 1086359)
 -- Name: space_type space_type_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -837,7 +865,7 @@ ALTER TABLE ONLY uranus.space_type
 
 
 --
--- TOC entry 5375 (class 2606 OID 1086307)
+-- TOC entry 5381 (class 2606 OID 1086307)
 -- Name: transport_station transport_station_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -846,7 +874,7 @@ ALTER TABLE ONLY uranus.transport_station
 
 
 --
--- TOC entry 5418 (class 2606 OID 1094718)
+-- TOC entry 5423 (class 2606 OID 1094718)
 -- Name: user user_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -855,7 +883,16 @@ ALTER TABLE ONLY uranus."user"
 
 
 --
--- TOC entry 5423 (class 2606 OID 1094741)
+-- TOC entry 5435 (class 2606 OID 1103207)
+-- Name: user_profile user_profile_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
+--
+
+ALTER TABLE ONLY uranus.user_profile
+    ADD CONSTRAINT user_profile_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 5427 (class 2606 OID 1094741)
 -- Name: user_role user_role_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -864,7 +901,7 @@ ALTER TABLE ONLY uranus.user_role
 
 
 --
--- TOC entry 5395 (class 2606 OID 1086382)
+-- TOC entry 5401 (class 2606 OID 1086382)
 -- Name: venue_link_types venue_link_types_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -873,7 +910,7 @@ ALTER TABLE ONLY uranus.venue_link_types
 
 
 --
--- TOC entry 5356 (class 2606 OID 1086241)
+-- TOC entry 5362 (class 2606 OID 1086241)
 -- Name: venue venue_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -882,7 +919,7 @@ ALTER TABLE ONLY uranus.venue
 
 
 --
--- TOC entry 5391 (class 2606 OID 1086372)
+-- TOC entry 5397 (class 2606 OID 1086372)
 -- Name: venue_type venue_type_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -891,7 +928,7 @@ ALTER TABLE ONLY uranus.venue_type
 
 
 --
--- TOC entry 5377 (class 2606 OID 1086316)
+-- TOC entry 5383 (class 2606 OID 1086316)
 -- Name: venue_url venue_url_pkey; Type: CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -900,7 +937,7 @@ ALTER TABLE ONLY uranus.venue_url
 
 
 --
--- TOC entry 5379 (class 1259 OID 1086562)
+-- TOC entry 5385 (class 1259 OID 1086562)
 -- Name: event_date_event_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -908,7 +945,7 @@ CREATE INDEX event_date_event_id_idx ON uranus.event_date USING btree (event_id)
 
 
 --
--- TOC entry 5410 (class 1259 OID 1086609)
+-- TOC entry 5416 (class 1259 OID 1086609)
 -- Name: event_date_link_images_event_date_id_image_id_main_image_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -916,7 +953,7 @@ CREATE UNIQUE INDEX event_date_link_images_event_date_id_image_id_main_image_idx
 
 
 --
--- TOC entry 5382 (class 1259 OID 1086564)
+-- TOC entry 5388 (class 1259 OID 1086564)
 -- Name: event_date_space_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -924,7 +961,7 @@ CREATE INDEX event_date_space_id_idx ON uranus.event_date USING btree (space_id)
 
 
 --
--- TOC entry 5383 (class 1259 OID 1094916)
+-- TOC entry 5389 (class 1259 OID 1094916)
 -- Name: event_date_start_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -932,7 +969,7 @@ CREATE INDEX event_date_start_idx ON uranus.event_date USING btree (date_start, 
 
 
 --
--- TOC entry 5384 (class 1259 OID 1086563)
+-- TOC entry 5390 (class 1259 OID 1086563)
 -- Name: event_date_venue_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -940,7 +977,7 @@ CREATE INDEX event_date_venue_id_idx ON uranus.event_date USING btree (venue_id)
 
 
 --
--- TOC entry 5409 (class 1259 OID 1086608)
+-- TOC entry 5415 (class 1259 OID 1086608)
 -- Name: event_link_images_event_id_image_id_main_image_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -948,7 +985,7 @@ CREATE UNIQUE INDEX event_link_images_event_id_image_id_main_image_idx ON uranus
 
 
 --
--- TOC entry 5403 (class 1259 OID 1094856)
+-- TOC entry 5409 (class 1259 OID 1094856)
 -- Name: event_link_type_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -956,7 +993,7 @@ CREATE INDEX event_link_type_idx ON uranus.event_link_types USING btree (event_i
 
 
 --
--- TOC entry 5362 (class 1259 OID 1086559)
+-- TOC entry 5368 (class 1259 OID 1086559)
 -- Name: event_organizer_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -964,7 +1001,7 @@ CREATE INDEX event_organizer_id_idx ON uranus.event USING btree (organizer_id);
 
 
 --
--- TOC entry 5365 (class 1259 OID 1086561)
+-- TOC entry 5371 (class 1259 OID 1086561)
 -- Name: event_space_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -972,7 +1009,7 @@ CREATE INDEX event_space_id_idx ON uranus.event USING btree (space_id);
 
 
 --
--- TOC entry 5399 (class 1259 OID 1086565)
+-- TOC entry 5405 (class 1259 OID 1086565)
 -- Name: event_type_i18n_locale_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -980,7 +1017,7 @@ CREATE INDEX event_type_i18n_locale_id_idx ON uranus.event_type USING btree (i18
 
 
 --
--- TOC entry 5402 (class 1259 OID 1086566)
+-- TOC entry 5408 (class 1259 OID 1086566)
 -- Name: event_type_type_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -988,7 +1025,7 @@ CREATE INDEX event_type_type_id_idx ON uranus.event_type USING btree (type_id);
 
 
 --
--- TOC entry 5366 (class 1259 OID 1086560)
+-- TOC entry 5372 (class 1259 OID 1086560)
 -- Name: event_venue_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -996,7 +1033,7 @@ CREATE INDEX event_venue_id_idx ON uranus.event USING btree (venue_id);
 
 
 --
--- TOC entry 5408 (class 1259 OID 1094871)
+-- TOC entry 5414 (class 1259 OID 1094871)
 -- Name: genre_link_type_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1004,7 +1041,7 @@ CREATE INDEX genre_link_type_idx ON uranus.genre_link_types USING btree (event_i
 
 
 --
--- TOC entry 5404 (class 1259 OID 1086567)
+-- TOC entry 5410 (class 1259 OID 1086567)
 -- Name: genre_type_i18n_locale_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1012,7 +1049,7 @@ CREATE INDEX genre_type_i18n_locale_id_idx ON uranus.genre_type USING btree (i18
 
 
 --
--- TOC entry 5407 (class 1259 OID 1086568)
+-- TOC entry 5413 (class 1259 OID 1086568)
 -- Name: genre_type_type_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1020,7 +1057,7 @@ CREATE INDEX genre_type_type_id_idx ON uranus.genre_type USING btree (type_id);
 
 
 --
--- TOC entry 5396 (class 1259 OID 1086569)
+-- TOC entry 5402 (class 1259 OID 1086569)
 -- Name: i18n_locale_iso_639_1_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1028,7 +1065,7 @@ CREATE INDEX i18n_locale_iso_639_1_idx ON uranus.i18n_locale USING btree (iso_63
 
 
 --
--- TOC entry 5367 (class 1259 OID 1086558)
+-- TOC entry 5373 (class 1259 OID 1086558)
 -- Name: image_image_type_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1036,7 +1073,7 @@ CREATE INDEX image_image_type_id_idx ON uranus.image USING btree (image_type_id)
 
 
 --
--- TOC entry 5368 (class 1259 OID 1086557)
+-- TOC entry 5374 (class 1259 OID 1086557)
 -- Name: image_license_type_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1044,7 +1081,7 @@ CREATE INDEX image_license_type_id_idx ON uranus.image USING btree (license_type
 
 
 --
--- TOC entry 5371 (class 1259 OID 1086606)
+-- TOC entry 5377 (class 1259 OID 1086606)
 -- Name: image_source_name_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1052,7 +1089,7 @@ CREATE UNIQUE INDEX image_source_name_idx ON uranus.image USING btree (source_na
 
 
 --
--- TOC entry 5385 (class 1259 OID 1086571)
+-- TOC entry 5391 (class 1259 OID 1086571)
 -- Name: space_type_i18n_locale_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1060,7 +1097,7 @@ CREATE INDEX space_type_i18n_locale_id_idx ON uranus.space_type USING btree (i18
 
 
 --
--- TOC entry 5388 (class 1259 OID 1086572)
+-- TOC entry 5394 (class 1259 OID 1086572)
 -- Name: space_type_type_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1068,7 +1105,7 @@ CREATE INDEX space_type_type_id_idx ON uranus.space_type USING btree (type_id);
 
 
 --
--- TOC entry 5361 (class 1259 OID 1086570)
+-- TOC entry 5367 (class 1259 OID 1086570)
 -- Name: space_venue_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1076,7 +1113,7 @@ CREATE INDEX space_venue_id_idx ON uranus.space USING btree (venue_id);
 
 
 --
--- TOC entry 5415 (class 1259 OID 1094761)
+-- TOC entry 5421 (class 1259 OID 1094761)
 -- Name: user_email_address_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1084,15 +1121,7 @@ CREATE UNIQUE INDEX user_email_address_idx ON uranus."user" USING btree (email_a
 
 
 --
--- TOC entry 5416 (class 1259 OID 1094749)
--- Name: user_email_address_username_idx; Type: INDEX; Schema: uranus; Owner: -
---
-
-CREATE UNIQUE INDEX user_email_address_username_idx ON uranus."user" USING btree (email_address, username);
-
-
---
--- TOC entry 5428 (class 1259 OID 1094886)
+-- TOC entry 5432 (class 1259 OID 1094886)
 -- Name: user_event_links_user_id_event_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1100,7 +1129,7 @@ CREATE UNIQUE INDEX user_event_links_user_id_event_id_idx ON uranus.user_event_l
 
 
 --
--- TOC entry 5429 (class 1259 OID 1094897)
+-- TOC entry 5433 (class 1259 OID 1094897)
 -- Name: user_event_links_user_id_event_id_user_role_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1108,7 +1137,7 @@ CREATE UNIQUE INDEX user_event_links_user_id_event_id_user_role_id_idx ON uranus
 
 
 --
--- TOC entry 5420 (class 1259 OID 1094747)
+-- TOC entry 5424 (class 1259 OID 1094747)
 -- Name: user_link_roles_user_id_user_role_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1116,7 +1145,7 @@ CREATE UNIQUE INDEX user_link_roles_user_id_user_role_id_idx ON uranus.user_link
 
 
 --
--- TOC entry 5426 (class 1259 OID 1094835)
+-- TOC entry 5430 (class 1259 OID 1094835)
 -- Name: user_organizer_links_user_id_organizer_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1124,7 +1153,7 @@ CREATE UNIQUE INDEX user_organizer_links_user_id_organizer_id_idx ON uranus.user
 
 
 --
--- TOC entry 5427 (class 1259 OID 1094834)
+-- TOC entry 5431 (class 1259 OID 1094834)
 -- Name: user_organizer_links_user_id_organizer_id_user_role_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1132,7 +1161,7 @@ CREATE UNIQUE INDEX user_organizer_links_user_id_organizer_id_user_role_id_idx O
 
 
 --
--- TOC entry 5421 (class 1259 OID 1094748)
+-- TOC entry 5425 (class 1259 OID 1094748)
 -- Name: user_role_name_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1140,15 +1169,7 @@ CREATE UNIQUE INDEX user_role_name_idx ON uranus.user_role USING btree (name);
 
 
 --
--- TOC entry 5419 (class 1259 OID 1094762)
--- Name: user_username_idx; Type: INDEX; Schema: uranus; Owner: -
---
-
-CREATE UNIQUE INDEX user_username_idx ON uranus."user" USING btree (username);
-
-
---
--- TOC entry 5424 (class 1259 OID 1094815)
+-- TOC entry 5428 (class 1259 OID 1094815)
 -- Name: user_venue_links_user_id_venue_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1156,7 +1177,7 @@ CREATE UNIQUE INDEX user_venue_links_user_id_venue_id_idx ON uranus.user_venue_l
 
 
 --
--- TOC entry 5425 (class 1259 OID 1094804)
+-- TOC entry 5429 (class 1259 OID 1094804)
 -- Name: user_venue_links_user_id_venue_id_user_role_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1164,7 +1185,7 @@ CREATE UNIQUE INDEX user_venue_links_user_id_venue_id_user_role_id_idx ON uranus
 
 
 --
--- TOC entry 5352 (class 1259 OID 1086577)
+-- TOC entry 5358 (class 1259 OID 1086577)
 -- Name: venue_city_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1172,7 +1193,7 @@ CREATE INDEX venue_city_idx ON uranus.venue USING btree (city);
 
 
 --
--- TOC entry 5353 (class 1259 OID 1086579)
+-- TOC entry 5359 (class 1259 OID 1086579)
 -- Name: venue_country_code_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1180,7 +1201,7 @@ CREATE INDEX venue_country_code_idx ON uranus.venue USING btree (country_code);
 
 
 --
--- TOC entry 5393 (class 1259 OID 1094869)
+-- TOC entry 5399 (class 1259 OID 1094869)
 -- Name: venue_link_type_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1188,7 +1209,7 @@ CREATE INDEX venue_link_type_idx ON uranus.venue_link_types USING btree (venue_i
 
 
 --
--- TOC entry 5354 (class 1259 OID 1086573)
+-- TOC entry 5360 (class 1259 OID 1086573)
 -- Name: venue_organizer_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1196,7 +1217,7 @@ CREATE INDEX venue_organizer_id_idx ON uranus.venue USING btree (organizer_id);
 
 
 --
--- TOC entry 5357 (class 1259 OID 1086578)
+-- TOC entry 5363 (class 1259 OID 1086578)
 -- Name: venue_postal_code_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1204,7 +1225,7 @@ CREATE INDEX venue_postal_code_idx ON uranus.venue USING btree (postal_code);
 
 
 --
--- TOC entry 5389 (class 1259 OID 1086574)
+-- TOC entry 5395 (class 1259 OID 1086574)
 -- Name: venue_type_i18n_locale_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1212,7 +1233,7 @@ CREATE INDEX venue_type_i18n_locale_id_idx ON uranus.venue_type USING btree (i18
 
 
 --
--- TOC entry 5392 (class 1259 OID 1086575)
+-- TOC entry 5398 (class 1259 OID 1086575)
 -- Name: venue_type_type_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1220,7 +1241,7 @@ CREATE INDEX venue_type_type_id_idx ON uranus.venue_type USING btree (type_id);
 
 
 --
--- TOC entry 5378 (class 1259 OID 1086576)
+-- TOC entry 5384 (class 1259 OID 1086576)
 -- Name: venue_url_venue_id_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1228,7 +1249,7 @@ CREATE INDEX venue_url_venue_id_idx ON uranus.venue_url USING btree (venue_id);
 
 
 --
--- TOC entry 5358 (class 1259 OID 1086607)
+-- TOC entry 5364 (class 1259 OID 1086607)
 -- Name: venue_wkb_geometry_idx; Type: INDEX; Schema: uranus; Owner: -
 --
 
@@ -1236,7 +1257,7 @@ CREATE INDEX venue_wkb_geometry_idx ON uranus.venue USING gist (wkb_geometry);
 
 
 --
--- TOC entry 5464 (class 2620 OID 1086393)
+-- TOC entry 5470 (class 2620 OID 1086393)
 -- Name: event set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1244,7 +1265,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.event FOR EACH ROW EXECUT
 
 
 --
--- TOC entry 5469 (class 2620 OID 1086394)
+-- TOC entry 5475 (class 2620 OID 1086394)
 -- Name: event_date set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1252,7 +1273,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.event_date FOR EACH ROW E
 
 
 --
--- TOC entry 5465 (class 2620 OID 1086395)
+-- TOC entry 5471 (class 2620 OID 1086395)
 -- Name: image set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1260,7 +1281,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.image FOR EACH ROW EXECUT
 
 
 --
--- TOC entry 5466 (class 2620 OID 1086396)
+-- TOC entry 5472 (class 2620 OID 1086396)
 -- Name: logo set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1268,7 +1289,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.logo FOR EACH ROW EXECUTE
 
 
 --
--- TOC entry 5461 (class 2620 OID 1086397)
+-- TOC entry 5467 (class 2620 OID 1086397)
 -- Name: organizer set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1276,7 +1297,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.organizer FOR EACH ROW EX
 
 
 --
--- TOC entry 5463 (class 2620 OID 1086398)
+-- TOC entry 5469 (class 2620 OID 1086398)
 -- Name: space set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1284,7 +1305,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.space FOR EACH ROW EXECUT
 
 
 --
--- TOC entry 5470 (class 2620 OID 1086399)
+-- TOC entry 5476 (class 2620 OID 1086399)
 -- Name: space_type set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1292,7 +1313,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.space_type FOR EACH ROW E
 
 
 --
--- TOC entry 5467 (class 2620 OID 1086400)
+-- TOC entry 5473 (class 2620 OID 1086400)
 -- Name: transport_station set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1300,7 +1321,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.transport_station FOR EAC
 
 
 --
--- TOC entry 5462 (class 2620 OID 1086401)
+-- TOC entry 5468 (class 2620 OID 1086401)
 -- Name: venue set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1308,7 +1329,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.venue FOR EACH ROW EXECUT
 
 
 --
--- TOC entry 5471 (class 2620 OID 1086402)
+-- TOC entry 5477 (class 2620 OID 1086402)
 -- Name: venue_type set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1316,7 +1337,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.venue_type FOR EACH ROW E
 
 
 --
--- TOC entry 5468 (class 2620 OID 1086403)
+-- TOC entry 5474 (class 2620 OID 1086403)
 -- Name: venue_url set_modified_at; Type: TRIGGER; Schema: uranus; Owner: -
 --
 
@@ -1324,7 +1345,7 @@ CREATE TRIGGER set_modified_at BEFORE UPDATE ON uranus.venue_url FOR EACH ROW EX
 
 
 --
--- TOC entry 5437 (class 2606 OID 1086329)
+-- TOC entry 5443 (class 2606 OID 1086329)
 -- Name: event_date event_date_event_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1333,7 +1354,7 @@ ALTER TABLE ONLY uranus.event_date
 
 
 --
--- TOC entry 5438 (class 2606 OID 1086339)
+-- TOC entry 5444 (class 2606 OID 1086339)
 -- Name: event_date event_date_space_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1342,7 +1363,7 @@ ALTER TABLE ONLY uranus.event_date
 
 
 --
--- TOC entry 5439 (class 2606 OID 1086334)
+-- TOC entry 5445 (class 2606 OID 1086334)
 -- Name: event_date event_date_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1351,7 +1372,7 @@ ALTER TABLE ONLY uranus.event_date
 
 
 --
--- TOC entry 5432 (class 2606 OID 1086275)
+-- TOC entry 5438 (class 2606 OID 1086275)
 -- Name: event event_organizer_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1360,7 +1381,7 @@ ALTER TABLE ONLY uranus.event
 
 
 --
--- TOC entry 5433 (class 2606 OID 1086270)
+-- TOC entry 5439 (class 2606 OID 1086270)
 -- Name: event event_space_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1369,7 +1390,7 @@ ALTER TABLE ONLY uranus.event
 
 
 --
--- TOC entry 5434 (class 2606 OID 1086280)
+-- TOC entry 5440 (class 2606 OID 1086280)
 -- Name: event event_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1378,7 +1399,7 @@ ALTER TABLE ONLY uranus.event
 
 
 --
--- TOC entry 5447 (class 2606 OID 1086541)
+-- TOC entry 5453 (class 2606 OID 1086541)
 -- Name: event_date_link_images fk_event_date_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1387,7 +1408,7 @@ ALTER TABLE ONLY uranus.event_date_link_images
 
 
 --
--- TOC entry 5445 (class 2606 OID 1086528)
+-- TOC entry 5451 (class 2606 OID 1086528)
 -- Name: event_link_images fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1396,7 +1417,7 @@ ALTER TABLE ONLY uranus.event_link_images
 
 
 --
--- TOC entry 5458 (class 2606 OID 1094881)
+-- TOC entry 5464 (class 2606 OID 1094881)
 -- Name: user_event_links fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1405,7 +1426,7 @@ ALTER TABLE ONLY uranus.user_event_links
 
 
 --
--- TOC entry 5442 (class 2606 OID 1094987)
+-- TOC entry 5448 (class 2606 OID 1094987)
 -- Name: event_link_types fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1414,7 +1435,7 @@ ALTER TABLE ONLY uranus.event_link_types
 
 
 --
--- TOC entry 5444 (class 2606 OID 1094997)
+-- TOC entry 5450 (class 2606 OID 1094997)
 -- Name: genre_link_types fk_event_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1423,7 +1444,7 @@ ALTER TABLE ONLY uranus.genre_link_types
 
 
 --
--- TOC entry 5443 (class 2606 OID 1094992)
+-- TOC entry 5449 (class 2606 OID 1094992)
 -- Name: event_link_types fk_event_type_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1432,7 +1453,7 @@ ALTER TABLE ONLY uranus.event_link_types
 
 
 --
--- TOC entry 5440 (class 2606 OID 1086444)
+-- TOC entry 5446 (class 2606 OID 1086444)
 -- Name: space_type fk_i18n_locale_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1441,7 +1462,7 @@ ALTER TABLE ONLY uranus.space_type
 
 
 --
--- TOC entry 5449 (class 2606 OID 1086601)
+-- TOC entry 5455 (class 2606 OID 1086601)
 -- Name: image_type fk_i18n_locale_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1450,7 +1471,7 @@ ALTER TABLE ONLY uranus.image_type
 
 
 --
--- TOC entry 5446 (class 2606 OID 1086533)
+-- TOC entry 5452 (class 2606 OID 1086533)
 -- Name: event_link_images fk_image_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1459,7 +1480,7 @@ ALTER TABLE ONLY uranus.event_link_images
 
 
 --
--- TOC entry 5448 (class 2606 OID 1086546)
+-- TOC entry 5454 (class 2606 OID 1086546)
 -- Name: event_date_link_images fk_image_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1468,7 +1489,7 @@ ALTER TABLE ONLY uranus.event_date_link_images
 
 
 --
--- TOC entry 5435 (class 2606 OID 1086588)
+-- TOC entry 5441 (class 2606 OID 1086588)
 -- Name: image fk_license_type_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1477,7 +1498,7 @@ ALTER TABLE ONLY uranus.image
 
 
 --
--- TOC entry 5455 (class 2606 OID 1094851)
+-- TOC entry 5461 (class 2606 OID 1094851)
 -- Name: user_organizer_links fk_organizer_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1486,7 +1507,7 @@ ALTER TABLE ONLY uranus.user_organizer_links
 
 
 --
--- TOC entry 5450 (class 2606 OID 1094729)
+-- TOC entry 5456 (class 2606 OID 1094729)
 -- Name: user_link_roles fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1495,7 +1516,7 @@ ALTER TABLE ONLY uranus.user_link_roles
 
 
 --
--- TOC entry 5452 (class 2606 OID 1094789)
+-- TOC entry 5458 (class 2606 OID 1094789)
 -- Name: user_venue_links fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1504,7 +1525,7 @@ ALTER TABLE ONLY uranus.user_venue_links
 
 
 --
--- TOC entry 5456 (class 2606 OID 1094836)
+-- TOC entry 5462 (class 2606 OID 1094836)
 -- Name: user_organizer_links fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1513,7 +1534,7 @@ ALTER TABLE ONLY uranus.user_organizer_links
 
 
 --
--- TOC entry 5459 (class 2606 OID 1094876)
+-- TOC entry 5465 (class 2606 OID 1094876)
 -- Name: user_event_links fk_user_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1522,7 +1543,7 @@ ALTER TABLE ONLY uranus.user_event_links
 
 
 --
--- TOC entry 5451 (class 2606 OID 1094742)
+-- TOC entry 5457 (class 2606 OID 1094742)
 -- Name: user_link_roles fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1531,7 +1552,7 @@ ALTER TABLE ONLY uranus.user_link_roles
 
 
 --
--- TOC entry 5453 (class 2606 OID 1094799)
+-- TOC entry 5459 (class 2606 OID 1094799)
 -- Name: user_venue_links fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1540,7 +1561,7 @@ ALTER TABLE ONLY uranus.user_venue_links
 
 
 --
--- TOC entry 5457 (class 2606 OID 1094829)
+-- TOC entry 5463 (class 2606 OID 1094829)
 -- Name: user_organizer_links fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1549,7 +1570,7 @@ ALTER TABLE ONLY uranus.user_organizer_links
 
 
 --
--- TOC entry 5460 (class 2606 OID 1094892)
+-- TOC entry 5466 (class 2606 OID 1094892)
 -- Name: user_event_links fk_user_role_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1558,7 +1579,7 @@ ALTER TABLE ONLY uranus.user_event_links
 
 
 --
--- TOC entry 5454 (class 2606 OID 1094794)
+-- TOC entry 5460 (class 2606 OID 1094794)
 -- Name: user_venue_links fk_venue_id; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1567,7 +1588,7 @@ ALTER TABLE ONLY uranus.user_venue_links
 
 
 --
--- TOC entry 5431 (class 2606 OID 1086256)
+-- TOC entry 5437 (class 2606 OID 1086256)
 -- Name: space space_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1576,7 +1597,7 @@ ALTER TABLE ONLY uranus.space
 
 
 --
--- TOC entry 5441 (class 2606 OID 1086383)
+-- TOC entry 5447 (class 2606 OID 1086383)
 -- Name: venue_link_types venue_link_types_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1585,7 +1606,7 @@ ALTER TABLE ONLY uranus.venue_link_types
 
 
 --
--- TOC entry 5430 (class 2606 OID 1095002)
+-- TOC entry 5436 (class 2606 OID 1095002)
 -- Name: venue venue_organizer_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1594,7 +1615,7 @@ ALTER TABLE ONLY uranus.venue
 
 
 --
--- TOC entry 5436 (class 2606 OID 1086317)
+-- TOC entry 5442 (class 2606 OID 1086317)
 -- Name: venue_url venue_url_venue_id_fkey; Type: FK CONSTRAINT; Schema: uranus; Owner: -
 --
 
@@ -1602,7 +1623,7 @@ ALTER TABLE ONLY uranus.venue_url
     ADD CONSTRAINT venue_url_venue_id_fkey FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
--- Completed on 2025-03-13 15:03:44 CET
+-- Completed on 2025-03-14 13:51:21 CET
 
 --
 -- PostgreSQL database dump complete
