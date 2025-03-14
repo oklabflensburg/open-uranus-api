@@ -8,7 +8,7 @@ from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 
-from app.db.repository.user import get_user_by_id, get_user_by_email_or_username
+from app.db.repository.user import get_user_by_id, get_user_by_email
 from app.db.repository.venue import get_venues_by_user_id
 from app.db.repository.organizer import get_organizers_by_user_id
 from app.db.repository.event import get_events_by_user_id
@@ -75,7 +75,7 @@ async def signin_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-    db_user = await get_user_by_email_or_username(db, form_data.username)
+    db_user = await get_user_by_email(db, form_data.username)
 
     if not db_user or not verify_password(form_data.password, db_user.password_hash):
         raise HTTPException(

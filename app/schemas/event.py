@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 
 
@@ -22,6 +22,10 @@ class EventCreate(BaseModel):
     event_space_id: Optional[int] = None
     event_date_start: datetime
     event_date_end: Optional[datetime] = None
+
+    @field_validator('event_date_end', mode='before')
+    def set_event_date_end(cls, v):
+        return v or None
 
 
 
