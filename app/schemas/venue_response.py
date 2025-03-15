@@ -1,6 +1,6 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from typing import Optional, List, Literal
-from datetime import datetime, date
+from datetime import date
 
 from app.services.validators import validate_positive_int32
 
@@ -26,7 +26,7 @@ class VenueResponse(BaseModel):
     organizer_url: Optional[str] = None
     geojson: Optional[VenueGeoJSONPoint] = None
 
-    @validator('venue_id')
+    @field_validator('venue_id')
     def validate_user_password(cls, value):
         return validate_positive_int32(value)
 
@@ -35,4 +35,6 @@ class VenueResponse(BaseModel):
 class UserVenueResponse(BaseModel):
     venue_id: int
     venue_name: str
-    can_edit: bool
+    can_edit_venue: bool
+    can_edit_space: bool
+    can_edit_event: bool

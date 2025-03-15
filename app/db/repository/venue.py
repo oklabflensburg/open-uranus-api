@@ -200,7 +200,9 @@ async def get_venues_by_user_id(db: AsyncSession, user_id: int):
         select(
             UserVenueLinks.venue_id.label('venue_id'),
             Venue.name.label('venue_name'),
-            UserRole.venue.label('can_edit')
+            UserRole.venue.label('can_edit_venue'),
+            UserRole.space.label('can_edit_space'),
+            UserRole.event.label('can_edit_event')
         )
         .join(User, User.id == UserVenueLinks.user_id)
         .join(Venue, Venue.id == UserVenueLinks.venue_id)
