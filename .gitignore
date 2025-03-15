@@ -1,6 +1,7 @@
 venv/
 dist/
 images/
+uploads/
 __pycache__/
 .parcel-cache/
 node_modules/

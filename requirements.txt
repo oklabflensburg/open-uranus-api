@@ -16,6 +16,7 @@ idna==3.10
 numpy==2.2.3
 packaging==24.2
 passlib==1.7.4
+pillow==11.1.0
 pyasn1==0.4.8
 pycparser==2.22
 pydantic==2.10.6

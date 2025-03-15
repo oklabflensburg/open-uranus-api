@@ -1,11 +1,17 @@
-from fastapi import APIRouter, HTTPException, Request, Depends, Query, status
+from fastapi import APIRouter, HTTPException, Request, Depends, Query, status, UploadFile, File
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
+import uuid
+import shutil
+import os
+
+from app.core.config import settings
 from app.db.session import get_db
 from app.db.repository.event import get_events_by_filter, get_events_sort_by, get_simple_event_by_id, add_event
 from app.db.repository.event_date import add_event_date
+from app.models.image import Image
 
 from app.models.user import User
 
@@ -14,7 +20,7 @@ from app.schemas.event import EventCreate, EventResponse, EventQueryResponse
 from app.enum.sort_order import SortOrder
 
 from app.services.auth import get_current_user
-
+from app.services.validators import validate_image
 
 
 router = APIRouter()
@@ -83,6 +89,35 @@ async def create_event(
         event_date_start=new_event_date.date_start,
         event_date_end=new_event_date.date_end
     )
+
+
+@router.post('/upload')
+async def upload_event_image(
+    file: UploadFile = File(...),
+    ext: str = Depends(validate_image),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    source_name = f'{uuid.uuid4()}.{ext}'
+    file_path = os.path.join(settings.UPLOAD_DIR, source_name)
+
+    with open(file_path, 'wb') as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    new_image = Image(
+        source_name=source_name,
+        license_type_id=1,
+        origin_name='tbd',
+        mime_type='is nen image',
+        image_type_id=1
+    )
+
+    db.add(new_image)
+
+    await db.commit()
+    await db.refresh(new_image)
+
+    return {'source_name': source_name}
 
 
 

@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-
+from typing import ClassVar
 import os
 
 
@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv('SECRET_KEY')
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ALGORITHM: str = 'HS256'
+    UPLOAD_DIR: str = 'uploads'
+    ALLOWED_EXTENSIONS: ClassVar[set] = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
 
 
 

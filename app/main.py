@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from app.api.v1.endpoints import (
     user,
@@ -16,7 +17,12 @@ from app.api.v1.endpoints import (
     image_type,
     i18n_locale
 )
+from app.core.config import settings
 
+
+ALLOWED_EXTENSIONS = settings.ALLOWED_EXTENSIONS
+UPLOAD_DIR = Path(settings.UPLOAD_DIR)
+UPLOAD_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(
     docs_url='/docs',
@@ -26,7 +32,7 @@ app = FastAPI(
     version='0.2.2'
 )
 
-app.mount('/static', StaticFiles(directory='static'), name='static')
+app.mount('/uploads', StaticFiles(directory=UPLOAD_DIR), name='uploads')
 
 
 app.include_router(user.router, prefix='/user', tags=['User'])
