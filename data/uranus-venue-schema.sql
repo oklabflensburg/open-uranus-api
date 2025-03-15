@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2 (Postgres.app)
 -- Dumped by pg_dump version 16.2 (Postgres.app)
 
--- Started on 2025-03-15 09:38:21 CET
+-- Started on 2025-03-15 11:36:53 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -678,6 +678,9 @@ CREATE TABLE uranus.venue (
     county_code text,
     opened_at date,
     closed_at date,
+    description text,
+    contact_email character varying,
+    contact_phone character varying,
     CONSTRAINT country_length_check CHECK ((char_length((country_code)::text) = 3))
 );
 
@@ -1654,7 +1657,7 @@ ALTER TABLE ONLY uranus.venue_url
     ADD CONSTRAINT venue_url_venue_id_fkey FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
--- Completed on 2025-03-15 09:38:22 CET
+-- Completed on 2025-03-15 11:36:53 CET
 
 --
 -- PostgreSQL database dump complete
