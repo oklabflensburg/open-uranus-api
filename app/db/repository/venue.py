@@ -206,6 +206,7 @@ async def get_venues_by_user_id(db: AsyncSession, user_id: int):
         .join(Venue, Venue.id == UserVenueLinks.venue_id)
         .join(UserRole, UserRole.id == UserVenueLinks.user_role_id)
         .where(UserVenueLinks.user_id == user_id)
+        .order_by(Venue.name)
     )
 
     result = await db.execute(stmt)

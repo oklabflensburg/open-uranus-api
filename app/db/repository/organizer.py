@@ -74,6 +74,7 @@ async def get_organizers_by_user_id(db: AsyncSession, user_id: int):
         .join(Organizer, Organizer.id == UserOrganizerLinks.organizer_id)
         .join(UserRole, UserRole.id == UserOrganizerLinks.user_role_id)
         .where(UserOrganizerLinks.user_id == user_id)
+        .order_by(Organizer.name)
     )
 
     result = await db.execute(stmt)
