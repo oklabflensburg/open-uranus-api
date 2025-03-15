@@ -260,8 +260,8 @@ async def add_user_venue(db: AsyncSession, user_id: int, venue_id: int, user_rol
 async def get_venue_stats(db: AsyncSession, venue_id: int):
     stmt = (
         select(
-            func.count(func.distinct(Space.id)).label('count_space'),
-            func.count(func.distinct(Event.id)).label('count_event')
+            func.count(func.distinct(Space.id)).label('count_spaces'),
+            func.count(func.distinct(Event.id)).label('count_events')
         )
         .select_from(Venue)
         .join(Space, Space.venue_id == Venue.id)

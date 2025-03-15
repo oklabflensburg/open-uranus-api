@@ -87,8 +87,8 @@ async def get_organizers_by_user_id(db: AsyncSession, user_id: int):
 async def get_organizer_stats(db: AsyncSession, organizer_id: int):
     stmt = (
         select(
-            func.count(func.distinct(Venue.id)).label('count_venue'),
-            func.count(func.distinct(Space.id)).label('count_space'),
+            func.count(func.distinct(Venue.id)).label('count_venues'),
+            func.count(func.distinct(Space.id)).label('count_spaces'),
             func.coalesce(func.count(func.distinct(Event.id)), 0).label('count_events')
         )
         .select_from(Organizer)
