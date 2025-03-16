@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Request, Depends, Query, status, UploadFile, File
+import json
+from fastapi import APIRouter, HTTPException, Request, Depends, Query, status, UploadFile, File, Form
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
@@ -6,15 +7,18 @@ from typing import Optional, List
 import uuid
 import shutil
 import os
+import mimetypes
+from PIL import Image as PILImage
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.db.repository.event import get_events_by_filter, get_events_sort_by, get_simple_event_by_id, add_event
+from app.db.repository.event import add_event_image, get_events_by_filter, get_events_sort_by, get_simple_event_by_id, add_event
 from app.db.repository.event_date import add_event_date
 from app.models.image import Image
 
 from app.models.user import User
 
+from app.schemas.image import ImageCreate
 from app.schemas.event import EventCreate, EventResponse, EventQueryResponse
 
 from app.enum.sort_order import SortOrder
@@ -72,12 +76,62 @@ async def fetch_events_by_filter(
 
 @router.post('/', response_model=EventResponse)
 async def create_event(
-    event_data: EventCreate,
+    event_title: str = Form(...),
+    event_description: str = Form(...),
+    event_organizer_id: int = Form(...),
+    event_venue_id: int = Form(...),
+    event_space_id: Optional[int] = Form(None),
+    event_image_type_id: Optional[int] = Form(None),
+    event_image_license_type_id: Optional[int] = Form(None),
+    event_date_start: str = Form(...),
+    event_date_end: Optional[str] = Form(None),
+    event_image_alt: Optional[str] = Form(None),
+    event_image_caption: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
+    ext: str = Depends(validate_image),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    new_event = await add_event(db, event_data)
-    new_event_date = await add_event_date(db, event_data, new_event)
+    if file:
+        source_name = f'{uuid.uuid4()}.{ext}'
+        file_path = os.path.join(settings.UPLOAD_DIR, source_name)
+
+        with open(file_path, 'wb') as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        mime_type, _ = mimetypes.guess_type(file_path)
+
+        with PILImage.open(file_path) as img:
+            width, height = img.size
+
+        image_data = ImageCreate(
+            image_origin_name=file.filename,
+            image_type_id=event_image_type_id,
+            image_license_type_id=event_image_license_type_id,
+            image_source_name=source_name,
+            image_alt_text=event_image_alt,
+            image_caption=event_image_caption,
+            image_mime_type=mime_type,
+            image_width=width,
+            image_height=height
+        )
+
+        new_image = await add_event_image(db, image_data)
+
+    event_data = {
+        'event_title': event_title,
+        'event_description': event_description,
+        'event_organizer_id': event_organizer_id,
+        'event_venue_id': event_venue_id,
+        'event_space_id': event_space_id,
+        'event_image_type_id': event_image_type_id,
+        'event_image_license_type_id': event_image_license_type_id,
+        'event_date_start': event_date_start,
+        'event_date_end': event_date_end
+    }
+    event = EventCreate(**event_data)
+    new_event = await add_event(db, event)
+    new_event_date = await add_event_date(db, event, new_event)
 
     return EventResponse(
         event_id=new_event.id,
@@ -104,12 +158,18 @@ async def upload_event_image(
     with open(file_path, 'wb') as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    mime_type, _ = mimetypes.guess_type(file_path)
+    with PILImage.open(file_path) as img:
+        width, height = img.size
+
     new_image = Image(
         source_name=source_name,
         license_type_id=1,
-        origin_name='tbd',
-        mime_type='is nen image',
-        image_type_id=1
+        origin_name=file.filename,
+        mime_type=mime_type,
+        image_type_id=1,
+        width=width,
+        height=height
     )
 
     db.add(new_image)

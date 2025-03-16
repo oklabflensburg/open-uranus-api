@@ -12,6 +12,7 @@ from sqlalchemy.sql import func
 from sqlalchemy import asc, desc, or_, case
 
 from app.schemas.event import EventCreate
+from app.schemas.image import ImageCreate
 
 from app.models.i18n_locale import I18nLocale
 from app.models.organizer import Organizer
@@ -286,6 +287,32 @@ async def get_events_sort_by(db: AsyncSession, order: dict, base_url: str, lang:
     events = result.mappings().all()
 
     return events
+
+
+
+async def add_event_image(db: AsyncSession, image: ImageCreate):
+    new_image = Image(
+        origin_name=image.image_origin_name,
+        mime_type=image.image_mime_type,
+        license_type_id=image.image_license_type_id,
+        copyright=image.image_copyright,
+        image_type_id=image.image_type_id,
+        alt_text=image.image_alt_text,
+        caption=image.image_caption,
+        source_name=image.image_source_name,
+        width=image.image_width,
+        height=image.image_height
+    )
+
+    db.add(new_image)
+
+    try:
+        await db.commit()
+        await db.refresh(new_image)
+
+        return new_image
+    except IntegrityError as e:
+        await db.rollback()
 
 
 
