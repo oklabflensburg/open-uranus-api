@@ -32,10 +32,7 @@ from app.models.event_date_link_images import EventDateLinkImages
 from app.models.event_link_images import EventLinkImages
 from app.models.image import Image
 
-from app.models.user_event_links import UserEventLinks
-
 from app.models.user_role import UserRole
-from app.models.user import User
 
 from app.enum.sort_order import SortOrder
 from app.core.parser import parse_date
@@ -97,7 +94,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, base_url: str, l
             Space.name.label('space_name'),
             spt.c.space_type,
             func.string_agg(func.distinct(gvt.c.venue_name), ', ').label('venue_type'),
-            func.nullif(func.concat(base_url, 'static/images/', Image.source_name), base_url + 'static/images/').label('image_url')
+            func.nullif(func.concat(base_url, 'uploads/', Image.source_name), base_url + 'uploads/').label('image_url')
         )
         .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
@@ -246,7 +243,7 @@ async def get_events_sort_by(db: AsyncSession, order: dict, base_url: str, lang:
             Space.name.label('space_name'),
             spt.c.space_type,
             func.string_agg(func.distinct(gvt.c.venue_name), ', ').label('venue_type'),
-            func.nullif(func.concat(base_url, 'static/images/', Image.source_name), base_url + 'static/images/').label('image_url')
+            func.nullif(func.concat(base_url, 'uploads/', Image.source_name), base_url + 'uploads/').label('image_url')
         )
         .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
