@@ -5,7 +5,7 @@
 -- Dumped from database version 16.2 (Postgres.app)
 -- Dumped by pg_dump version 16.2 (Postgres.app)
 
--- Started on 2025-03-15 11:36:53 CET
+-- Started on 2025-03-16 14:20:04 CET
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -253,15 +253,17 @@ CREATE TABLE uranus.image (
     id integer NOT NULL,
     origin_name character varying NOT NULL,
     mime_type character varying NOT NULL,
-    license_type_id integer NOT NULL,
+    license_type_id integer,
     created_by character varying,
     copyright character varying,
-    image_type_id integer NOT NULL,
+    image_type_id integer,
     alt_text text,
     caption text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     modified_at timestamp without time zone,
-    source_name character varying(64) NOT NULL
+    source_name character varying(64) NOT NULL,
+    width integer,
+    height integer
 );
 
 
@@ -1657,7 +1659,7 @@ ALTER TABLE ONLY uranus.venue_url
     ADD CONSTRAINT venue_url_venue_id_fkey FOREIGN KEY (venue_id) REFERENCES uranus.venue(id) ON DELETE CASCADE;
 
 
--- Completed on 2025-03-15 11:36:53 CET
+-- Completed on 2025-03-16 14:20:04 CET
 
 --
 -- PostgreSQL database dump complete
