@@ -12,7 +12,7 @@ from PIL import Image as PILImage
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.db.repository.event import add_event_image, get_events_by_filter, get_events_sort_by, get_simple_event_by_id, add_event
+from app.db.repository.event import add_event_image, add_event_link_image, get_events_by_filter, get_events_sort_by, get_simple_event_by_id, add_event
 from app.db.repository.event_date import add_event_date
 from app.models.image import Image
 
@@ -132,6 +132,7 @@ async def create_event(
     event = EventCreate(**event_data)
     new_event = await add_event(db, event)
     new_event_date = await add_event_date(db, event, new_event)
+    await add_event_link_image(db, new_event.id, new_image.id)
 
     return EventResponse(
         event_id=new_event.id,
