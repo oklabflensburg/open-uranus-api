@@ -80,6 +80,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, base_url: str, l
     stmt = (
         select(
             Event.id.label('event_id'),
+            EventDate.id.label('event_date_id'),
             Venue.id.label('venue_id'),
             Venue.name.label('venue_name'),
             Venue.postal_code.label('venue_postcode'),
@@ -115,6 +116,7 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, base_url: str, l
         .outerjoin(Image, Image.id == func.coalesce(EventDateLinkImages.image_id, EventLinkImages.image_id))
         .group_by(
             Event.id,
+            EventDate.id,
             Venue.id,
             Event.title,
             Event.description,

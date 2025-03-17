@@ -42,7 +42,8 @@ class EventResponse(BaseModel):
 
 
 class EventQueryResponse(BaseModel):
-    event_id: int 
+    event_id: int
+    event_date_id: int
     venue_id: int 
     venue_name: str 
     venue_postcode: str 
