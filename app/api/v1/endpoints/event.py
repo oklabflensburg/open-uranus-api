@@ -29,6 +29,8 @@ from app.services.validators import validate_image
 
 router = APIRouter()
 
+MAX_IMAGE_PX_SIZE = 2000  # Maximum allowed size for width or height
+
 
 @router.get('/', response_model=List[EventQueryResponse])
 async def fetch_events_by_filter(
@@ -156,29 +158,42 @@ async def upload_event_image(
     source_name = f'{uuid.uuid4()}.{ext}'
     file_path = os.path.join(settings.UPLOAD_DIR, source_name)
 
+    # Save the uploaded file temporarily
     with open(file_path, 'wb') as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    mime_type, _ = mimetypes.guess_type(file_path)
+    # Open the image with Pillow
     with PILImage.open(file_path) as img:
         width, height = img.size
 
+        # Check if resizing is needed
+        if width > MAX_IMAGE_PX_SIZE or height > MAX_IMAGE_PX_SIZE:
+            # Calculate new size while maintaining aspect ratio
+            img.thumbnail((MAX_IMAGE_PX_SIZE, MAX_IMAGE_PX_SIZE), PILImage.LANCZOS)
+            img.save(file_path)  # Overwrite the original file
+
+        # Get new dimensions after resizing
+        new_width, new_height = img.size
+
+    # Determine MIME type
+    mime_type, _ = mimetypes.guess_type(file_path)
+
+    # Save image metadata to database
     new_image = Image(
         source_name=source_name,
         license_type_id=1,
         origin_name=file.filename,
         mime_type=mime_type,
         image_type_id=1,
-        width=width,
-        height=height
+        width=new_width,
+        height=new_height
     )
 
     db.add(new_image)
-
     await db.commit()
     await db.refresh(new_image)
 
-    return {'source_name': source_name}
+    return {'source_name': source_name, 'width': new_width, 'height': new_height}
 
 
 
