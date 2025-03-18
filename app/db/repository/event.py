@@ -334,6 +334,25 @@ async def add_event_link_image(db: AsyncSession, event_id: int, image_id: int):
 
 
 
+async def add_event_link_type(db: AsyncSession, event_id: int, type_id: int):
+    new_event_type_link = EventLinkTypes(
+        event_type_id=type_id,
+        event_id=event_id,
+        main_image=True
+    )
+
+    db.add(new_event_type_link)
+
+    try:
+        await db.commit()
+        await db.refresh(new_event_type_link)
+
+        return new_event_type_link
+    except IntegrityError as e:
+        await db.rollback()
+
+
+
 async def add_event(db: AsyncSession, event: EventCreate):
     new_event = Event(
         title=event.event_title,
