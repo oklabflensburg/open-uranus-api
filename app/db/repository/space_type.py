@@ -18,6 +18,8 @@ async def get_all_space_types(db: AsyncSession, lang: str):
     if lang:
         stmt = stmt.where(I18nLocale.iso_639_1 == lang)
 
+    stmt = stmt.order_by(SpaceType.name)
+
     result = await db.execute(stmt)
     spaces = result.mappings().all()
 

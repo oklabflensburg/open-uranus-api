@@ -42,6 +42,8 @@ async def get_spaces_by_filter(db: AsyncSession, filters: dict):
 
         stmt = stmt.where(column == filter_value)
 
+    stmt = stmt.order_by(Space.name)
+
     result = await db.execute(stmt)
     spaces = result.scalars().all()
 

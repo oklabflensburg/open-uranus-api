@@ -18,6 +18,8 @@ async def get_all_image_types(db: AsyncSession, lang: str):
     if lang:
         stmt = stmt.where(I18nLocale.iso_639_1 == lang)
 
+    stmt = stmt.order_by(ImageType.name)
+
     result = await db.execute(stmt)
     images = result.mappings().all()
 
