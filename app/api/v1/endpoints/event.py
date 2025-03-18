@@ -1,4 +1,3 @@
-import json
 from fastapi import APIRouter, HTTPException, Request, Depends, Query, status, UploadFile, File, Form
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -74,8 +73,6 @@ async def fetch_events_by_filter(
 
     return events
 
-
-
 @router.post('/', response_model=EventResponse)
 async def create_event(
     event_title: str = Form(...),
@@ -90,7 +87,7 @@ async def create_event(
     event_image_alt: Optional[str] = Form(None),
     event_image_caption: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
-    ext: str = Depends(validate_image),
+    ext: Optional[str] = Depends(validate_image),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -131,10 +128,13 @@ async def create_event(
         'event_date_start': event_date_start,
         'event_date_end': event_date_end
     }
+
     event = EventCreate(**event_data)
     new_event = await add_event(db, event)
     new_event_date = await add_event_date(db, event, new_event)
-    await add_event_link_image(db, new_event.id, new_image.id)
+
+    if file:
+        await add_event_link_image(db, new_event.id, new_image.id)
 
     return EventResponse(
         event_id=new_event.id,
@@ -148,7 +148,8 @@ async def create_event(
     )
 
 
-@router.post('/upload')
+
+@router.post('/upload', deprecated=True)
 async def upload_event_image(
     file: UploadFile = File(...),
     ext: str = Depends(validate_image),

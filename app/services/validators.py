@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status, UploadFile
+from typing import Optional
 from PIL import Image
 
 from app.core.config import settings
@@ -49,7 +50,10 @@ def validate_not_none(value):
 
 
 
-def validate_image(file: UploadFile):
+def validate_image(file: Optional[UploadFile] = None):
+    if file is None:
+        return None
+
     ext = file.filename.split('.')[-1].lower()
 
     if ext not in settings.ALLOWED_EXTENSIONS:
