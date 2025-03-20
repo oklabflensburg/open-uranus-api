@@ -3,9 +3,19 @@ from datetime import datetime
 from typing import Optional
 
 
+class EventUpdate(BaseModel):
+    event_id: int
+    event_title: Optional[str] = None
+    event_description: Optional[str] = None
+    event_venue_id: Optional[int] = None
+    event_space_id: Optional[int] = None
+    event_date_start: Optional[datetime] = None
+    event_date_end: Optional[datetime] = None
+
 
 class UserEventResponse(BaseModel):
     event_id: int
+    event_date_id: int
     event_title: str
     event_date_start_first: datetime
     event_date_start_last: datetime
@@ -31,6 +41,7 @@ class EventCreate(BaseModel):
 
 class EventResponse(BaseModel):
     event_id: int
+    event_date_id: int
     event_title: str
     event_description: str
     event_organizer_id: int
