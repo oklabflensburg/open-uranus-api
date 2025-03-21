@@ -5,7 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.dialects.postgresql import array_agg  # Add this import
+from sqlalchemy.dialects.postgresql import array_agg
 
 from app.models.event_date import EventDate
 from app.models.event import Event
@@ -31,7 +31,8 @@ async def add_event_date(
 ):
     # Remove timezone information
     date_start = event.event_date_start.replace(tzinfo=None)
-    date_end = event.event_date_end.replace(tzinfo=None) if event.event_date_end else None
+    date_end = event.event_date_end.replace(
+        tzinfo=None) if event.event_date_end else None
 
     new_event_date = EventDate(
         date_start=date_start,
@@ -146,6 +147,34 @@ async def get_event_by_event_date_id(
             Organizer.id,
             Image.source_name,
         )
+    )
+
+    result = await db.execute(stmt)
+    event = result.mappings().first()
+
+    return event
+
+
+async def get_event_detail_by_event_date_id(
+    db: AsyncSession,
+    event_date_id: int
+):
+    stmt = (
+        select(
+            Event.title.label('event_title'),
+            Event.description.label('event_description'),
+            EventDate.date_start.label('event_date_start'),
+            EventDate.date_end.label('event_date_end'),
+            func.concat(
+                Venue.street, ' ',
+                Venue.house_number, ' ',
+                Venue.postal_code, ' ',
+                Venue.city
+            ).label('event_venue_address')
+        )
+        .join(EventDate, Event.id == EventDate.event_id)
+        .join(Venue, Venue.id == EventDate.venue_id)
+        .where(EventDate.id == event_date_id)
     )
 
     result = await db.execute(stmt)

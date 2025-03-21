@@ -13,6 +13,8 @@ from fastapi import (
     File,
     Form
 )
+from fastapi.responses import FileResponse
+from icalendar import Calendar, Event as ICalEvent
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -42,7 +44,8 @@ from app.db.repository.event import (
 
 from app.db.repository.event_date import (
     add_event_date,
-    get_event_by_event_date_id
+    get_event_by_event_date_id,
+    get_event_detail_by_event_date_id
 )
 
 from app.db.repository.event_type import (
@@ -481,3 +484,54 @@ async def fetch_events_sort_by(
         )
 
     return events
+
+
+@router.get('/{event_date_id}/calendar', response_class=FileResponse)
+async def get_event_calendar(
+    event_date_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Generate and retrieve a calendar .ics file for the specified event date.
+    """
+    event = await get_event_detail_by_event_date_id(db, event_date_id)
+
+    if not event:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'No event date found for event_date_id: {event_date_id}'
+        )
+
+    # Validate that the required attributes are present
+    required_attributes = ['event_title', 'event_description', 'event_date_start', 'event_venue_address']
+    for attr in required_attributes:
+        if not hasattr(event, attr):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f'Missing required attribute "{attr}" in event data.'
+            )
+
+    cal = Calendar()
+    ical_event = ICalEvent()
+    ical_event.add('summary', event.event_title)
+    ical_event.add('description', event.event_description)
+    ical_event.add('dtstart', event.event_date_start)
+
+    if event.event_date_end:
+        ical_event.add('dtend', event.event_date_end)
+
+    ical_event.add('location', event.event_venue_address)
+    cal.add_component(ical_event)
+
+    ics_file_path = os.path.join(
+        settings.TEMP_DIR, f'event_uranus_{event_date_id}.ics'
+    )
+
+    with open(ics_file_path, 'wb') as ics_file:
+        ics_file.write(cal.to_ical())
+
+    return FileResponse(
+        ics_file_path,
+        media_type='text/calendar',
+        filename=f'event_uranus_{event_date_id}.ics'
+    )

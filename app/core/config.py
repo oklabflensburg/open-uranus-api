@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ALGORITHM: str = 'HS256'
     UPLOAD_DIR: str = os.getenv('UPLOAD_DIR')
+    TEMP_DIR: str = os.getenv('TEMP_DIR')
     ALLOWED_EXTENSIONS: ClassVar[set] = {
         'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'
     }
