@@ -2,7 +2,17 @@ import re
 
 from datetime import datetime, time
 
-from fastapi import APIRouter, HTTPException, Request, Depends, Query, status, UploadFile, File, Form
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Request,
+    Depends,
+    Query,
+    status,
+    UploadFile,
+    File,
+    Form
+)
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -12,6 +22,7 @@ import uuid
 import shutil
 import os
 import mimetypes
+import xml.etree.ElementTree as ET
 
 from PIL import Image as PILImage
 
@@ -43,12 +54,15 @@ from app.db.repository.image import (
     get_main_image_id_by_event_id
 )
 
-from app.models.image import Image
-
 from app.models.user import User
 
 from app.schemas.image import ImageCreate
-from app.schemas.event import EventCreate, EventResponse, EventQueryResponse
+from app.schemas.event import (
+    EventCreate,
+    EventResponse,
+    EventQueryResponse
+)
+
 from app.schemas.event_date import EventDateResponse
 
 from app.enum.sort_order import SortOrder
@@ -113,8 +127,10 @@ async def fetch_events_by_filter(
     }
 
     # Remove filters with None values
-    active_filters = {key: value for key, value in filters.items() if value not in [
-        None, '']}
+    active_filters = {
+        key: value for key, value in filters.items()
+        if value not in [None, '']
+    }
 
     if not active_filters:
         raise HTTPException(
@@ -131,6 +147,75 @@ async def fetch_events_by_filter(
         )
 
     return events
+
+
+async def process_uploaded_file(file: UploadFile, ext: str) -> dict:
+    '''
+    Process the uploaded file and return metadata including file path,
+    dimensions, and MIME type.
+    '''
+    source_name = f'{uuid.uuid4()}.{ext}'
+    file_path = os.path.join(settings.UPLOAD_DIR, source_name)
+
+    with open(file_path, 'wb') as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    mime_type, _ = mimetypes.guess_type(file_path)
+
+    if ext == 'svg':
+        with open(file_path, 'r') as svg_file:
+            svg_content = svg_file.read()
+        try:
+            root = ET.fromstring(svg_content)
+            width = root.attrib.get('width')
+            height = root.attrib.get('height')
+            width = int(float(width)) if width else None
+            height = int(float(height)) if height else None
+        except ET.ParseError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='Invalid SVG file format.'
+            )
+    else:
+        with PILImage.open(file_path) as img:
+            width, height = img.size
+
+    return {
+        'file_path': file_path,
+        'source_name': source_name,
+        'mime_type': mime_type,
+        'width': width,
+        'height': height
+    }
+
+
+def handle_integrity_error(e: IntegrityError, column_name_list: List[str]):
+    '''
+    Handle IntegrityError exceptions and raise
+    appropriate HTTPException errors.
+
+    :param e: The IntegrityError exception.
+    :param column_name_list: List of column names
+    to check for in the error message.
+    '''
+    error_message = str(e.orig)
+    match = re.search(r'\(([a-zA-Z_]+)\)=\((-?\d+)\)', error_message)
+
+    if match:
+        column_name = match.group(1)
+        column_value = match.group(2)
+
+        if column_name in column_name_list:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f'''
+                    The {column_name} ({column_value}) provided is invalid.
+                ''',
+            )
+    raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail='Foreign key constraint violation.',
+    )
 
 
 @router.put('/{event_date_id}', response_model=EventResponse)
@@ -179,24 +264,7 @@ async def update_event_by_event_date_id(
         await db.refresh(event_date)
     except IntegrityError as e:
         await db.rollback()
-
-        error_message = str(e.orig)
-        match = re.search(r'\(([a-zA-Z_]+)\)=\((-?\d+)\)', error_message)
-
-        if match:
-            column_name = match.group(1)
-            column_value = match.group(2)
-
-            if column_name in ['venue_id', 'space_id']:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=f'The {column_name} ({column_value}) provided is invalid.',
-                )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail='Foreign key constraint violation.',
-            )
+        handle_integrity_error(e, ['venue_id', 'space_id'])
 
     event = await get_simple_event_by_id(db, event_date.event_id)
 
@@ -212,55 +280,65 @@ async def update_event_by_event_date_id(
     try:
         await db.commit()
         await db.refresh(event)
-    except IntegrityError:
+    except IntegrityError as e:
         await db.rollback()
-
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail='Foreign key constraint violation.',
-        )
+        handle_integrity_error(e, ['organizer_id', 'venue_id'])
 
     if file:
-        image = await get_main_image_id_by_event_id(db, event_date.event_id)
+        image_row = await get_main_image_id_by_event_id(
+            db,
+            event_date.event_id
+        )
 
-        print(image)
-        source_name = f'{uuid.uuid4()}.{ext}'
-        file_path = os.path.join(settings.UPLOAD_DIR, source_name)
+        if not image_row:
+            file_metadata = await process_uploaded_file(file, ext)
 
-        with open(file_path, 'wb') as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        mime_type, _ = mimetypes.guess_type(file_path)
-
-        with PILImage.open(file_path) as img:
-            width, height = img.size
-
-        image.origin_name = file.filename,
-        image.type_id = event_image_type_id,
-        image.license_type_id = event_image_license_type_id,
-        image.source_name = source_name,
-        image.alt_text = event_image_alt,
-        image.caption = event_image_caption,
-        image.mime_type = mime_type,
-        image.width = width,
-        image.height = height
-
-        try:
-            await db.commit()
-            await db.refresh(image)
-        except IntegrityError:
-            await db.rollback()
-
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail='Foreign key constraint violation.',
+            new_image_data = ImageCreate(
+                image_origin_name=file.filename,
+                image_type_id=event_image_type_id,
+                image_license_type_id=event_image_license_type_id,
+                image_source_name=file_metadata['source_name'],
+                image_alt_text=event_image_alt,
+                image_caption=event_image_caption,
+                image_mime_type=file_metadata['mime_type'],
+                image_width=file_metadata['width'],
+                image_height=file_metadata['height']
             )
+
+            new_image = await add_event_image(db, new_image_data)
+            await add_event_link_image(db, event_date.event_id, new_image.id)
+        else:
+            image = image_row['Image']
+
+            file_metadata = await process_uploaded_file(file, ext)
+
+            image.origin_name = file.filename
+            image.image_type_id = event_image_type_id
+            image.license_type_id = event_image_license_type_id
+            image.source_name = file_metadata['source_name']
+            image.alt_text = event_image_alt
+            image.caption = event_image_caption
+            image.mime_type = file_metadata['mime_type']
+            image.width = file_metadata['width']
+            image.height = file_metadata['height']
+
+            try:
+                await db.commit()
+                await db.refresh(image)
+            except IntegrityError:
+                await db.rollback()
+
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail='Foreign key constraint violation.',
+                )
 
     current_event_types = await get_event_types_by_event_id(db, event.id)
     print(current_event_types)
 
     current_event_type_ids = [
-        event_type['EventLinkTypes'].event_type_id for event_type in current_event_types
+        event_type['EventLinkTypes'].event_type_id
+        for event_type in current_event_types
     ]
 
     ids_to_add = set(event_type_id) - set(current_event_type_ids)
@@ -309,27 +387,18 @@ async def create_event(
     db: AsyncSession = Depends(get_db)
 ):
     if file:
-        source_name = f'{uuid.uuid4()}.{ext}'
-        file_path = os.path.join(settings.UPLOAD_DIR, source_name)
-
-        with open(file_path, 'wb') as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        mime_type, _ = mimetypes.guess_type(file_path)
-
-        with PILImage.open(file_path) as img:
-            width, height = img.size
+        file_metadata = await process_uploaded_file(file, ext)
 
         image_data = ImageCreate(
             image_origin_name=file.filename,
             image_type_id=event_image_type_id,
             image_license_type_id=event_image_license_type_id,
-            image_source_name=source_name,
+            image_source_name=file_metadata['source_name'],
             image_alt_text=event_image_alt,
             image_caption=event_image_caption,
-            image_mime_type=mime_type,
-            image_width=width,
-            image_height=height
+            image_mime_type=file_metadata['mime_type'],
+            image_width=file_metadata['width'],
+            image_height=file_metadata['height']
         )
 
         new_image = await add_event_image(db, image_data)
@@ -356,6 +425,13 @@ async def create_event(
     for type_id in event_type_id:
         await add_event_link_type(db, new_event.id, type_id)
 
+    try:
+        await db.commit()
+        await db.refresh(new_event)
+    except IntegrityError as e:
+        await db.rollback()
+        handle_integrity_error(e, ['organizer_id', 'venue_id'])
+
     return EventResponse(
         event_id=new_event.id,
         event_date_id=new_event_date.id,
@@ -367,55 +443,6 @@ async def create_event(
         event_date_start=new_event_date.date_start,
         event_date_end=new_event_date.date_end
     )
-
-
-@router.post('/upload', deprecated=True)
-async def upload_event_image(
-    file: UploadFile = File(...),
-    ext: str = Depends(validate_image),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    source_name = f'{uuid.uuid4()}.{ext}'
-    file_path = os.path.join(settings.UPLOAD_DIR, source_name)
-
-    # Save the uploaded file temporarily
-    with open(file_path, 'wb') as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    # Open the image with Pillow
-    with PILImage.open(file_path) as img:
-        width, height = img.size
-
-        # Check if resizing is needed
-        if width > MAX_IMAGE_PX_SIZE or height > MAX_IMAGE_PX_SIZE:
-            # Calculate new size while maintaining aspect ratio
-            img.thumbnail((MAX_IMAGE_PX_SIZE, MAX_IMAGE_PX_SIZE),
-                          PILImage.LANCZOS)
-            img.save(file_path)  # Overwrite the original file
-
-        # Get new dimensions after resizing
-        new_width, new_height = img.size
-
-    # Determine MIME type
-    mime_type, _ = mimetypes.guess_type(file_path)
-
-    # Save image metadata to database
-    new_image = Image(
-        source_name=source_name,
-        license_type_id=1,
-        origin_name=file.filename,
-        mime_type=mime_type,
-        image_type_id=1,
-        width=new_width,
-        height=new_height
-    )
-
-    db.add(new_image)
-    await db.commit()
-    await db.refresh(new_image)
-
-    return {'source_name': source_name, 'width': new_width, 'height': new_height}
 
 
 @router.delete('/{event_id}', response_model=dict)
