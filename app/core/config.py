@@ -15,6 +15,14 @@ class Settings(BaseSettings):
     ALLOWED_EXTENSIONS: ClassVar[set] = {
         'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'
     }
+    MAIL_USERNAME: str = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD: str = os.getenv('MAIL_PASSWORD')
+    MAIL_FROM: str = os.getenv('MAIL_FROM')
+    MAIL_PORT: int = os.getenv('MAIL_PORT')
+    MAIL_SERVER: str = os.getenv('MAIL_SERVER')
+    MAIL_STARTTLS: bool = os.getenv('MAIL_STARTTLS')
+    MAIL_SSL_TLS: bool = os.getenv('MAIL_SSL_TLS')
+    FRONTEND_URL: str = os.getenv('FRONTEND_URL')
 
 
 settings = Settings()

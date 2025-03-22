@@ -5,7 +5,6 @@ from app.models.user import UserBase
 from app.services.auth import validate_password
 
 
-
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
@@ -18,7 +17,6 @@ class UserUpdate(BaseModel):
 
     class Config:
         from_attributes = True
-
 
 
 class UserCreate(BaseModel):
@@ -34,11 +32,9 @@ class UserRead(UserBase):
     id: int
 
 
-
 class UserSignin(BaseModel):
     username: EmailStr
     password: str
-
 
 
 class Token(BaseModel):
@@ -47,6 +43,10 @@ class Token(BaseModel):
     token_type: str
 
 
-
 class RefreshToken(BaseModel):
     refresh_token: str
+
+
+class PasswordChangeRequest(BaseModel):
+    reset_token: str
+    new_password: str

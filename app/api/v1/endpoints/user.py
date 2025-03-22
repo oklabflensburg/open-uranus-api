@@ -22,7 +22,10 @@ from app.services.auth import (
     create_access_token,
     create_refresh_token,
     verify_refresh_token,
-    get_current_user
+    get_current_user,
+    create_reset_token,
+    decode_reset_token,
+    validate_password
 )
 
 from app.schemas.user import (
@@ -30,17 +33,28 @@ from app.schemas.user import (
     UserCreate,
     UserUpdate,
     Token,
-    RefreshToken
+    RefreshToken,
+    PasswordChangeRequest
 )
 
 from app.schemas.venue_response import UserVenueResponse
 from app.schemas.organizer import UserOrganizerResponse
 from app.schemas.event import UserEventResponse
 
+from app.services.email import send_reset_password_email
 
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+def update_user_attributes(user, update_data: dict):
+    for key, value in update_data.items():
+        setattr(user, key, value)
 
 
 @router.post('/signup', response_model=UserRead, status_code=status.HTTP_201_CREATED)
@@ -69,7 +83,6 @@ async def signup_user(
         )
 
 
-
 @router.post('/signin', response_model=Token)
 async def signin_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -94,7 +107,6 @@ async def signin_user(
     }
 
 
-
 @router.post('/token/refresh')
 def refresh_access_token(data: RefreshToken):
     user_email_address = verify_refresh_token(data.refresh_token)
@@ -108,7 +120,6 @@ def refresh_access_token(data: RefreshToken):
     new_access_token = create_access_token({'sub': user_email_address})
 
     return {'access_token': new_access_token}
-
 
 
 @router.put('/update', response_model=UserRead)
@@ -125,7 +136,6 @@ async def update_user(
             detail=f'User not found by user id {current_user.id}'
         )
 
-    # Prevent updating username and email
     update_data = user_update.dict(exclude_unset=True)
 
     if 'username' in update_data or 'email_address' in update_data:
@@ -134,12 +144,11 @@ async def update_user(
             detail='Username and email address cannot be changed here'
         )
 
-    # Hash password if being updated
     if 'password' in update_data:
-        update_data['password_hash'] = pwd_context.hash(update_data.pop('password'))
+        update_data['password_hash'] = hash_password(
+            update_data.pop('password'))
 
-    for key, value in update_data.items():
-        setattr(user, key, value)
+    update_user_attributes(user, update_data)
 
     await db.commit()
     await db.refresh(user)
@@ -147,26 +156,77 @@ async def update_user(
     return user
 
 
-
-@router.post('/update/email')
+@router.post('/update/email', response_model=UserRead)
 async def user_change_email(
     new_email: EmailStr,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = await get_user_by_email(db, new_email)
+    # Check if the new email is already in use
+    existing_user = await get_user_by_email(db, new_email)
 
-    if user:
+    if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Email address already in use'
         )
 
-    # Send a verification email before updating (Example)
-    # send_verification_email(current_user, new_email)
+    # Update the user's email
+    current_user.email_address = new_email
 
-    return {'message': 'Verification email sent. Please confirm to update email.'}
+    await db.commit()
+    await db.refresh(current_user)
 
+    return current_user
+
+
+@router.post('/renew/password')
+async def forgot_password(
+    email: EmailStr,
+    db: AsyncSession = Depends(get_db)
+):
+    user = await get_user_by_email(db, email)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='User with this email does not exist'
+        )
+
+    # Generate a reset token
+    reset_token = create_reset_token({'sub': user.email_address})
+
+    # Send the reset token via email (ensure it is awaited)
+    await send_reset_password_email(email, reset_token)
+
+    return {'message': 'Password reset email sent. Please check your inbox.'}
+
+
+@router.post('/confirm/password')
+async def confirm_reset_password(
+    data: PasswordChangeRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    # Decode and verify the reset token
+    email = decode_reset_token(data.reset_token)
+
+    # Fetch the user by email
+    user = await get_user_by_email(db, email)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='User not found'
+        )
+
+    validate_password(data.new_password)
+
+    # Update the user's password
+    user.password_hash = hash_password(data.new_password)
+    await db.commit()
+    await db.refresh(user)
+
+    return {'message': 'Password successfully updated'}
 
 
 @router.get('/profile', response_model=UserRead)
@@ -174,7 +234,6 @@ async def fetch_user_profile(
     current_user: User = Depends(get_current_user)
 ):
     return current_user
-
 
 
 @router.get('/venue', response_model=List[UserVenueResponse])
@@ -187,7 +246,6 @@ async def fetch_venues_by_user_id(
     return venues
 
 
-
 @router.get('/organizer', response_model=List[UserOrganizerResponse])
 async def fetch_organizers_by_user_id(
     current_user: User = Depends(get_current_user),
@@ -196,7 +254,6 @@ async def fetch_organizers_by_user_id(
     organizers = await get_organizers_by_user_id(db, current_user.id)
 
     return organizers
-
 
 
 @router.get('/event', response_model=List[UserEventResponse])
