@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
 
 from app.db.session import get_db
 
-from app.models.organizer import Organizer
 from app.services.auth import get_current_user
 
 from app.db.repository.organizer import (
@@ -11,7 +11,8 @@ from app.db.repository.organizer import (
     get_organizer_by_id,
     add_user_organizer,
     add_organizer,
-    delete_organizer_by_id
+    delete_organizer_by_id,
+    get_all_organizers
 )
 
 from app.schemas.organizer import OrganizerCreate, OrganizerSchema
@@ -175,3 +176,18 @@ async def remove_organizer(
     return {
         'detail': f'Organizer with orgaizer_id {organizer_id} has been deleted'
     }
+
+
+@router.get('/', response_model=List[OrganizerSchema])
+async def fetch_all_organizers(
+    db: AsyncSession = Depends(get_db)
+):
+    organizers = await get_all_organizers(db)
+
+    if not organizers:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='No organizers found'
+        )
+
+    return organizers

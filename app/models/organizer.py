@@ -13,6 +13,10 @@ class OrganizerBase(SQLModel):
     house_number: Optional[str] = Field(default=None, max_length=50)
     postal_code: Optional[str] = Field(default=None, max_length=20)
     city: Optional[str] = Field(default=None, max_length=100)
+    holding_organizer_id: Optional[int] = None
+    legal_form_id: Optional[int] = None
+    nonprofit: Optional[bool] = None
+    address_addition: Optional[str] = Field(default=None, max_length=255)
 
 
 class Organizer(OrganizerBase, table=True):

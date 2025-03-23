@@ -1,10 +1,12 @@
+from fastapi import HTTPException, status
+
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, or_
 from datetime import datetime
-
 from pydantic import EmailStr
+from typing import List
 
 from app.models.organizer import Organizer
 from app.models.user_organizer_links import UserOrganizerLinks
@@ -15,7 +17,7 @@ from app.models.space import Space
 from app.models.event import Event
 from app.models.event_date import EventDate
 
-from app.schemas.organizer import OrganizerCreate
+from app.schemas.organizer import OrganizerCreate, OrganizerSchema
 
 
 async def add_user_organizer(db: AsyncSession, user_id: int, organizer_id: int, user_role_id: int):
@@ -128,3 +130,30 @@ async def delete_organizer_by_id(db: AsyncSession, organizer: Organizer):
     except IntegrityError:
         await db.rollback()
         return False
+
+
+async def get_all_organizers(db: AsyncSession) -> List[OrganizerSchema]:
+    stmt = select(Organizer).order_by(Organizer.name)
+
+    result = await db.execute(stmt)
+    organizers = result.scalars().all()
+
+    return [
+        OrganizerSchema(
+            organizer_id=organizer.id,
+            organizer_name=organizer.name,
+            organizer_description=organizer.description,
+            organizer_contact_email=organizer.contact_email,
+            organizer_contact_phone=organizer.contact_phone,
+            organizer_website_url=organizer.website_url,
+            organizer_street=organizer.street,
+            organizer_house_number=organizer.house_number,
+            organizer_postal_code=organizer.postal_code,
+            organizer_city=organizer.city,
+            organizer_holding_organizer_id=organizer.holding_organizer_id,
+            organizer_nonprofit=organizer.nonprofit,
+            organizer_legal_form_id=organizer.legal_form_id,
+            organizer_address_addition=organizer.address_addition
+        )
+        for organizer in organizers
+    ]
