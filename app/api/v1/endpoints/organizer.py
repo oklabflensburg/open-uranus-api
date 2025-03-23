@@ -10,7 +10,8 @@ from app.db.repository.organizer import (
     get_organizer_stats,
     get_organizer_by_id,
     add_user_organizer,
-    add_organizer
+    add_organizer,
+    delete_organizer_by_id
 )
 
 from app.schemas.organizer import OrganizerCreate, OrganizerSchema
@@ -65,7 +66,7 @@ async def fetch_organizer_stats(
 
 
 @router.get(
-    '/{organizer_id}', 
+    '/{organizer_id}',
     response_model=OrganizerSchema,
 )
 async def fetch_organizer_by_id(
@@ -102,13 +103,13 @@ async def update_organizer_by_id(
     db: AsyncSession = Depends(get_db)
 ):
     organizer = await get_organizer_by_id(db, organizer_id)
-    
+
     if not organizer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f'Organizer with id {organizer_id} not found'
         )
-    
+
     organizer.name = organizer_schema.organizer_name
     organizer.description = organizer_schema.organizer_description
     organizer.contact_email = organizer_schema.organizer_contact_email
@@ -118,7 +119,7 @@ async def update_organizer_by_id(
     organizer.house_number = organizer_schema.organizer_house_number
     organizer.postal_code = organizer_schema.organizer_postal_code
     organizer.city = organizer_schema.organizer_city
-    
+
     try:
         await db.commit()
         await db.refresh(organizer)
@@ -129,7 +130,7 @@ async def update_organizer_by_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f'Failed to update organizer: {str(e)}'
         )
-    
+
     return OrganizerSchema(
         organizer_id=organizer.id,
         organizer_name=organizer.name,
@@ -142,3 +143,35 @@ async def update_organizer_by_id(
         organizer_postal_code=organizer.postal_code,
         organizer_city=organizer.city
     )
+
+
+@router.delete(
+    '/{organizer_id}',
+    status_code=status.HTTP_200_OK
+)
+async def remove_organizer(
+    organizer_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    organizer = await get_organizer_by_id(db, organizer_id)
+
+    if not organizer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'Organizer with id {organizer_id} not found'
+        )
+
+    try:
+        await delete_organizer_by_id(db, organizer)
+    except Exception as e:
+        await db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f'Failed to delete organizer: {str(e.args)}'
+        )
+
+    return {
+        'detail': f'Organizer with orgaizer_id {organizer_id} has been deleted'
+    }

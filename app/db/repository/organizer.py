@@ -117,3 +117,14 @@ async def get_organizer_stats(db: AsyncSession, organizer_id: int):
     stats = result.mappings().first()
 
     return stats
+
+
+async def delete_organizer_by_id(db: AsyncSession, organizer: Organizer):
+    await db.delete(organizer)
+
+    try:
+        await db.commit()
+        return True
+    except IntegrityError:
+        await db.rollback()
+        return False
