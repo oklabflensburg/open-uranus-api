@@ -129,7 +129,6 @@ async def fetch_events_by_filter(
         'date_end': date_end
     }
 
-    # Remove filters with None values
     active_filters = {
         key: value for key, value in filters.items()
         if value not in [None, '']

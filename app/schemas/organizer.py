@@ -1,15 +1,13 @@
 from pydantic import BaseModel, EmailStr
 
 
-
 class UserOrganizerResponse(BaseModel):
     organizer_id: int
     organizer_name: str
     can_edit: bool
 
 
-
-class OrganizerCreateResponse(BaseModel):
+class OrganizerSchema(BaseModel):
     organizer_id: int
     organizer_name: str
     organizer_description: str
@@ -22,10 +20,10 @@ class OrganizerCreateResponse(BaseModel):
     organizer_city: str
 
 
-
 class OrganizerCreate(BaseModel):
     organizer_name: str
     organizer_description: str
+    organizer_contact_email: EmailStr
     organizer_contact_phone: str
     organizer_website_url: str
     organizer_street: str
@@ -34,7 +32,6 @@ class OrganizerCreate(BaseModel):
     organizer_city: str
 
 
-
 class OrganizerRead(BaseModel):
-    organizer_id: int 
-    organizer_name: str 
+    organizer_id: int
+    organizer_name: str

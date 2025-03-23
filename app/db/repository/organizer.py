@@ -18,7 +18,6 @@ from app.models.event_date import EventDate
 from app.schemas.organizer import OrganizerCreate
 
 
-
 async def add_user_organizer(db: AsyncSession, user_id: int, organizer_id: int, user_role_id: int):
     new_user_organizer = UserOrganizerLinks(
         user_id=user_id,
@@ -35,7 +34,6 @@ async def add_user_organizer(db: AsyncSession, user_id: int, organizer_id: int, 
         return new_user_organizer
     except IntegrityError as e:
         await db.rollback()
-
 
 
 async def add_organizer(db: AsyncSession, organizer: OrganizerCreate, current_user_email: EmailStr):
@@ -58,9 +56,19 @@ async def add_organizer(db: AsyncSession, organizer: OrganizerCreate, current_us
         await db.refresh(new_organizer)
 
         return new_organizer
-    except IntegrityError as e:
+    except IntegrityError:
         await db.rollback()
 
+
+async def get_organizer_by_id(db: AsyncSession, organizer_id: int):
+    stmt = (
+        select(Organizer).where(Organizer.id == organizer_id)
+    )
+
+    result = await db.execute(stmt)
+    organizer = result.scalars().first()
+
+    return organizer
 
 
 async def get_organizers_by_user_id(db: AsyncSession, user_id: int):
@@ -83,14 +91,13 @@ async def get_organizers_by_user_id(db: AsyncSession, user_id: int):
     return organizer
 
 
-
-
 async def get_organizer_stats(db: AsyncSession, organizer_id: int):
     stmt = (
         select(
             func.count(func.distinct(Venue.id)).label('count_venues'),
             func.count(func.distinct(Space.id)).label('count_spaces'),
-            func.coalesce(func.count(func.distinct(Event.id)), 0).label('count_events')
+            func.coalesce(func.count(func.distinct(Event.id)),
+                          0).label('count_events')
         )
         .select_from(Organizer)
         .join(Venue, Venue.organizer_id == Organizer.id)
