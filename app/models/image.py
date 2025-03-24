@@ -1,22 +1,22 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
-from datetime import datetime, timezone
-
+from datetime import datetime
 
 
 class ImageBase(SQLModel):
     origin_name: str = Field(max_length=255)
     mime_type: str = Field(max_length=255)
-    license_type_id: Optional[int] = Field(foreign_key='uranus.license_type.id')
+    license_type_id: Optional[int] = Field(
+        foreign_key='uranus.license_type.id')
     created_by: Optional[str] = Field(default=None, max_length=255)
     copyright: Optional[str] = Field(default=None, max_length=255)
     image_type_id: Optional[int] = Field(foreign_key='uranus.image_type.id')
+    user_id: int = Field(foreign_key='uranus.user.id')
     alt_text: Optional[str] = None
     caption: Optional[str] = None
     width: Optional[int] = None
     height: Optional[int] = None
     source_name: str = Field(max_length=64, unique=True)
-
 
 
 class Image(ImageBase, table=True):

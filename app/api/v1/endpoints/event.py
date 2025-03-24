@@ -1,5 +1,6 @@
 import re
-
+import aiofiles
+import asyncio
 from datetime import datetime, time
 
 from fastapi import (
@@ -159,14 +160,16 @@ async def process_uploaded_file(file: UploadFile, ext: str) -> dict:
     source_name = f'{uuid.uuid4()}.{ext}'
     file_path = os.path.join(settings.UPLOAD_DIR, source_name)
 
-    with open(file_path, 'wb') as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Use aiofiles for async file operations
+    async with aiofiles.open(file_path, 'wb') as buffer:
+        content = await file.read()
+        await buffer.write(content)
 
     mime_type, _ = mimetypes.guess_type(file_path)
 
     if ext == 'svg':
-        with open(file_path, 'r') as svg_file:
-            svg_content = svg_file.read()
+        async with aiofiles.open(file_path, 'r') as svg_file:
+            svg_content = await svg_file.read()
         try:
             root = ET.fromstring(svg_content)
             width = root.attrib.get('width')
@@ -179,11 +182,14 @@ async def process_uploaded_file(file: UploadFile, ext: str) -> dict:
                 detail='Invalid SVG file format.'
             )
     else:
-        with PILImage.open(file_path) as img:
-            width, height = img.size
+        # Use asyncio.to_thread to run PIL operations asynchronously
+        def get_image_dimensions(path):
+            with PILImage.open(path) as img:
+                return img.size
+
+        width, height = await asyncio.to_thread(get_image_dimensions, file_path)
 
     return {
-        'file_path': file_path,
         'source_name': source_name,
         'mime_type': mime_type,
         'width': width,
@@ -241,6 +247,7 @@ async def update_event_by_event_date_id(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # First, fetch the necessary data
     event_date = await get_simple_event_date_by_id(db, event_date_id)
 
     if not event_date:
@@ -249,113 +256,104 @@ async def update_event_by_event_date_id(
             detail=f'No event date found for event_date_id: {event_date_id}'
         )
 
-    if event_date_start:
-        event_date.date_start = event_date_start.replace(tzinfo=None)
+    # Store event_id immediately to avoid lazy loading later
+    event_id = event_date.event_id
 
-    if event_date_end:
-        event_date.date_end = event_date_end.replace(tzinfo=None)
-
-    if event_entry_time:
-        event_date.entry_time = event_entry_time
-
-    event_date.venue_id = event_venue_id
-    event_date.space_id = event_space_id
-
-    try:
-        await db.commit()
-        await db.refresh(event_date)
-    except IntegrityError as e:
-        await db.rollback()
-        handle_integrity_error(e, ['venue_id', 'space_id'])
-
-    event = await get_simple_event_by_id(db, event_date.event_id)
+    event = await get_simple_event_by_id(db, event_id)
 
     if not event:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f'No event found for event_id: {event_date.event_id}'
+            detail=f'No event found for event_id: {event_id}'
         )
 
-    event.title = event_title
-    event.description = event_description
+    # Process image if provided
+    file_metadata = None
+    if file:
+        file_metadata = await process_uploaded_file(file, ext)
 
     try:
-        await db.commit()
-        await db.refresh(event)
-    except IntegrityError as e:
-        await db.rollback()
-        handle_integrity_error(e, ['organizer_id', 'venue_id'])
+        # Update event date
+        if event_date_start:
+            event_date.date_start = event_date_start.replace(tzinfo=None)
+        if event_date_end:
+            event_date.date_end = event_date_end.replace(tzinfo=None)
+        if event_entry_time:
+            event_date.entry_time = event_entry_time
 
-    if file:
-        image_row = await get_main_image_id_by_event_id(
-            db,
-            event_date.event_id
-        )
+        event_date.venue_id = event_venue_id
+        event_date.space_id = event_space_id
 
-        if not image_row:
-            file_metadata = await process_uploaded_file(file, ext)
+        # Update event
+        event.title = event_title
+        event.description = event_description
+        event.organizer_id = event_organizer_id
 
-            new_image_data = ImageCreate(
-                image_origin_name=file.filename,
-                image_type_id=event_image_type_id,
-                image_license_type_id=event_image_license_type_id,
-                image_source_name=file_metadata['source_name'],
-                image_alt_text=event_image_alt,
-                image_caption=event_image_caption,
-                image_mime_type=file_metadata['mime_type'],
-                image_width=file_metadata['width'],
-                image_height=file_metadata['height']
-            )
+        # Perform database flush to commit these changes before further operations
+        await db.flush()
 
-            new_image = await add_event_image(db, new_image_data)
-            await add_event_link_image(db, event_date.event_id, new_image.id)
-        else:
-            image = image_row['Image']
+        # Handle event types - using stored event_id instead of event.id
+        current_event_types = await get_event_types_by_event_id(db, event_id)
 
-            file_metadata = await process_uploaded_file(file, ext)
+        current_event_type_ids = [
+            event_type['EventLinkTypes'].event_type_id
+            for event_type in current_event_types
+        ]
 
-            image.origin_name = file.filename
-            image.image_type_id = event_image_type_id
-            image.license_type_id = event_image_license_type_id
-            image.source_name = file_metadata['source_name']
-            image.alt_text = event_image_alt
-            image.caption = event_image_caption
-            image.mime_type = file_metadata['mime_type']
-            image.width = file_metadata['width']
-            image.height = file_metadata['height']
+        ids_to_add = set(event_type_id) - set(current_event_type_ids)
+        ids_to_remove = set(current_event_type_ids) - set(event_type_id)
 
-            try:
-                await db.commit()
-                await db.refresh(image)
-            except IntegrityError:
-                await db.rollback()
+        for type_id in ids_to_remove:
+            await delete_event_link_type(db, event_id, type_id)
 
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail='Foreign key constraint violation.',
+        for type_id in ids_to_add:
+            await add_event_link_type(db, event_id, type_id)
+
+        # Add image data after other updates
+        if file and file_metadata:
+            image_row = await get_main_image_id_by_event_id(db, event_id)
+
+            if not image_row:
+                new_image_data = ImageCreate(
+                    image_user_id=current_user.id,
+                    image_origin_name=file.filename,
+                    image_type_id=event_image_type_id,
+                    image_license_type_id=event_image_license_type_id,
+                    image_source_name=file_metadata['source_name'],
+                    image_alt_text=event_image_alt,
+                    image_caption=event_image_caption,
+                    image_mime_type=file_metadata['mime_type'],
+                    image_width=file_metadata['width'],
+                    image_height=file_metadata['height']
                 )
 
-    current_event_types = await get_event_types_by_event_id(db, event.id)
-    print(current_event_types)
+                new_image = await add_event_image(db, new_image_data)
 
-    current_event_type_ids = [
-        event_type['EventLinkTypes'].event_type_id
-        for event_type in current_event_types
-    ]
+                await add_event_link_image(db, event_id, new_image.id)
+            else:
+                image = image_row['Image']
 
-    ids_to_add = set(event_type_id) - set(current_event_type_ids)
-    ids_to_remove = set(current_event_type_ids) - set(event_type_id)
+                image.user_id = current_user.id
+                image.origin_name = file.filename
+                image.image_type_id = event_image_type_id
+                image.license_type_id = event_image_license_type_id
+                image.source_name = file_metadata['source_name']
+                image.alt_text = event_image_alt
+                image.caption = event_image_caption
+                image.mime_type = file_metadata['mime_type']
+                image.width = file_metadata['width']
+                image.height = file_metadata['height']
 
-    for type_id in ids_to_add:
-        await add_event_link_type(db, event.id, type_id)
+        # Commit all changes
+        await db.commit()
 
-    for type_id in ids_to_remove:
-        await delete_event_link_type(db, event.id, type_id)
-
-    await db.commit()
+    except IntegrityError as e:
+        # Roll back in case of error
+        await db.rollback()
+        handle_integrity_error(e, ['organizer_id', 'venue_id', 'space_id'])
 
     return EventResponse(
-        event_id=event_date.event_id,
+        event_id=event_id,
         event_date_id=event_date_id,
         event_title=event_title,
         event_description=event_description,
@@ -386,22 +384,11 @@ async def create_event(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # Process image if provided
+    file_metadata = None
+
     if file:
         file_metadata = await process_uploaded_file(file, ext)
-
-        image_data = ImageCreate(
-            image_origin_name=file.filename,
-            image_type_id=event_image_type_id,
-            image_license_type_id=event_image_license_type_id,
-            image_source_name=file_metadata['source_name'],
-            image_alt_text=event_image_alt,
-            image_caption=event_image_caption,
-            image_mime_type=file_metadata['mime_type'],
-            image_width=file_metadata['width'],
-            image_height=file_metadata['height']
-        )
-
-        new_image = await add_event_image(db, image_data)
 
     event_data = {
         'event_title': event_title,
@@ -416,19 +403,39 @@ async def create_event(
     }
 
     event = EventCreate(**event_data)
-    new_event = await add_event(db, event)
-    new_event_date = await add_event_date(db, event, new_event)
-
-    if file:
-        await add_event_link_image(db, new_event.id, new_image.id)
-
-    for type_id in event_type_id:
-        await add_event_link_type(db, new_event.id, type_id)
 
     try:
+        # Create the event
+        new_event = await add_event(db, event)
+        new_event_date = await add_event_date(db, event, new_event)
+
+        # Handle image upload
+        if file and file_metadata:
+            image_data = ImageCreate(
+                image_user_id=current_user.id,
+                image_origin_name=file.filename,
+                image_type_id=event_image_type_id,
+                image_license_type_id=event_image_license_type_id,
+                image_source_name=file_metadata['source_name'],
+                image_alt_text=event_image_alt,
+                image_caption=event_image_caption,
+                image_mime_type=file_metadata['mime_type'],
+                image_width=file_metadata['width'],
+                image_height=file_metadata['height']
+            )
+
+            new_image = await add_event_image(db, image_data)
+            await add_event_link_image(db, new_event.id, new_image.id)
+
+        # Add event types
+        for type_id in event_type_id:
+            await add_event_link_type(db, new_event.id, type_id)
+
+        # Commit all changes
         await db.commit()
-        await db.refresh(new_event)
+
     except IntegrityError as e:
+        # Roll back in case of error
         await db.rollback()
         handle_integrity_error(e, ['organizer_id', 'venue_id'])
 
@@ -459,8 +466,15 @@ async def delete_event_by_id(
             detail=f'No venue found for event_id: {event_id}'
         )
 
-    await db.delete(venue)
-    await db.commit()
+    try:
+        await db.delete(venue)
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting venue: {str(e)}"
+        )
 
     return {'message': 'Venue deleted successfully'}
 
@@ -500,7 +514,8 @@ async def get_event_calendar(
         )
 
     # Validate that the required attributes are present
-    required_attributes = ['event_title', 'event_description', 'event_date_start', 'event_venue_address']
+    required_attributes = ['event_title', 'event_description',
+                           'event_date_start', 'event_venue_address']
     for attr in required_attributes:
         if not hasattr(event, attr):
             raise HTTPException(

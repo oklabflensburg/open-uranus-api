@@ -2,8 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-
 class ImageCreate(BaseModel):
+    image_user_id: int
     image_origin_name: str
     image_type_id: Optional[int] = None
     image_license_type_id: Optional[int] = None
