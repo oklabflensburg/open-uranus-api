@@ -4,6 +4,8 @@ from fastapi import APIRouter, HTTPException, Depends, status, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from shapely.wkb import loads
+from shapely.geometry import Point
+from geoalchemy2.shape import from_shape
 
 from decimal import Decimal
 from typing import List, Optional
@@ -15,7 +17,7 @@ from app.db.session import get_db
 
 from app.models.user import User
 
-from app.schemas.venue import VenueCreate
+from app.models.venue import Venue
 from app.schemas.venue_response import VenueResponse, VenueGeoJSONPoint
 from app.schemas.venue_junk_response import VenueJunkResponse
 from app.schemas.venue_bounds_response import VenueBoundsResponse
@@ -114,12 +116,49 @@ async def fetch_venues_within_bounds(
 
 @router.post('/', response_model=VenueResponse)
 async def create_venue(
-    venue_data: VenueCreate,
+    venue_name: str = Form(...),
+    venue_organizer_id: int = Form(None),
+    venue_street: str = Form(None),
+    venue_house_number: str = Form(None),
+    venue_postal_code: str = Form(None),
+    venue_city: str = Form(None),
+    venue_country_code: str = Form(None),
+    venue_state_code: str = Form(None),
+    venue_opened_at: date = Form(None),
+    venue_closed_at: date = Form(None),
+    venue_latitude: Decimal = Form(None),
+    venue_longitude: Decimal = Form(None),
+    venue_type_ids: Optional[List[int]] = Form(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    new_venue = await add_venue(db, venue_data)
+    point = None
+    
+    if venue_latitude and venue_longitude:
+        point = from_shape(
+            Point(venue_longitude, venue_latitude), srid=4326
+        )
+
+    venue = Venue(
+        organizer_id=venue_organizer_id,
+        name=venue_name,
+        street=venue_street,
+        house_number=venue_house_number,
+        postal_code=venue_postal_code,
+        city=venue_city,
+        country_code=venue_country_code,
+        state_code=venue_state_code,
+        opened_at=venue_opened_at,
+        closed_at=venue_closed_at,
+        wkb_geometry=point
+    )
+
+    new_venue = await add_venue(db, venue)
     await add_user_venue(db, current_user.id, new_venue.id, 1)
+
+    if venue_type_ids:
+        for type_id in venue_type_ids:
+            await add_venue_link_type(db, new_venue.id, type_id)
 
     geom = loads(bytes(new_venue.wkb_geometry.data))
     geojson = VenueGeoJSONPoint(type='Point', coordinates=[geom.x, geom.y])
@@ -132,7 +171,7 @@ async def create_venue(
         venue_house_number=new_venue.house_number,
         venue_postal_code=new_venue.postal_code,
         venue_country_code=new_venue.country_code,
-        venue_county_code=new_venue.county_code,
+        venue_state_code=new_venue.state_code,
         venue_city=new_venue.city,
         opened_at=new_venue.opened_at,
         closed_at=new_venue.closed_at,
@@ -150,7 +189,7 @@ async def update_venue(
     venue_postal_code: str = Form(None),
     venue_city: str = Form(None),
     venue_country_code: str = Form(None),
-    venue_county_code: str = Form(None),
+    venue_state_code: str = Form(None),
     venue_opened_at: date = Form(None),
     venue_closed_at: date = Form(None),
     venue_type_ids: Optional[List[int]] = Form(None),
@@ -172,7 +211,7 @@ async def update_venue(
     venue.postal_code = venue_postal_code
     venue.city = venue_city
     venue.country_code = venue_country_code
-    venue.county_code = venue_county_code
+    venue.state_code = venue_state_code
     venue.opened_at = venue_opened_at
     venue.closed_at = venue_closed_at
 
@@ -213,7 +252,7 @@ async def update_venue(
         venue_postal_code=venue.postal_code,
         venue_city=venue.city,
         venue_country_code=venue.country_code,
-        venue_county_code=venue.county_code,
+        venue_state_code=venue.state_code,
         venue_opened_at=venue.opened_at,
         venue_closed_at=venue.closed_at,
         geojson=geojson

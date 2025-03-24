@@ -20,7 +20,7 @@ class VenueResponse(BaseModel):
     venue_postal_code: Optional[str] = None
     venue_city: Optional[str] = None
     venue_country_code: Optional[str] = None
-    venue_county_code: Optional[str] = None
+    venue_state_code: Optional[str] = None
     venue_opened_at: Optional[date] = None
     venue_closed_at: Optional[date] = None
     venue_organizer_name: Optional[str] = None

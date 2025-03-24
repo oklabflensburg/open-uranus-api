@@ -1,6 +1,6 @@
 from sqlalchemy.sql import func
 from datetime import datetime
-from sqlalchemy.types import JSON, String
+from sqlalchemy.types import JSON
 from sqlalchemy.orm import aliased
 from sqlalchemy.future import select
 from sqlalchemy.sql.expression import cast, or_
@@ -8,10 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
 from geoalchemy2.functions import ST_AsGeoJSON, ST_MakeEnvelope
-from geoalchemy2.shape import from_shape
-from shapely.geometry import Point
-
-from app.schemas.venue import VenueCreate
 
 from app.models.i18n_locale import I18nLocale
 from app.models.organizer import Organizer
@@ -76,7 +72,7 @@ async def get_all_venues(db: AsyncSession, lang: str = 'de'):
             Venue.house_number.label('venue_house_number'),
             Venue.postal_code.label('venue_postal_code'),
             Venue.country_code.label('venue_country_code'),
-            Venue.county_code.label('venue_county_code'),
+            Venue.state_code.label('venue_state_code'),
             Venue.city.label('venue_city'),
             func.string_agg(
                 func.distinct(gvt.c.name), ', ').label('venue_type'),
@@ -148,7 +144,7 @@ async def get_venue_by_id(db: AsyncSession, venue_id: int, lang: str = 'de'):
             Venue.house_number.label('venue_house_number'),
             Venue.postal_code.label('venue_postal_code'),
             Venue.country_code.label('venue_country_code'),
-            Venue.county_code.label('venue_county_code'),
+            Venue.state_code.label('venue_state_code'),
             Venue.city.label('venue_city'),
             func.array_agg(
                 func.coalesce(gvt.c.type_id, None)
@@ -229,24 +225,7 @@ async def get_venues_by_user_id(db: AsyncSession, user_id: int):
     return organizer
 
 
-async def add_venue(db: AsyncSession, venue: VenueCreate):
-    point = from_shape(
-        Point(venue.venue_longitude, venue.venue_latitude), srid=4326
-    )
-
-    new_venue = Venue(
-        name=venue.venue_name,
-        organizer_id=venue.venue_organizer_id,
-        street=venue.venue_street,
-        house_number=venue.venue_house_number,
-        postal_code=venue.venue_postal_code,
-        country_code=venue.venue_country_code,
-        county_code=venue.venue_county_code,
-        city=venue.venue_city,
-        opened_at=venue.venue_opened_at,
-        wkb_geometry=point
-    )
-
+async def add_venue(db: AsyncSession, new_venue: Venue):
     db.add(new_venue)
 
     await db.commit()
