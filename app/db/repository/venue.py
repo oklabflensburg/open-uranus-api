@@ -1,6 +1,6 @@
 from sqlalchemy.sql import func
 from datetime import datetime
-from sqlalchemy.types import JSON
+from sqlalchemy.types import JSON, String
 from sqlalchemy.orm import aliased
 from sqlalchemy.future import select
 from sqlalchemy.sql.expression import cast, or_
@@ -68,12 +68,15 @@ async def get_all_venues(db: AsyncSession, lang: str = 'de'):
     stmt = (
         select(
             Venue.id.label('venue_id'),
-            Organizer.name.label('organizer_name'),
+            Venue.organizer_id.label('venue_organizer_id'),
+            Organizer.name.label('venue_organizer_name'),
             Organizer.website_url.label('organizer_url'),
             Venue.name.label('venue_name'),
             Venue.street.label('venue_street'),
             Venue.house_number.label('venue_house_number'),
             Venue.postal_code.label('venue_postal_code'),
+            Venue.country_code.label('venue_country_code'),
+            Venue.county_code.label('venue_county_code'),
             Venue.city.label('venue_city'),
             func.string_agg(
                 func.distinct(gvt.c.name), ', ').label('venue_type'),
@@ -144,9 +147,12 @@ async def get_venue_by_id(db: AsyncSession, venue_id: int, lang: str = 'de'):
             Venue.street.label('venue_street'),
             Venue.house_number.label('venue_house_number'),
             Venue.postal_code.label('venue_postal_code'),
+            Venue.country_code.label('venue_country_code'),
+            Venue.county_code.label('venue_county_code'),
             Venue.city.label('venue_city'),
-            func.string_agg(func.distinct(gvt.c.name),
-                            ', ').label('venue_type'),
+            func.array_agg(
+                func.coalesce(gvt.c.type_id, None)
+            ).filter(gvt.c.type_id.isnot(None)).label('venue_type_ids'),
             Venue.opened_at.label('venue_opened_at'),
             Venue.closed_at.label('venue_closed_at'),
             cast(ST_AsGeoJSON(Venue.wkb_geometry, 15), JSON).label('geojson')
@@ -176,7 +182,13 @@ async def get_venue_by_id(db: AsyncSession, venue_id: int, lang: str = 'de'):
     return venues
 
 
-async def get_venues_within_bounds(db: AsyncSession, xmin: float, ymin: float, xmax: float, ymax: float):
+async def get_venues_within_bounds(
+    db: AsyncSession,
+    xmin: float,
+    ymin: float,
+    xmax: float,
+    ymax: float
+):
     stmt = (
         select(
             Venue.id,
@@ -218,8 +230,9 @@ async def get_venues_by_user_id(db: AsyncSession, user_id: int):
 
 
 async def add_venue(db: AsyncSession, venue: VenueCreate):
-    point = from_shape(Point(venue.venue_longitude,
-                       venue.venue_latitude), srid=4326)
+    point = from_shape(
+        Point(venue.venue_longitude, venue.venue_latitude), srid=4326
+    )
 
     new_venue = Venue(
         name=venue.venue_name,
@@ -227,6 +240,8 @@ async def add_venue(db: AsyncSession, venue: VenueCreate):
         street=venue.venue_street,
         house_number=venue.venue_house_number,
         postal_code=venue.venue_postal_code,
+        country_code=venue.venue_country_code,
+        county_code=venue.venue_county_code,
         city=venue.venue_city,
         opened_at=venue.venue_opened_at,
         wkb_geometry=point
@@ -281,3 +296,21 @@ async def get_venue_stats(db: AsyncSession, venue_id: int):
     stats = result.mappings().first()
 
     return stats
+
+
+async def add_venue_link_type(
+    db: AsyncSession,
+    venue_id: int,
+    venue_type_id: int
+):
+    new_link_type = VenueLinkTypes(
+        venue_id=venue_id,
+        venue_type_id=venue_type_id
+    )
+
+    db.add(new_link_type)
+
+    await db.commit()
+    await db.refresh(new_link_type)
+
+    return new_link_type

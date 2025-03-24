@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 
 from app.models.venue import VenueBase
@@ -12,9 +12,13 @@ class VenueCreate(BaseModel):
     venue_postal_code: Optional[str] = None
     venue_city: Optional[str] = None
     venue_opened_at: Optional[date] = None
+    venue_country_code: Optional[str] = None
+    venue_county_code: Optional[str] = None
+    venue_type_ids: Optional[List[int]] = None
     venue_latitude: float
     venue_longitude: float
-    venue_organizer_id: int
+    venue_organizer_id: Optional[int] = None
+    venue_closed_at: Optional[date] = None
 
 
 class VenueRead(VenueBase):

@@ -354,8 +354,6 @@ async def update_event_by_event_date_id(
 
     await db.commit()
 
-    await get_event_types_by_event_id(db, event.id)
-
     return EventResponse(
         event_id=event_date.event_id,
         event_date_id=event_date_id,
