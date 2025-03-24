@@ -22,7 +22,6 @@ from sqlalchemy.exc import IntegrityError
 from typing import Optional, List
 
 import uuid
-import shutil
 import os
 import mimetypes
 import xml.etree.ElementTree as ET
@@ -77,7 +76,7 @@ from app.services.validators import validate_image
 
 router = APIRouter()
 
-MAX_IMAGE_PX_SIZE = 2000
+MAX_IMAGE_PX_SIZE = 1920
 
 
 @router.get('/{event_date_id}', response_model=EventDateResponse)
@@ -155,7 +154,8 @@ async def fetch_events_by_filter(
 async def process_uploaded_file(file: UploadFile, ext: str) -> dict:
     '''
     Process the uploaded file and return metadata including file path,
-    dimensions, and MIME type.
+    dimensions, and MIME type. Resize image if longest dimension exceeds
+    MAX_IMAGE_PX_SIZE.
     '''
     source_name = f'{uuid.uuid4()}.{ext}'
     file_path = os.path.join(settings.UPLOAD_DIR, source_name)
@@ -183,11 +183,31 @@ async def process_uploaded_file(file: UploadFile, ext: str) -> dict:
             )
     else:
         # Use asyncio.to_thread to run PIL operations asynchronously
-        def get_image_dimensions(path):
+        def process_image(path):
             with PILImage.open(path) as img:
-                return img.size
+                original_width, original_height = img.size
 
-        width, height = await asyncio.to_thread(get_image_dimensions, file_path)
+                # Check if resizing is needed
+                if original_width > MAX_IMAGE_PX_SIZE or original_height > MAX_IMAGE_PX_SIZE:
+                    # Calculate new dimensions maintaining aspect ratio
+                    if original_width >= original_height:
+                        new_width = MAX_IMAGE_PX_SIZE
+                        new_height = int(original_height *
+                                         (MAX_IMAGE_PX_SIZE / original_width))
+                    else:
+                        new_height = MAX_IMAGE_PX_SIZE
+                        new_width = int(original_width *
+                                        (MAX_IMAGE_PX_SIZE / original_height))
+
+                    # Resize and save
+                    img = img.resize((new_width, new_height), PILImage.LANCZOS)
+                    img.save(path)
+
+                    return new_width, new_height
+
+                return original_width, original_height
+
+        width, height = await asyncio.to_thread(process_image, file_path)
 
     return {
         'source_name': source_name,
@@ -269,6 +289,7 @@ async def update_event_by_event_date_id(
 
     # Process image if provided
     file_metadata = None
+
     if file:
         file_metadata = await process_uploaded_file(file, ext)
 
