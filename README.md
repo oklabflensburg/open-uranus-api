@@ -1,39 +1,37 @@
-# Uranus - Veranstaltungslandschaft digital abbilden und bereitstellen
+# Uranus – Digitally Mapping and Providing the Event Landscape
 
-_**Haftungsausschluss:** Dieses Repository und die zugehörige Datenbank befinden sich derzeit in einer Beta-Version. Einige Aspekte des Codes und der Daten können noch Fehler enthalten. Bitte kontaktieren Sie uns per E-Mail oder erstellen Sie ein Issue auf GitHub, wenn Sie einen Fehler entdecken._
+_Disclaimer: This repository and the associated database are currently in a beta version. Some aspects of the code and data may still contain errors. Please contact us via email or create an issue on GitHub if you discover any issues._
 
+## Introduction
 
-### Einleitung
+With this project, we aim to create a detailed and flexible representation of the event landscape. Our goal is to make it easier to create, maintain, publish, and share high-quality event data.
 
-Mit dem Projekt möchten wir eine detaillierte und flexible Abbildung der Veranstaltungslandschaft schaffen. Wir möchten es einfacher machen, qualitativ hochwertige Veranstaltungsdaten zu erstellen, zu pflegen, zu veröffentlichen und zu teilen.
+The Uranus database provides a differentiated representation of event venues (Venues), space descriptions (Spaces), and organizations, for example, in a hierarchical structure such as Institution > Association > Working Group. Additionally, it enables the description of events (Events) with flexible scheduling (EventDate).
 
-Die Uranus-Datenbank bietet eine differenzierte Darstellung von Veranstaltungsorten (Venues), Raumbeschreibungen (Spaces) und Organisationen, z. B. in einer hierarchischen Struktur wie Träger > Verein > Arbeitsgruppe. Zudem ermöglicht sie die Beschreibung von Veranstaltungen (Events) mit beliebigen Terminen (EventDate).
+The generated data is accessible via an open API in various combinations. This allows the development of plugins (e.g., for WordPress) or integrations for websites.
 
-Die erstellten Daten sind über eine offene Schnittstelle (API) in vielen Kombinationen abrufbar. Dadurch können Plugins (z. B. für WordPress) oder Integrationen für Webseiten entwickelt werden.
-
-Im Gegensatz zu anderen Systemen, die meist nur den Event selbst betrachten, berücksichtigt Uranus auch die Beziehungen zwischen Orten, Räumen, Terminen und Organisationen. Dies eröffnet neue Möglichkeiten für Anfragen (Queries) und Anwendungen. Orte und Veranstaltungen können auf Karten und in Portalen auf innovative Weise visualisiert und dargestellt werden.
-
-
-## Zielgruppen
-
-- **Veranstalter:** Alle, die Veranstaltungen mit Teilnahmemöglichkeit öffentlich anbieten, z. B.:
-	- 	Vereine, Initiativen, Bildungseinrichtungen
-	- 	Einrichtungen aus den Bereichen Kultur, Freizeit und Sport
-- **Interessierte an Veranstaltungen:** Nutzer, die gezielt nach Veranstaltungen suchen, z. B. anhand von:
-	- 	Terminen
-	- 	Zielgruppen
-	- 	Veranstaltungsarten und Genres
-	- 	Veranstaltungsorten
-	- 	Organisatoren
-	- 	barrierefreien Angeboten
-	- 	Festivals, Ausstellungen, Veranstaltungsserien
-- **Portale und Institutionen:** Vereine, Kommunen oder Webseitenbetreiber, die Veranstaltungsdaten auf ihren Plattformen integrieren möchten
-- **Journalisten und Kulturberichterstatter:** Alle, die Informationen über Kulturveranstaltungen benötigen
+Unlike other systems that primarily focus on individual events, Uranus also considers the relationships between locations, spaces, dates, and organizations. This opens up new possibilities for queries and applications. Locations and events can be visualized and presented in innovative ways on maps and portals.
 
 
-## Projektstatus
+## Target Groups
+-	Event Organizers: Anyone who publicly offers events with participation opportunities, such as:
+	-	Associations, initiatives, educational institutions
+	-	Organizations in the fields of culture, leisure, and sports
+-	Event Enthusiasts: Users who are actively searching for events, based on criteria such as:
+	-	Dates
+	-	Target audiences
+	-	Event types and genres
+	-	Event locations
+	-	Organizers
+	-	Accessibility-friendly events
+	-	Festivals, exhibitions, and event series
+-	Portals and Institutions: Associations, municipalities, or website operators who want to integrate event data into their platforms
+- Journalists and Culture Reporters: Anyone looking for information about cultural events
 
-Der Anfang wurde am 2. März 2025 gemacht. Aktuell arbeiten wir an einer ersten **MVP** (Minimal Viable Product), mit dem Ziel, die Grundidee von Uranus in einer Demo zu präsentieren zu können. Das MVP wird die Kernfunktionen wie die Erstellung und Pflege von Veranstaltungsdaten und die API-Bereitstellung umfassen. Weitere Features sollen in den kommenden Monaten ergänzt werden.
+
+## Project Status
+
+The project was initiated on March 2, 2025. We are currently working on the first MVP (Minimal Viable Product) with the goal of presenting the core concept of Uranus in a demo. The MVP will include essential features such as event data creation and management, as well as API availability. Additional features will be added in the coming months.
 
 
 ## Installation
