@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -5,8 +7,6 @@ from shapely.wkb import loads
 
 from decimal import Decimal
 from typing import List
-
-import json
 
 from geojson import Feature, FeatureCollection
 
@@ -19,7 +19,6 @@ from app.schemas.venue_response import VenueResponse, VenueGeoJSONPoint
 from app.schemas.venue_junk_response import VenueJunkResponse
 from app.schemas.venue_bounds_response import VenueBoundsResponse
 
-from app.services.validators import validate_positive_int32
 from app.services.auth import get_current_user
 
 from app.db.repository.venue import (
@@ -34,14 +33,7 @@ from app.db.repository.venue import (
 )
 
 
-
 router = APIRouter()
-
-
-
-def validate_venue_id_param(venue_id: int):
-    return validate_positive_int32(venue_id)
-
 
 
 @router.get('/', response_model=List[VenueResponse])
@@ -49,7 +41,6 @@ async def fetch_all_venues(db: AsyncSession = Depends(get_db)):
     venues = await get_all_venues(db)
 
     return venues
-
 
 
 @router.get('/junk', response_model=List[VenueJunkResponse])
@@ -60,24 +51,28 @@ async def fetch_venues_by_name_junk(
     venue = await get_venues_by_name_junk(db, query)
 
     if not venue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venues found by query: {query}')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'No venues found by query: {query}'
+        )
 
     return venue
 
 
-
-@router.get('/id', response_model=VenueResponse)
+@router.get('/{venue_id}', response_model=VenueResponse)
 async def fetch_venue_by_id(
-    venue_id: int = Depends(validate_venue_id_param),
+    venue_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     venue = await get_venue_by_id(db, venue_id)
 
     if not venue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venue found for venue_id: {venue_id}')
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'No venue found for venue_id: {venue_id}'
+        )
 
     return venue
-
 
 
 @router.get('/bounds', response_model=VenueBoundsResponse)
@@ -91,7 +86,8 @@ async def fetch_venues_within_bounds(
     rows = await get_venues_within_bounds(db, xmin, ymin, xmax, ymax)
 
     if len(rows) < 1:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No venues found for bounds xmin: {xmin}, ymin; {ymin}, xmax: {xmax}, ymax: {ymax}')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'No venues found for bounds xmin: {xmin}, ymin; {ymin}, xmax: {xmax}, ymax: {ymax}')
 
     features = [
         Feature(
@@ -108,7 +104,6 @@ async def fetch_venues_within_bounds(
     return venues
 
 
-
 @router.post('/', response_model=VenueResponse)
 async def create_venue(
     venue_data: VenueCreate,
@@ -123,6 +118,7 @@ async def create_venue(
 
     return VenueResponse(
         venue_id=new_venue.id,
+        venue_organizer_id=new_venue.organizer_id,
         venue_name=new_venue.name,
         venue_street=new_venue.street,
         venue_house_number=new_venue.house_number,
@@ -134,8 +130,7 @@ async def create_venue(
     )
 
 
-
-@router.patch('/{venue_id}', response_model=VenueResponse)
+@router.put('/{venue_id}', response_model=VenueResponse)
 async def update_venue(
     venue_id: int,
     venue_update: VenueCreate,
@@ -143,6 +138,7 @@ async def update_venue(
     db: AsyncSession = Depends(get_db),
 ):
     FIELD_MAPPING = {
+        'venue_organizer_id': 'organizer_id',
         'venue_name': 'name',
         'venue_street': 'street',
         'venue_house_number': 'house_number',
@@ -175,16 +171,16 @@ async def update_venue(
 
     return VenueResponse(
         venue_id=venue.id,
+        venue_organizer_id=venue.organizer_id,
         venue_name=venue.name,
         venue_street=venue.street,
         venue_house_number=venue.house_number,
         venue_postal_code=venue.postal_code,
         venue_city=venue.city,
-        opened_at=venue.opened_at,
-        closed_at=venue.closed_at,
+        venue_opened_at=venue.opened_at,
+        venue_closed_at=venue.closed_at,
         geojson=geojson
     )
-
 
 
 @router.delete('/{venue_id}', response_model=dict)
@@ -207,8 +203,7 @@ async def delete_venue_by_id(
     return {'message': 'Venue deleted successfully'}
 
 
-
-@router.get('/stats', response_model=dict)
+@router.get('/{venue_id}/stats', response_model=dict)
 async def fetch_venue_stats(
     venue_id: int,
     db: AsyncSession = Depends(get_db)
