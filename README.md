@@ -1,6 +1,42 @@
-# Veranstaltungsorte Uranus
+# Uranus - Veranstaltungslandschaft digital abbilden und bereitstellen
 
-_Haftungsausschluss: Dieses Repository und die zugehörige Datenbank befinden sich derzeit in einer Beta-Version. Einige Aspekte des Codes und der Daten können noch Fehler enthalten. Bitte kontaktieren Sie uns per E-Mail oder erstellen Sie ein Issue auf GitHub, wenn Sie einen Fehler entdecken._
+_**Haftungsausschluss:** Dieses Repository und die zugehörige Datenbank befinden sich derzeit in einer Beta-Version. Einige Aspekte des Codes und der Daten können noch Fehler enthalten. Bitte kontaktieren Sie uns per E-Mail oder erstellen Sie ein Issue auf GitHub, wenn Sie einen Fehler entdecken._
+
+
+### Einleitung
+
+Mit dem Projekt möchten wir eine detaillierte und flexible Abbildung der Veranstaltungslandschaft schaffen. Wir möchten es einfacher machen, qualitativ hochwertige Veranstaltungsdaten zu erstellen, zu pflegen, zu veröffentlichen und zu teilen.
+
+Die Uranus-Datenbank bietet eine differenzierte Darstellung von Veranstaltungsorten (Venues), Raumbeschreibungen (Spaces) und Organisationen, z. B. in einer hierarchischen Struktur wie Träger > Verein > Arbeitsgruppe. Zudem ermöglicht sie die Beschreibung von Veranstaltungen (Events) mit beliebigen Terminen (EventDate).
+
+Die erstellten Daten sind über eine offene Schnittstelle (API) in vielen Kombinationen abrufbar. Dadurch können Plugins (z. B. für WordPress) oder Integrationen für Webseiten entwickelt werden.
+
+Im Gegensatz zu anderen Systemen, die meist nur den Event selbst betrachten, berücksichtigt Uranus auch die Beziehungen zwischen Orten, Räumen, Terminen und Organisationen. Dies eröffnet neue Möglichkeiten für Anfragen (Queries) und Anwendungen. Orte und Veranstaltungen können auf Karten und in Portalen auf innovative Weise visualisiert und dargestellt werden.
+
+
+## Zielgruppen
+
+- **Veranstalter:** Alle, die Veranstaltungen mit Teilnahmemöglichkeit öffentlich anbieten, z. B.:
+	- 	Vereine, Initiativen, Bildungseinrichtungen
+	- 	Einrichtungen aus den Bereichen Kultur, Freizeit und Sport
+- **Interessierte an Veranstaltungen:** Nutzer, die gezielt nach Veranstaltungen suchen, z. B. anhand von:
+	- 	Terminen
+	- 	Zielgruppen
+	- 	Veranstaltungsarten und Genres
+	- 	Veranstaltungsorten
+	- 	Organisatoren
+	- 	barrierefreien Angeboten
+	- 	Festivals, Ausstellungen, Veranstaltungsserien
+- **Portale und Institutionen:** Vereine, Kommunen oder Webseitenbetreiber, die Veranstaltungsdaten auf ihren Plattformen integrieren möchten
+- **Journalisten und Kulturberichterstatter:** Alle, die Informationen über Kulturveranstaltungen benötigen
+
+
+## Projektstatus
+
+Der Anfang wurde am 2. März 2025 gemacht. Aktuell arbeiten wir an einer ersten **MVP** (Minimal Viable Product), mit dem Ziel, die Grundidee von Uranus in einer Demo zu präsentieren zu können. Das MVP wird die Kernfunktionen wie die Erstellung und Pflege von Veranstaltungsdaten und die API-Bereitstellung umfassen. Weitere Features sollen in den kommenden Monaten ergänzt werden.
+
+
+## Installation
 
 ### Prerequisites
 
