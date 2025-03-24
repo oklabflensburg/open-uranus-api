@@ -4,12 +4,10 @@ from pydantic import EmailStr
 from typing import Optional
 
 
-
 class UserBase(SQLModel):
     email_address: EmailStr
     password_hash: str
     disabled: bool = False
-
 
 
 class User(UserBase, table=True):

@@ -8,7 +8,12 @@ from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 
-from app.db.repository.user import get_user_by_id, get_user_by_email
+from app.db.repository.user import (
+    get_user_by_id,
+    get_user_by_email,
+    get_user_roles_by_current_user_id
+)
+
 from app.db.repository.venue import get_venues_by_user_id
 from app.db.repository.organizer import get_organizers_by_user_id
 from app.db.repository.event import get_events_by_user_id
@@ -31,6 +36,7 @@ from app.services.auth import (
 from app.schemas.user import (
     UserRead,
     UserCreate,
+    UserRoleResponse,
     UserUpdate,
     Token,
     RefreshToken,
@@ -264,3 +270,13 @@ async def fetch_events_by_user_id(
     events = await get_events_by_user_id(db, current_user.id)
 
     return events
+
+
+@router.get('/roles', response_model=list[UserRoleResponse])
+async def fetch_user_roles_by_current_user_id(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    roles = await get_user_roles_by_current_user_id(db, current_user.id)
+
+    return roles

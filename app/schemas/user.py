@@ -50,3 +50,11 @@ class RefreshToken(BaseModel):
 class PasswordChangeRequest(BaseModel):
     reset_token: str
     new_password: str
+
+
+class UserRoleResponse(BaseModel):
+    organizer_name: str
+    role_organization: bool
+    role_venue: bool
+    role_space: bool
+    role_event: bool
