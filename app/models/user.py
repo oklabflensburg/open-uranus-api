@@ -8,6 +8,7 @@ class UserBase(SQLModel):
     email_address: EmailStr
     password_hash: str
     disabled: bool = False
+    display_name: Optional[str] = None
 
 
 class User(UserBase, table=True):

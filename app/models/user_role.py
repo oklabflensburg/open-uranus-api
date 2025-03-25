@@ -3,7 +3,6 @@ from typing import Optional
 from sqlmodel import SQLModel, Field
 
 
-
 class UserRoleBase(SQLModel):
     name: str
     organization: bool
@@ -17,7 +16,6 @@ class UserRoleBase(SQLModel):
     genre_type: bool
     space_type: bool
     role_type: bool
-
 
 
 class UserRole(UserRoleBase, table=True):

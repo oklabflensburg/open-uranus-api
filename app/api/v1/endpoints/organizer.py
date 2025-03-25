@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
+from app.db.repository.user import get_organizer_user_roles_by_organizer_id
 from app.db.session import get_db
 
 from app.services.auth import get_current_user
@@ -15,7 +16,11 @@ from app.db.repository.organizer import (
     get_all_organizers
 )
 
-from app.schemas.organizer import OrganizerCreate, OrganizerSchema
+from app.schemas.organizer import (
+    OrganizerCreate,
+    OrganizerSchema,
+    OrganizerUserRoleResponse
+)
 
 from app.models.user import User
 
@@ -23,7 +28,11 @@ from app.models.user import User
 router = APIRouter()
 
 
-@router.post('/', response_model=OrganizerSchema, status_code=status.HTTP_201_CREATED)
+@router.post(
+    '/',
+    response_model=OrganizerSchema,
+    status_code=status.HTTP_201_CREATED
+)
 async def create_organizer(
     organizer: OrganizerCreate,
     current_user: User = Depends(get_current_user),
@@ -191,3 +200,21 @@ async def fetch_all_organizers(
         )
 
     return organizers
+
+
+@router.get(
+    '/{organizer_id}/roles',
+    response_model=List[OrganizerUserRoleResponse]
+)
+async def fetch_organizer_user_roles_by_organizer_id(
+    organizer_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    roles = await get_organizer_user_roles_by_organizer_id(
+        db,
+        organizer_id,
+        current_user.id
+    )
+
+    return roles

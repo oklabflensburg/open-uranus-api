@@ -38,3 +38,13 @@ class OrganizerSchema(OrganizerCreate):
 class OrganizerRead(BaseModel):
     organizer_id: int
     organizer_name: str
+
+
+class OrganizerUserRoleResponse(BaseModel):
+    user_id: int
+    user_email: str
+    user_display_name: str
+    can_edit_organization: bool
+    can_edit_venue: bool
+    can_edit_space: bool
+    can_edit_event: bool
