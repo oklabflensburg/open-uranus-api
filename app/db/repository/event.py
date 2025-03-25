@@ -450,7 +450,7 @@ async def get_events_by_user_id(db: AsyncSession, user_id: int):
             func.min(EventDate.date_start).label('event_date_start_first'),
             func.max(EventDate.date_start).label('event_date_start_last'),
             case(
-                (UserRole.event == True, True),
+                (UserRole.event, True),
                 else_=False
             ).label('can_edit')
         )
@@ -460,7 +460,14 @@ async def get_events_by_user_id(db: AsyncSession, user_id: int):
         .join(UserRole, UserRole.id == UserVenueLinks.user_role_id)
         .where(UserVenueLinks.user_id == user_id)
         .where(EventDate.date_start >= datetime.now())
-        .group_by(EventDate.date_start, Event.id, EventDate.id, Venue.id, Venue.name, UserRole.event)
+        .group_by(
+            EventDate.date_start,
+            Event.id,
+            EventDate.id,
+            Venue.id,
+            Venue.name,
+            UserRole.event
+        )
         .order_by(EventDate.date_start)
     )
 
