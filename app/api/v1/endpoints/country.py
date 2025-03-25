@@ -19,9 +19,10 @@ router = APIRouter()
 
 @router.get('/', response_model=List[CountryResponse])
 async def fetch_all_countrys(
+    lang: str,
     db: AsyncSession = Depends(get_db)
 ):
-    countrys = await get_all_countrys(db)
+    countrys = await get_all_countrys(db, lang)
 
     return countrys
 

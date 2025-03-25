@@ -4,13 +4,15 @@ from sqlalchemy.future import select
 from app.models.country import Country
 
 
-async def get_all_countrys(db: AsyncSession):
+async def get_all_countrys(db: AsyncSession, lang: str):
     stmt = (
         select(
             Country.name.label('country_name'),
             Country.code.label('country_code'),
             Country.iso_639_1.label('country_iso_639_1'),
-        ).order_by(Country.name)
+        )
+        .where(Country.iso_639_1 == lang)
+        .order_by(Country.name)
     )
 
     countrys = await db.execute(stmt)
