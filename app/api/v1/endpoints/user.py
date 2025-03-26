@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 
 from app.db.repository.user import (
     get_user_by_id,
-    get_user_by_email,
+    get_auth_user_by_email,
     get_user_roles_by_current_user_id
 )
 
@@ -40,7 +40,8 @@ from app.schemas.user import (
     UserUpdate,
     Token,
     RefreshToken,
-    PasswordChangeRequest
+    PasswordChangeRequest,
+    UserResponse
 )
 
 from app.schemas.venue_response import UserVenueResponse
@@ -94,7 +95,7 @@ async def signin_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-    db_user = await get_user_by_email(db, form_data.username)
+    db_user = await get_auth_user_by_email(db, form_data.username)
 
     if not db_user or not verify_password(form_data.password, db_user.password_hash):
         raise HTTPException(
@@ -134,12 +135,12 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    user = await get_user_by_id(db, current_user.id)
+    user = await get_user_by_id(db, current_user.user_id)
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f'User not found by user id {current_user.id}'
+            detail=f'User not found by user id {current_user.user_id}'
         )
 
     update_data = user_update.dict(exclude_unset=True)
@@ -169,7 +170,7 @@ async def user_change_email(
     current_user: User = Depends(get_current_user),
 ):
     # Check if the new email is already in use
-    existing_user = await get_user_by_email(db, new_email)
+    existing_user = await get_auth_user_by_email(db, new_email)
 
     if existing_user:
         raise HTTPException(
@@ -191,7 +192,7 @@ async def forgot_password(
     email: EmailStr,
     db: AsyncSession = Depends(get_db)
 ):
-    user = await get_user_by_email(db, email)
+    user = await get_auth_user_by_email(db, email)
 
     if not user:
         raise HTTPException(
@@ -217,7 +218,7 @@ async def confirm_reset_password(
     email = decode_reset_token(data.reset_token)
 
     # Fetch the user by email
-    user = await get_user_by_email(db, email)
+    user = await get_auth_user_by_email(db, email)
 
     if not user:
         raise HTTPException(
@@ -235,7 +236,7 @@ async def confirm_reset_password(
     return {'message': 'Password successfully updated'}
 
 
-@router.get('/profile', response_model=UserRead)
+@router.get('/profile', response_model=UserResponse)
 async def fetch_user_profile(
     current_user: User = Depends(get_current_user)
 ):
@@ -247,7 +248,7 @@ async def fetch_venues_by_user_id(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    venues = await get_venues_by_user_id(db, current_user.id)
+    venues = await get_venues_by_user_id(db, current_user.user_id)
 
     return venues
 
@@ -257,7 +258,7 @@ async def fetch_organizers_by_user_id(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    organizers = await get_organizers_by_user_id(db, current_user.id)
+    organizers = await get_organizers_by_user_id(db, current_user.user_id)
 
     return organizers
 
@@ -267,7 +268,7 @@ async def fetch_events_by_user_id(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    events = await get_events_by_user_id(db, current_user.id)
+    events = await get_events_by_user_id(db, current_user.user_id)
 
     return events
 
@@ -277,6 +278,6 @@ async def fetch_user_roles_by_current_user_id(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    roles = await get_user_roles_by_current_user_id(db, current_user.id)
+    roles = await get_user_roles_by_current_user_id(db, current_user.user_id)
 
     return roles

@@ -42,7 +42,7 @@ async def create_organizer(
 
     new_organizer = await add_organizer(db, organizer, current_user_email)
     new_user_organizer = await add_user_organizer(
-        db, current_user.id, new_organizer.id, 1
+        db, current_user.user_id, new_organizer.id, 1
     )
 
     return OrganizerSchema(
@@ -214,7 +214,7 @@ async def fetch_organizer_user_roles_by_organizer_id(
     roles = await get_organizer_user_roles_by_organizer_id(
         db,
         organizer_id,
-        current_user.id
+        current_user.user_id
     )
 
     return roles

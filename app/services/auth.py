@@ -102,18 +102,24 @@ async def get_current_user(
 
         if email is None:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid token')
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Invalid token'
+            )
 
         user = await get_user_by_email(db, email)
 
         if user is None:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='User not found'
+            )
 
         return user
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid token')
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Invalid token'
+        )
 
 
 def create_reset_token(

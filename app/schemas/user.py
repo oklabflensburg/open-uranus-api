@@ -37,6 +37,12 @@ class UserSignin(BaseModel):
     password: str
 
 
+class UserResponse(BaseModel):
+    user_id: int
+    user_email_address: str
+    user_display_name: str
+
+
 class Token(BaseModel):
     access_token: str
     refresh_token: str

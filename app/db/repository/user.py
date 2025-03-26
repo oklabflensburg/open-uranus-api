@@ -19,9 +19,9 @@ async def get_user_by_id(db: AsyncSession, user_id: int):
     return user
 
 
-async def get_user_by_username(db: AsyncSession, username: int):
+async def get_auth_user_by_email(db: AsyncSession, email_address: int):
     stmt = (
-        select(User).where(User.username == username)
+        select(User).where(User.email_address == email_address)
     )
 
     result = await db.execute(stmt)
@@ -32,11 +32,15 @@ async def get_user_by_username(db: AsyncSession, username: int):
 
 async def get_user_by_email(db: AsyncSession, email_address: int):
     stmt = (
-        select(User).where(User.email_address == email_address)
+        select(
+            User.id.label('user_id'),
+            User.email_address.label('user_email_address'),
+            User.display_name.label('user_display_name'),
+        ).where(User.email_address == email_address)
     )
 
     result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
+    user = result.mappings().one_or_none()
 
     return user
 

@@ -31,7 +31,7 @@ async def create_user_venue_link(
     db: AsyncSession = Depends(get_db)
 ):
     new_user_venue_link = UserVenueLinks(
-        user_id=current_user.id,
+        user_id=current_user.user_id,
         venue_id=venue_id,
         user_role_id=user_role_id
     )
@@ -81,6 +81,6 @@ async def fetch_roles_venue_by_user_id(
   current_user: User = Depends(get_current_user),
   db: AsyncSession = Depends(get_db)
 ):
-    user_roles = await get_roles_venue_by_user_id(db, current_user.id)
+    user_roles = await get_roles_venue_by_user_id(db, current_user.user_id)
 
     return user_roles

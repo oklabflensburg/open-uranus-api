@@ -336,7 +336,7 @@ async def update_event_by_event_date_id(
 
             if not image_row:
                 new_image_data = ImageCreate(
-                    image_user_id=current_user.id,
+                    image_user_id=current_user.user_id,
                     image_origin_name=file.filename,
                     image_type_id=event_image_type_id,
                     image_license_type_id=event_image_license_type_id,
@@ -354,7 +354,7 @@ async def update_event_by_event_date_id(
             else:
                 image = image_row['Image']
 
-                image.user_id = current_user.id
+                image.user_id = current_user.user_id
                 image.origin_name = file.filename
                 image.image_type_id = event_image_type_id
                 image.license_type_id = event_image_license_type_id
@@ -433,7 +433,7 @@ async def create_event(
         # Handle image upload
         if file and file_metadata:
             image_data = ImageCreate(
-                image_user_id=current_user.id,
+                image_user_id=current_user.user_id,
                 image_origin_name=file.filename,
                 image_type_id=event_image_type_id,
                 image_license_type_id=event_image_license_type_id,
