@@ -104,8 +104,14 @@ async def signin_user(
             headers={'WWW-Authenticate': 'Bearer'}
         )
 
-    access_token = create_access_token({'sub': db_user.email_address})
-    refresh_token = create_refresh_token({'sub': db_user.email_address})
+    token_payload = {
+        'user_id': db_user.id,
+        'user_display_name': db_user.display_name,
+        'user_email_address': db_user.email_address
+    }
+
+    access_token = create_access_token(token_payload)
+    refresh_token = create_refresh_token(token_payload)
 
     return {
         'access_token': access_token,
@@ -114,19 +120,33 @@ async def signin_user(
     }
 
 
-@router.post('/token/refresh')
-def refresh_access_token(data: RefreshToken):
-    user_email_address = verify_refresh_token(data.refresh_token)
+@router.post('/token/refresh', response_model=Token)
+async def refresh_access_token(
+    data: RefreshToken,
+    db: AsyncSession = Depends(get_db)
+):
+    payload = verify_refresh_token(data.refresh_token)
 
-    if not user_email_address:
+    if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Invalid refresh token'
         )
 
-    new_access_token = create_access_token({'sub': user_email_address})
+    token_payload = {
+        'user_id': payload.get('user_id'),
+        'user_display_name': payload.get('user_display_name'),
+        'user_email_address': payload.get('user_email_address')
+    }
 
-    return {'access_token': new_access_token}
+    access_token = create_access_token(token_payload)
+    refresh_token = create_refresh_token(token_payload)
+
+    return {
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        'token_type': 'bearer'
+    }
 
 
 @router.put('/update', response_model=UserRead)

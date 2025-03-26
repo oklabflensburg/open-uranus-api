@@ -52,7 +52,7 @@ def verify_refresh_token(token: str) -> Optional[int]:
                              algorithms=[settings.ALGORITHM])
 
         return payload.get('sub')
-    except JWTError as e:
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Invalid or expired refresh token'
@@ -98,7 +98,7 @@ async def get_current_user(
     try:
         payload = jwt.decode(token, settings.SECRET_KEY,
                              algorithms=[settings.ALGORITHM])
-        email: EmailStr = payload.get('sub')
+        email: EmailStr = payload.get('user_email_address')
 
         if email is None:
             raise HTTPException(
