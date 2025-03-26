@@ -1,7 +1,5 @@
 import re
 
-from datetime import datetime
-
 from fastapi import HTTPException, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,8 +8,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import func
-from sqlalchemy import asc, desc, or_, case
+from sqlalchemy import asc, desc, or_, case, cast, JSON, exists
+from geoalchemy2.functions import ST_AsGeoJSON
 
+from app.models.user_organizer_links import UserOrganizerLinks
 from app.schemas.event import EventCreate, EventUpdate
 from app.schemas.image import ImageCreate
 
@@ -37,7 +37,6 @@ from app.models.user_role import UserRole
 
 from app.enum.sort_order import SortOrder
 from app.core.parser import parse_date
-from app.models.user_venue_links import UserVenueLinks
 
 
 async def get_events_by_filter(db: AsyncSession, filters: dict, base_url: str, lang: str = 'de'):
@@ -102,8 +101,11 @@ async def get_events_by_filter(db: AsyncSession, filters: dict, base_url: str, l
             spt.c.space_type,
             func.string_agg(func.distinct(gvt.c.venue_name),
                             ', ').label('venue_type'),
-            func.nullif(func.concat(base_url, 'uploads/', Image.source_name),
-                        base_url + 'uploads/').label('image_url')
+            func.nullif(
+                func.concat(base_url, 'uploads/', Image.source_name),
+                base_url + 'uploads/').label('image_url'),
+            cast(ST_AsGeoJSON(Venue.wkb_geometry, 15), JSON).label('geojson')
+
         )
         .select_from(Event)
         .join(EventDate, Event.id == EventDate.event_id)
@@ -364,7 +366,7 @@ async def add_event_link_image(db: AsyncSession, event_id: int, image_id: int):
         await db.refresh(new_event)
 
         return new_event
-    except IntegrityError as e:
+    except IntegrityError:
         await db.rollback()
 
 
@@ -449,26 +451,32 @@ async def get_events_by_user_id(db: AsyncSession, user_id: int):
             Venue.name.label('event_venue_name'),
             func.min(EventDate.date_start).label('event_date_start_first'),
             func.max(EventDate.date_start).label('event_date_start_last'),
-            case(
-                (UserRole.event, True),
-                else_=False
+            case((
+                UserRole.event & exists(
+                    select(1)
+                    .where(
+                        UserOrganizerLinks.user_id == user_id
+                    )
+                    .where(
+                        UserOrganizerLinks.organizer_id == Event.organizer_id
+                    )
+                    .correlate(Event, Organizer)
+                ),
+                True
+            ), else_=False
             ).label('can_edit')
         )
         .join(Venue, Venue.id == Event.venue_id)
-        .join(UserVenueLinks, UserVenueLinks.venue_id == Venue.id)
         .join(EventDate, EventDate.event_id == Event.id)
-        .join(UserRole, UserRole.id == UserVenueLinks.user_role_id)
-        .where(UserVenueLinks.user_id == user_id)
-        .where(EventDate.date_start >= datetime.now())
+        .join(Organizer, Organizer.id == Event.organizer_id)
+        .join(UserOrganizerLinks, UserOrganizerLinks.organizer_id == Organizer.id)
+        .join(UserRole, UserRole.id == UserOrganizerLinks.user_role_id)
+        .where(UserOrganizerLinks.user_id == user_id)
+        .where(EventDate.date_start >= func.now())
         .group_by(
-            EventDate.date_start,
-            Event.id,
-            EventDate.id,
-            Venue.id,
-            Venue.name,
-            UserRole.event
+            Event.id, EventDate.id, Venue.id, Venue.name, UserRole.event
         )
-        .order_by(EventDate.date_start)
+        .order_by(EventDate.date_start, Event.title, Event.id)
     )
 
     result = await db.execute(stmt)

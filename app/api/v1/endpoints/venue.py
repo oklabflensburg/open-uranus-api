@@ -154,7 +154,7 @@ async def create_venue(
     )
 
     new_venue = await add_venue(db, venue)
-    await add_user_venue(db, current_user.id, new_venue.id, 1)
+    await add_user_venue(db, current_user.id, new_venue.id)
 
     if venue_type_ids:
         for type_id in venue_type_ids:

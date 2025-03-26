@@ -7,5 +7,3 @@ class UserVenueLinks(SQLModel, table=True):
 
     user_id: int = Field(foreign_key='uranus.user.id', primary_key=True)
     venue_id: int = Field(foreign_key='uranus.venue.id', primary_key=True)
-    user_role_id: int = Field(
-        foreign_key='uranus.user_role.id', primary_key=True)

@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import aliased
 from sqlalchemy.future import select
-from sqlalchemy.sql.expression import cast, or_
+from sqlalchemy.sql.expression import cast, or_, case, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -11,6 +11,7 @@ from geoalchemy2.functions import ST_AsGeoJSON, ST_MakeEnvelope
 
 from app.models.i18n_locale import I18nLocale
 from app.models.organizer import Organizer
+from app.models.user_organizer_links import UserOrganizerLinks
 from app.models.venue_link_types import VenueLinkTypes
 from app.models.user_venue_links import UserVenueLinks
 from app.models.venue_type import VenueType
@@ -203,26 +204,71 @@ async def get_venues_within_bounds(
 
 
 async def get_venues_by_user_id(db: AsyncSession, user_id: int):
+    uol2 = aliased(UserOrganizerLinks)
+    uvl = aliased(UserVenueLinks)
+
     stmt = (
         select(
-            UserVenueLinks.venue_id.label('venue_id'),
+            Venue.id.label('venue_id'),
             Venue.organizer_id.label('venue_organizer_id'),
             Venue.name.label('venue_name'),
-            UserRole.venue.label('can_edit_venue'),
-            UserRole.space.label('can_edit_space'),
-            UserRole.event.label('can_edit_event')
+            case(
+                (
+                    UserRole.venue & exists(
+                        select(1)
+                        .where(uol2.user_id == user_id)
+                        .where(uol2.organizer_id == Venue.organizer_id)
+                        .correlate(Venue)
+                    ),
+                    True,
+                ),
+                (
+                    exists(
+                        select(1)
+                        .where(uvl.user_id == user_id)
+                        .where(uvl.venue_id == Venue.id)
+                        .correlate(Venue)
+                    ),
+                    True,
+                ),
+                else_=False,
+            ).label('can_edit_venue'),
+            case(
+                (
+                    UserRole.space & exists(
+                        select(1)
+                        .where(uol2.user_id == user_id)
+                        .where(uol2.organizer_id == Venue.organizer_id)
+                        .correlate(Venue)
+                    ),
+                    True,
+                ),
+                else_=False,
+            ).label('can_edit_space'),
+            case(
+                (
+                    UserRole.event & exists(
+                        select(1)
+                        .where(uol2.user_id == user_id)
+                        .where(uol2.organizer_id == Venue.organizer_id)
+                        .correlate(Venue)
+                    ),
+                    True,
+                ),
+                else_=False,
+            ).label('can_edit_event'),
         )
-        .join(User, User.id == UserVenueLinks.user_id)
-        .join(Venue, Venue.id == UserVenueLinks.venue_id)
-        .join(UserRole, UserRole.id == UserVenueLinks.user_role_id)
-        .where(UserVenueLinks.user_id == user_id)
+        .join(Organizer, Organizer.id == Venue.organizer_id)
+        .join(UserOrganizerLinks, UserOrganizerLinks.organizer_id == Organizer.id)
+        .join(UserRole, UserRole.id == UserOrganizerLinks.user_role_id)
+        .where(UserOrganizerLinks.user_id == user_id)
         .order_by(Venue.name)
     )
 
     result = await db.execute(stmt)
-    organizer = result.mappings().all()
+    venues = result.mappings().all()
 
-    return organizer
+    return venues
 
 
 async def add_venue(db: AsyncSession, new_venue: Venue):
@@ -234,11 +280,10 @@ async def add_venue(db: AsyncSession, new_venue: Venue):
     return new_venue
 
 
-async def add_user_venue(db: AsyncSession, user_id: int, venue_id: int, user_role_id: int):
+async def add_user_venue(db: AsyncSession, user_id: int, venue_id: int):
     new_user_venue = UserVenueLinks(
         user_id=user_id,
-        venue_id=venue_id,
-        user_role_id=user_role_id
+        venue_id=venue_id
     )
 
     db.add(new_user_venue)
@@ -255,20 +300,17 @@ async def add_user_venue(db: AsyncSession, user_id: int, venue_id: int, user_rol
 async def get_venue_stats(db: AsyncSession, venue_id: int):
     stmt = (
         select(
-            func.count(func.distinct(Space.id)).label('count_spaces'),
-            func.count(func.distinct(Event.id)).label('count_events')
+            func.count(Space.id.distinct()).label('count_spaces'),
+            func.count(Event.id.distinct()).label('count_events')
         )
         .select_from(Venue)
         .join(Space, Space.venue_id == Venue.id)
         .outerjoin(Event, Event.venue_id == Venue.id)
-        .outerjoin(EventDate, EventDate.event_id == Event.id)
-        .where(
-            Venue.id == venue_id,
-            or_(
-                EventDate.date_start >= datetime.now(),
-                EventDate.date_start == None
-            )
+        .outerjoin(
+            EventDate, (EventDate.event_id == Event.id) &
+            (EventDate.date_start >= datetime.now())
         )
+        .where(Venue.id == venue_id)
     )
 
     result = await db.execute(stmt)

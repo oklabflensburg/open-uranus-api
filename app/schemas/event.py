@@ -2,6 +2,8 @@ from pydantic import BaseModel, field_validator
 from datetime import datetime
 from typing import Optional
 
+from app.schemas.venue_response import VenueGeoJSONPoint
+
 
 class EventUpdate(BaseModel):
     event_id: int
@@ -23,9 +25,8 @@ class UserEventResponse(BaseModel):
     can_edit: bool
 
 
-
 class EventCreate(BaseModel):
-    event_title: str 
+    event_title: str
     event_description: str
     event_organizer_id: int
     event_venue_id: int
@@ -38,7 +39,6 @@ class EventCreate(BaseModel):
         return v or None
 
 
-
 class EventResponse(BaseModel):
     event_id: int
     event_date_id: int
@@ -49,18 +49,18 @@ class EventResponse(BaseModel):
     event_space_id: Optional[int] = None
     event_date_start: datetime
     event_date_end: Optional[datetime] = None
-
+    geojson: Optional[VenueGeoJSONPoint] = None
 
 
 class EventQueryResponse(BaseModel):
     event_id: int
     event_date_id: int
-    venue_id: int 
-    venue_name: str 
-    venue_postcode: str 
-    venue_city: str 
-    event_title: str 
-    event_description: str 
+    venue_id: int
+    venue_name: str
+    venue_postcode: str
+    venue_city: str
+    event_title: str
+    event_description: str
     event_date_start: datetime
     event_created_at: datetime
     image_url: Optional[str] = None
@@ -70,3 +70,4 @@ class EventQueryResponse(BaseModel):
     venue_type: Optional[str] = None
     space_name: Optional[str] = None
     space_type: Optional[str] = None
+    geojson: Optional[VenueGeoJSONPoint] = None
