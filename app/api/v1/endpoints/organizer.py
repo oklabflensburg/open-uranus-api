@@ -38,7 +38,7 @@ async def create_organizer(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    current_user_email = current_user.email_address
+    current_user_email = current_user.user_email_address
 
     new_organizer = await add_organizer(db, organizer, current_user_email)
     new_user_organizer = await add_user_organizer(
