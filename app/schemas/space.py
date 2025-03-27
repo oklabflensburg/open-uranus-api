@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-
 class SpaceCreate(BaseModel):
     space_venue_id: int
     space_name: str
@@ -11,7 +10,6 @@ class SpaceCreate(BaseModel):
     space_type_id: Optional[int] = None
     space_building_level: Optional[int] = None
     space_url: Optional[str] = None
-
 
 
 class SpaceResponse(SpaceCreate):

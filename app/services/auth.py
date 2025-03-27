@@ -96,8 +96,11 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db)
 ):
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY,
-                             algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+
         email: EmailStr = payload.get('user_email_address')
 
         if email is None:
