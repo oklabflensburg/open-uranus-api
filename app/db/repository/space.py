@@ -116,7 +116,13 @@ async def add_space(db: AsyncSession, space: SpaceCreate):
 
 
 async def update_space(db: AsyncSession, space_id: int, space_data):
-    space = await get_space_by_id(db, space_id)
+    stmt = (
+        select(Space)
+        .where(Space.id == space_id)
+    )
+
+    result = await db.execute(stmt)
+    space = result.scalars().first()
 
     if not space:
         raise HTTPException(
