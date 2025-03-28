@@ -9,7 +9,7 @@ class EventDateResponse(BaseModel):
     event_venue_id: int
     event_type_ids: Optional[List[int]]
     event_venue_type_id: int
-    event_genre_type_id: Optional[int]
+    event_genre_type_ids: Optional[List[int]]
     event_title: str
     event_description: str
     event_date_start: datetime

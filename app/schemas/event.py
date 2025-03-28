@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from app.schemas.venue_response import VenueGeoJSONPoint
 
@@ -45,6 +45,7 @@ class EventResponse(BaseModel):
     event_title: str
     event_description: str
     event_organizer_id: int
+    event_genre_type_id: List[int]
     event_venue_id: int
     event_space_id: Optional[int] = None
     event_date_start: datetime

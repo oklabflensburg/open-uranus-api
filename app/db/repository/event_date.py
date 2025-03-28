@@ -94,7 +94,9 @@ async def get_event_by_event_date_id(
                 func.coalesce(EventType.id, None)
             ).filter(EventType.id.isnot(None)).label('event_type_ids'),
             VenueType.type_id.label('event_venue_type_id'),
-            GenreType.type_id.label('event_genre_type_id'),
+            array_agg(
+                func.coalesce(GenreType.id, None)
+            ).filter(GenreType.id.isnot(None)).label('event_genre_type_ids'),
             Event.title.label('event_title'),
             Event.description.label('event_description'),
             EventDate.date_start.label('event_date_start'),

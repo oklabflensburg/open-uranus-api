@@ -48,6 +48,12 @@ from app.db.repository.event_date import (
     get_event_detail_by_event_date_id
 )
 
+from app.db.repository.genre_type import (
+    get_genre_types_by_event_id,
+    add_genre_link_type,
+    delete_genre_link_type
+)
+
 from app.db.repository.event_type import (
     get_event_types_by_event_id,
     delete_event_link_type
@@ -255,6 +261,7 @@ async def update_event_by_event_date_id(
     event_venue_id: int = Form(...),
     event_type_id: List[int] = Form(...),
     event_space_id: Optional[int] = Form(None),
+    event_genre_type_id: Optional[List[int]] = Form(None),
     event_image_type_id: Optional[int] = Form(None),
     event_image_license_type_id: Optional[int] = Form(None),
     event_date_start: datetime = Form(...),
@@ -316,6 +323,7 @@ async def update_event_by_event_date_id(
         # Handle event types - using stored event_id instead of event.id
         current_event_types = await get_event_types_by_event_id(db, event_id)
 
+        # TODO: same as below by genre type
         current_event_type_ids = [
             event_type['EventLinkTypes'].event_type_id
             for event_type in current_event_types
@@ -329,6 +337,24 @@ async def update_event_by_event_date_id(
 
         for type_id in ids_to_add:
             await add_event_link_type(db, event_id, type_id)
+
+        current_genre_types = await get_genre_types_by_event_id(db, event_id)
+
+        current_genre_type_ids = [
+            genre_type.genre_type_id
+            for genre_type in current_genre_types
+        ]
+
+        genre_ids_to_add = \
+            set(event_genre_type_id) - set(current_genre_type_ids)
+        genre_ids_to_remove = \
+            set(current_genre_type_ids) - set(event_genre_type_id)
+
+        for genre_type_id in genre_ids_to_remove:
+            await delete_genre_link_type(db, event_id, genre_type_id)
+
+        for genre_type_id in genre_ids_to_add:
+            await add_genre_link_type(db, event_id, genre_type_id)
 
         # Add image data after other updates
         if file and file_metadata:
@@ -382,7 +408,8 @@ async def update_event_by_event_date_id(
         event_venue_id=event_venue_id,
         event_space_id=event_space_id,
         event_date_start=event_date_start,
-        event_date_end=event_date_end
+        event_date_end=event_date_end,
+        event_genre_type_id=event_genre_type_id
     )
 
 
@@ -394,10 +421,11 @@ async def create_event(
     event_venue_id: int = Form(...),
     event_type_id: List[int] = Form(...),
     event_space_id: Optional[int] = Form(None),
+    event_genre_type_id: Optional[List[int]] = Form(None),
     event_image_type_id: Optional[int] = Form(None),
     event_image_license_type_id: Optional[int] = Form(None),
-    event_date_start: str = Form(...),
-    event_date_end: Optional[str] = Form(None),
+    event_date_start: datetime = Form(...),
+    event_date_end: Optional[datetime] = Form(None),
     event_image_alt: Optional[str] = Form(None),
     event_image_caption: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
@@ -426,11 +454,9 @@ async def create_event(
     event = EventCreate(**event_data)
 
     try:
-        # Create the event
         new_event = await add_event(db, event)
         new_event_date = await add_event_date(db, event, new_event)
 
-        # Handle image upload
         if file and file_metadata:
             image_data = ImageCreate(
                 image_user_id=current_user.user_id,
@@ -448,16 +474,17 @@ async def create_event(
             new_image = await add_event_image(db, image_data)
             await add_event_link_image(db, new_event.id, new_image.id)
 
-        # Add event types
         for type_id in event_type_id:
             await add_event_link_type(db, new_event.id, type_id)
 
-        # Commit all changes
+        for genre_type_id in event_genre_type_id:
+            await add_genre_link_type(db, new_event.id, genre_type_id)
+
         await db.commit()
 
     except IntegrityError as e:
-        # Roll back in case of error
         await db.rollback()
+
         handle_integrity_error(e, ['organizer_id', 'venue_id'])
 
     return EventResponse(
@@ -469,7 +496,8 @@ async def create_event(
         event_venue_id=new_event.venue_id,
         event_space_id=new_event.space_id,
         event_date_start=new_event_date.date_start,
-        event_date_end=new_event_date.date_end
+        event_date_end=new_event_date.date_end,
+        event_genre_type_id=event_genre_type_id
     )
 
 
